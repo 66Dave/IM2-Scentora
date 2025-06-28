@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | Scentora</title>
+  <style>
+    /* Root and Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    :root {
+      --lavender-light: #d2b3d6;
+      --white: #ffffff;
+      --mauve: #917489;
+      --lavender-accent: #b497bd;
+    }
+
+    /* Hero Background */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Login Container */
+    .login-container {
+      position: relative;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      color: var(--white);
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    .login-container h2 {
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+    }
+
+    .login-container input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .login-container button {
+      width: 100%;
+      padding: 0.8rem;
+      background-color: rgba(255, 255, 255, 0.85);
+      color: var(--mauve);
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .login-container button:hover {
+      background-color: var(--lavender-accent);
+      color: white;
+    }
+
+    .forgot-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.95rem;
+      margin-top: 1rem;
+    }
+
+    .forgot-btn:hover {
+      color: var(--lavender-accent);
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      color: #333;
+      position: relative;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 1rem;
+    }
+
+    .modal-content p {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-content .email-btn {
+      padding: 0.7rem 1.5rem;
+      background-color: var(--lavender-accent);
+      border: none;
+      border-radius: 30px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal-content .email-btn:hover {
+      background-color: var(--mauve);
+    }
+
+    .modal-content .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      color: #666;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal-content .close-btn:hover {
+      color: #000;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .login-container h2 {
+        font-size: 1.5rem;
+      }
+
+      .login-container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <video autoplay muted loop playsinline>
+      <source src="/files/videos/bg.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+    <div class="login-container">
+      <h2>Login to Scentora</h2>
+      <form id="login-form">
+        <input type="text" name="username" placeholder="Username" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <button class="forgot-btn" onclick="document.getElementById('forgotModal').style.display = 'flex'">Forgot Password?</button>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal" id="forgotModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="document.getElementById('forgotModal').style.display='none'">&times;</button>
+      <h3>Password Assistance</h3>
+      <p>If you forgot your password, please contact our administrator at:</p>
+      <strong>devnest_admin@gmail.com</strong>
+      <br><br>
+      <a href="mailto:devnest_admin@gmail.com">
+        <button class="email-btn">Send Email</button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = e.target.username.value;
+      alert(`Logged in as ${username}`);
+      // You can add a redirect or AJAX login logic here
+    });
+
+    // Optional: close modal on outside click
+    window.addEventListener("click", function (e) {
+      const modal = document.getElementById("forgotModal");
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+  </script>
+
+</body>
+</html>
