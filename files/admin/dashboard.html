@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- HEAD -->
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -23,7 +22,8 @@
       background: var(--background);
       color: var(--text);
       padding-top: 74px;
-      transition: background 0.3s, color 0.3s;
+      margin: 0;
+      transition: background 0.5s ease, color 0.5s ease;
     }
 
     header {
@@ -50,7 +50,7 @@
 
     .nav-links {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .nav-links a {
@@ -58,17 +58,31 @@
       color: var(--white);
       font-weight: 500;
       font-size: 1rem;
-      transition: color 0.3s ease;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:not([href="#logout"]).active {
+      background: var(--white);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
     }
 
     .nav-links a:hover {
-      color: var(--primary);
+      background-color: rgba(255, 255, 255, 0.2);
     }
 
     .toggle-switch {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    .toggle-switch label {
+      font-size: 0.96rem;
+      color: var(--white);
     }
 
     .toggle-switch input[type="checkbox"] {
@@ -82,9 +96,11 @@
       transition: background 0.3s;
       cursor: pointer;
     }
+
     .toggle-switch input[type="checkbox"]:checked {
       background: #392e44;
     }
+
     .toggle-switch input[type="checkbox"]::before {
       content: "";
       position: absolute;
@@ -96,13 +112,10 @@
       background: #fff;
       transition: 0.3s;
     }
+
     .toggle-switch input[type="checkbox"]:checked::before {
       transform: translateX(19px);
       background: #a182c9;
-    }
-    .toggle-switch label {
-      font-size: 0.96rem;
-      color: var(--white);
     }
 
     .dashboard-container {
@@ -111,6 +124,7 @@
       margin: auto;
       padding: 2rem;
       gap: 2rem;
+      transition: background 0.5s ease, color 0.5s ease;
     }
 
     .sidebar {
@@ -133,13 +147,14 @@
       display: block;
       margin-bottom: 0.8rem;
       text-decoration: none;
-      color: #392e44;
+      color: var(--text);
       font-weight: 500;
       border-radius: 4px;
       padding: 0.4rem 0.7rem;
       transition: background 0.2s;
       cursor: pointer;
     }
+
     .sidebar a.active,
     .sidebar a:hover {
       background: var(--primary);
@@ -154,6 +169,7 @@
       display: none;
       animation: fadein 0.5s;
     }
+
     .dashboard-page.active {
       display: block;
     }
@@ -167,6 +183,7 @@
       font-size: 1.2rem;
       text-align: center;
     }
+
     .quick-links {
       display: flex;
       gap: 1.5rem;
@@ -174,6 +191,7 @@
       flex-wrap: wrap;
       justify-content: center;
     }
+
     .quick-link {
       background: var(--primary);
       color: var(--white);
@@ -187,11 +205,13 @@
       display: inline-block;
       margin-bottom: 1rem;
     }
+
     .quick-link:hover {
       background: #8663b9;
       color: #f2e9ff;
       transform: translateY(-3px) scale(1.04);
     }
+
     .overview-grid {
       display: flex;
       gap: 1.5rem;
@@ -199,6 +219,7 @@
       margin-bottom: 1rem;
       justify-content: center;
     }
+
     .overview-widget {
       background: var(--accent);
       color: var(--primary);
@@ -212,12 +233,6 @@
       font-weight: 500;
     }
 
-    /* Statistics Page */
-    .stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-    }
     .stat-card {
       background: var(--card);
       flex: 1 1 250px;
@@ -228,10 +243,12 @@
       text-align: center;
       transition: background 0.3s, color 0.3s;
     }
+
     .stat-card h4 {
       font-size: 1.08rem;
       color: #6b5097;
     }
+
     .stat-card p {
       font-size: 2.2rem;
       color: var(--primary);
@@ -239,119 +256,32 @@
       margin-top: 0.7rem;
     }
 
-    /* Orders Page */
-    .orders-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--card);
-      margin-top: 1rem;
-      box-shadow: var(--shadow);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .orders-table th, .orders-table td {
-      padding: 0.9rem;
-      border-bottom: 1px solid var(--accent);
-      text-align: left;
-    }
-    .orders-table th {
-      background: var(--accent);
-      color: var(--primary);
-    }
-    .orders-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* Settings Page */
-    .settings-section {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem 1.5rem;
-      box-shadow: var(--shadow);
-      max-width: 550px;
-      margin: 0 auto 2rem auto;
-    }
-    .settings-section label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--primary);
-      font-weight: 500;
-    }
-    .settings-section input, .settings-section select {
-      width: 100%;
-      padding: 0.65rem;
-      border-radius: 6px;
-      border: 1px solid var(--accent);
-      margin-bottom: 1.1rem;
-    }
-    .settings-section button {
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 6px;
-      padding: 0.7rem 1.8rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 0.3rem;
-    }
-    .settings-section button:hover {
-      background: #8663b9;
-    }
-
-    @media (max-width: 900px) {
-      .dashboard-container { flex-direction: column; }
-      .sidebar { width: 100%; margin-bottom: 1.2rem; }
-      .stats, .overview-grid, .quick-links { flex-direction: column; }
+    body.darkmode {
+      --primary: #c5b3ea;
+      --accent: #3b2e4a;
+      --background: #1e142d;
+      --card: #2a1d3b;
+      --sidebar: #2e2041;
+      --text: #f8f0ff;
+      --nav-bg: rgba(53, 42, 71, 0.86);
+      --white: #f2e9ff;
+      --shadow: 0 2px 10px rgba(31,12,54,0.15);
     }
 
     @keyframes fadein {
       from { opacity: 0; }
       to   { opacity: 1; }
     }
-
-    /* DARK MODE */
-    body.darkmode {
-      --primary: #a58fd7;
-      --accent: #352a47;
-      --background: #231833;
-      --card: #31203e;
-      --sidebar: #2b1a38;
-      --text: #f2e9ff;
-      --nav-bg: rgba(53, 42, 71, 0.86);
-      --white: #f2e9ff;
-      --shadow: 0 2px 10px rgba(31,12,54,0.15);
-    }
-    body.darkmode .nav-links a,
-    body.darkmode .toggle-switch label {
-      color: #f2e9ff;
-    }
-    body.darkmode .sidebar a {
-      color: #f2e9ff;
-    }
-    body.darkmode .sidebar a:hover, body.darkmode .sidebar a.active {
-      background: var(--primary);
-      color: #31203e;
-    }
-    body.darkmode .stat-card h4 {
-      color: #d6c4f7;
-    }
-    body.darkmode .stat-card p {
-      color: #bba1e1;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Navbar -->
   <header>
     <div class="logo">Scentora</div>
     <div class="nav-links">
-      <a href="#">Home</a>
-      <a href="#">Shop</a>
+      <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
-      <a href="#">Dashboard</a>
-      <a href="#">Logout</a>
+      <a href="#logout" id="logout-link">Logout</a>
     </div>
     <div class="toggle-switch">
       <label for="darkmode">Dark mode</label>
@@ -360,154 +290,69 @@
   </header>
 
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <h3>Dashboard</h3>
       <a href="#" id="overview-link" class="active" onclick="showPage('overview', event)">Overview</a>
       <a href="#" id="stats-link" onclick="showPage('stats', event)">Statistics</a>
       <a href="#" id="orders-link" onclick="showPage('orders', event)">Orders</a>
-      <a href="#" id="settings-link" onclick="showPage('settings', event)">Settings</a>
     </aside>
 
-    <!-- Main -->
     <section class="dashboard-main">
       <!-- Overview Page -->
       <div id="overview" class="dashboard-page active">
         <div class="welcome-card">
-          Welcome to your <strong>Scentora Dashboard</strong>!  
-          <br><br>
-          Use the sidebar to quickly access inventory, orders, and analytics.  
+          Welcome to your <strong>Scentora Dashboard</strong>!
         </div>
         <div class="quick-links">
           <a class="quick-link" href="#">Add New Perfume</a>
           <a class="quick-link" href="inventory_seller.html">View Inventory</a>
-          <a class="quick-link" href="#">Sales Report</a>
         </div>
         <div class="overview-grid">
-          <div class="overview-widget">
-            Perfume Products<br>
-            <span style="font-size:2rem;font-weight:bold;">--</span>
-          </div>
-          <div class="overview-widget">
-            Stock Alerts<br>
-            <span style="font-size:2rem;font-weight:bold;">--</span>
-          </div>
-          <div class="overview-widget">
-            New Orders<br>
-            <span style="font-size:2rem;font-weight:bold;">--</span>
-          </div>
+          <div class="overview-widget">Perfume Products<br><span>--</span></div>
+          <div class="overview-widget">Stock Alerts<br><span>--</span></div>
+          <div class="overview-widget">New Orders<br><span>--</span></div>
         </div>
       </div>
 
       <!-- Statistics Page -->
       <div id="stats" class="dashboard-page">
-        <h2 style="margin-bottom: 1rem; color: var(--primary);">Statistics Overview</h2>
-        <div class="stats">
-          <div class="stat-card">
-            <h4>Total Perfumes</h4>
-            <p><!-- From DB -->0</p>
-          </div>
-          <div class="stat-card">
-            <h4>In Stock</h4>
-            <p><!-- From DB -->0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Out of Stock</h4>
-            <p><!-- From DB -->0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Total Orders</h4>
-            <p><!-- From DB -->0</p>
-          </div>
+        <h2 style="color:var(--primary);">Statistics Overview</h2>
+        <div class="overview-grid">
+          <div class="stat-card"><h4>Total Perfumes</h4><p>0</p></div>
+          <div class="stat-card"><h4>In Stock</h4><p>0</p></div>
+          <div class="stat-card"><h4>Out of Stock</h4><p>0</p></div>
+          <div class="stat-card"><h4>Total Orders</h4><p>0</p></div>
         </div>
       </div>
 
-      <!-- Orders Page -->
-      <div id="orders" class="dashboard-page">
-        <h2 style="color:var(--primary);margin-bottom:1rem;">Orders</h2>
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>#1001</td>
-              <td>Jane Doe</td>
-              <td>2025-06-28</td>
-              <td>Pending</td>
-              <td>$120.00</td>
-            </tr>
-            <tr>
-              <td>#1002</td>
-              <td>John Smith</td>
-              <td>2025-06-27</td>
-              <td>Shipped</td>
-              <td>$65.50</td>
-            </tr>
-            <tr>
-              <td>#1003</td>
-              <td>Alex Chen</td>
-              <td>2025-06-27</td>
-              <td>Delivered</td>
-              <td>$39.99</td>
-            </tr>
-            <!-- Placeholder rows - replace with backend data -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Settings Page -->
-      <div id="settings" class="dashboard-page">
-        <h2 style="color:var(--primary);margin-bottom:1rem;">Settings</h2>
-        <form class="settings-section" onsubmit="event.preventDefault();alert('Settings saved (demo)!');">
-          <label for="storeName">Store Name</label>
-          <input type="text" id="storeName" value="Scentora" />
-
-          <label for="currency">Currency</label>
-          <select id="currency">
-            <option value="usd" selected>USD - US Dollar</option>
-            <option value="eur">EUR - Euro</option>
-            <option value="gbp">GBP - British Pound</option>
-          </select>
-
-          <label for="lowStock">Low Stock Threshold</label>
-          <input type="number" id="lowStock" min="1" value="5" />
-
-          <button type="submit">Save Settings</button>
-        </form>
-      </div>
-    </section>
-  </div>
 
   <script>
-    // Sidebar navigation
-    function showPage(page, evt) {
-      evt.preventDefault();
-      // Remove 'active' from all sidebar links
+    // Highlight nav item (skip logout)
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      const path = new URL(link.href).pathname;
+      if (!link.href.includes('#logout') && window.location.pathname.endsWith(path)) {
+        link.classList.add('active');
+      }
+    });
+
+    // Sidebar page switcher
+    function showPage(page, event) {
+      event.preventDefault();
       document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-      // Add to the clicked link
-      document.getElementById(page + '-link').classList.add('active');
-      // Hide all dashboard pages
       document.querySelectorAll('.dashboard-page').forEach(p => p.classList.remove('active'));
-      // Show selected page
+      document.getElementById(`${page}-link`).classList.add('active');
       document.getElementById(page).classList.add('active');
     }
 
-    // Dark mode logic
+    // Dark mode toggle
     const darkToggle = document.getElementById('darkmode');
     if (localStorage.getItem('scentoraDark') === '1') {
       document.body.classList.add('darkmode');
       darkToggle.checked = true;
     }
-    darkToggle.addEventListener('change', function () {
-      document.body.classList.toggle('darkmode', this.checked);
-      localStorage.setItem('scentoraDark', this.checked ? '1' : '0');
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
   </script>
 </body>

@@ -1,261 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scentora | Inventory</title>
-  <style>
-    :root {
-      --primary: #a182c9;
-      --accent: #e5d6f7;
-      --background: #f7f5fa;
-      --card: #fff7ff;
-      --sidebar: #efe2fa;
-      --text: #392e44;
-      --nav-bg: rgba(161, 130, 201, 0.7);
-      --nav-blur: blur(10px);
-      --white: #fff;
-      --shadow: 0 2px 6px rgba(161,130,201,0.12);
-      --success: #2dc972;
-      --warning: #ffcc00;
-      --danger: #ea384c;
-    }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--background);
-      color: var(--text);
-      padding-top: 74px;
-      margin: 0;
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: var(--nav-bg);
-      backdrop-filter: var(--nav-blur);
-      -webkit-backdrop-filter: var(--nav-blur);
-      color: var(--white);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-    }
-    .logo {
-      font-size: 1.5rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-    .nav-links {
-      display: flex;
-      gap: 1.5rem;
-    }
-    .nav-links a {
-      text-decoration: none;
-      color: var(--white);
-      font-weight: 500;
-      font-size: 1rem;
-      transition: color 0.3s;
-      border-bottom: 2px solid transparent;
-      padding-bottom: 2px;
-    }
-    .nav-links a.active,
-    .nav-links a:focus,
-    .nav-links a:hover {
-      color: var(--primary);
-      border-bottom: 2px solid var(--primary);
-    }
-    .container {
-      max-width: 1200px;
-      margin: 40px auto 0 auto;
-      padding: 2rem 1rem 2rem 1rem;
-      background: var(--white);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-    }
-    .top_minibar_inventory {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 1.2rem;
-    }
-    .top_minibar_inventory h3 {
-      font-size: 1.5rem;
-      color: var(--primary);
-      margin: 0;
-      letter-spacing: 1px;
-    }
-    .add_new_item {
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 7px;
-      padding: 0.7rem 1.7rem;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      box-shadow: var(--shadow);
-    }
-    .add_new_item:hover {
-      background: #8663b9;
-    }
-    .main_bar_inventory {
-      width: 100%;
-    }
-    .products {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      justify-content: flex-start;
-    }
-    .item {
-      background: var(--card);
-      border: 1px solid var(--accent);
-      border-radius: 16px;
-      width: 220px;
-      text-align: center;
-      padding: 1.4rem 1rem 1rem 1rem;
-      margin-bottom: 1.5rem;
-      box-shadow: var(--shadow);
-      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .item img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-      border: 2px solid var(--accent);
-      background: var(--white);
-    }
-    .item h3 {
-      margin: 0 0 0.6rem 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--primary);
-    }
-    .item p {
-      margin: 0.2rem 0;
-      font-size: 1rem;
-    }
-    .low_stock {
-      color: var(--warning);
-      font-weight: bold;
-    }
-    .in_stock {
-      color: var(--success);
-      font-weight: bold;
-    }
-    .out_of_stock {
-      color: var(--danger);
-      font-weight: bold;
-    }
-    @media (max-width: 900px) {
-      .container { padding: 1rem 2vw; }
-      .products { justify-content: center; gap: 1.3rem;}
-      .item { width: 47vw; min-width: 180px;}
-      .top_minibar_inventory { flex-direction: column; gap:1rem; align-items: flex-start;}
-    }
-    @media (max-width: 600px) {
-      .container { padding: 0.5rem 2vw; }
-      .products { gap: 0.7rem;}
-      .item { width: 95vw; min-width: unset;}
-    }
-  </style>
+  <link rel="stylesheet" href="/files/admin/inventory.css" />
 </head>
 <body>
   <header>
     <div class="logo">Scentora</div>
     <div class="nav-links">
-      <a href="homepage.html">Home</a>
       <a href="dashboard.html">Dashboard</a>
-      <a href="inventory_seller.html" class="active">Inventory</a>
-      <a href="#">Contact</a>
+      <a href="inventory.html" class="active">Inventory</a>
+      <a href="#logout" id="logout-link">Logout</a>
+    </div>
+    <div class="toggle-switch">
+      <label for="darkmode">Dark mode</label>
+      <input type="checkbox" id="darkmode" title="Toggle dark mode" />
     </div>
   </header>
-  <div class="container">
-    <div class="top_minibar_inventory">
-      <h3>Stock Inventory</h3>
-      <button class="add_new_item">Add New Item</button>
+  <div class="inventory-main-container">
+    <div class="inventory-title-row">
+      <h2>Items</h2>
+      <span class="total-items" id="totalItems">3 registered items</span>
     </div>
-    <div class="main_bar_inventory">
-      <div class="products">
-        <div class="item">
-          <img src="imges/flo_es.png" alt="Floral Essence">
-          <h3>Floral Essence</h3>
-          <p>Current Stock: 12</p>
-          <p class="low_stock">Low Stock</p>
+    <div class="inventory-controls">
+      <button class="add-btn" id="addBtn">Add Item</button>
+      <input type="text" id="searchInput" placeholder="Item, value or code" />
+      <button class="search-btn" id="searchBtn">Search</button>
+      <button class="filter-btn" id="openFilter">Filter</button>
+      <span class="category-btn-wrapper">
+        <button class="category-btn" id="categoryBtn">Category</button>
+        <div class="category-dropdown" id="categoryDropdown"></div>
+      </span>
+    </div>
+    <div class="inventory-table-container">
+      <table class="inventory-table" id="inventoryTable">
+        <thead>
+          <tr>
+            <th style="width:36px"></th>
+            <th>Product</th>
+            <th>Category</th>
+            <th style="text-align:right">Stock</th>
+            <th style="text-align:center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Filter Modal -->
+  <div class="modal" id="filterModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeFilter">&times;</button>
+      <h3>Filter by Date</h3>
+      <form id="filterForm">
+        <div>
+          <label for="dateAdded">Date added:</label>
+          <input type="date" id="dateAdded" name="dateAdded">
         </div>
-        <div class="item">
-          <img src="imges/ci_de.png" alt="Citrus Delight">
-          <h3>Citrus Delight</h3>
-          <p>Current Stock: 30</p>
-          <p class="in_stock">In Stock</p>
+        <div style="margin-top:1em;">
+          <label for="dateUpdated">Date updated:</label>
+          <input type="date" id="dateUpdated" name="dateUpdated">
         </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
+        <div class="modal-btns" style="margin-top:1.5em;">
+          <button type="submit">Apply</button>
+          <button type="button" id="resetFilter">Reset</button>
         </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
+      </form>
+    </div>
+  </div>
+  <!-- Add Item Modal -->
+  <div class="modal" id="addItemModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeAddItem">&times;</button>
+      <h3>Add New Item</h3>
+      <form id="addItemForm" autocomplete="off">
+        <label>Name:</label>
+        <input type="text" id="addName" required placeholder="Perfume name">
+        <label>Code:</label>
+        <input type="text" id="addCode" required placeholder="Code (e.g. FLR123)">
+        <label>Category:</label>
+        <select id="addCategory" required></select>
+        <label>Stock:</label>
+        <input type="number" min="0" id="addStock" required placeholder="Stock quantity">
+        <label>Image URL:</label>
+        <input type="text" id="addImg" required placeholder="e.g. /files/imges/yourimg.png">
+        <div class="modal-btns">
+          <button type="submit">Add</button>
         </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/wo_mu.png" alt="Woody Musk">
-          <h3>Woody Musk</h3>
-          <p>Current Stock: 0</p>
-          <p class="out_of_stock">Out of Stock</p>
-        </div>
-        <div class="item">
-          <img src="imges/ci_de.png" alt="Citrus Delight">
-          <h3>Citrus Delight</h3>
-          <p>Current Stock: 30</p>
-          <p class="in_stock">In Stock</p>
-        </div>
+      </form>
+    </div>
+  </div>
+  <!-- View Item Modal -->
+  <div class="modal" id="viewModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeView">&times;</button>
+      <h3>View Item</h3>
+      <div class="view-details" id="viewDetails"></div>
+      <div class="modal-btns">
+        <button class="disable-btn" id="toggleDisableBtn"></button>
+        <button class="delete-btn" id="deleteBtn">Delete</button>
       </div>
     </div>
   </div>
+  <script>
+    // Categories and Inventory Data
+    const categories = [
+      "Floral", "Citrus", "Woody", "Oriental",
+      "Fresh", "Fruity", "Gourmand", "Chypre", "Fougere", "Leather"
+    ];
+    let inventory = [
+      {
+        name: "Floral Essence",
+        category: "Floral",
+        stock: 12,
+        img: "/files/imges/flo_es.png",
+        code: "FLO001",
+        added: "2024-06-25",
+        updated: "2024-06-28",
+        active: true
+      },
+      {
+        name: "Citrus Delight",
+        category: "Citrus",
+        stock: 30,
+        img: "/files/imges/ci_de.png",
+        code: "CIT002",
+        added: "2024-06-26",
+        updated: "2024-06-27",
+        active: true
+      },
+      {
+        name: "Woody Musk",
+        category: "Woody",
+        stock: 0,
+        img: "/files/imges/wo_mu.png",
+        code: "WOO003",
+        added: "2024-06-20",
+        updated: "2024-06-28",
+        active: true
+      }
+    ];
+
+    let filterCategory = "All";
+    let filterDateAdded = "";
+    let filterDateUpdated = "";
+    let searchTerm = "";
+    let viewIndex = null;
+
+    function getStockClass(stock) {
+      if (stock === 0) return "stock-out";
+      if (stock <= 12) return "stock-low";
+      return "stock-in";
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector("#inventoryTable tbody");
+      let filtered = inventory.filter((item, i) => {
+        let match = true;
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          match = (
+            item.name.toLowerCase().includes(term) ||
+            item.code.toLowerCase().includes(term)
+          );
+        }
+        if (filterCategory && filterCategory !== "All") {
+          match = match && (item.category === filterCategory);
+        }
+        if (filterDateAdded) {
+          match = match && (item.added === filterDateAdded);
+        }
+        if (filterDateUpdated) {
+          match = match && (item.updated === filterDateUpdated);
+        }
+        return match;
+      });
+
+      tbody.innerHTML = "";
+      filtered.forEach((item, idx) => {
+        const stockClass = getStockClass(item.stock);
+        const i = inventory.indexOf(item);
+        tbody.innerHTML += `
+          <tr class="${item.active === false ? 'disabled-row' : ''}">
+            <td><img src="${item.img}" class="product-thumb" alt="${item.name}" /></td>
+            <td><span class="product-name">${item.name}</span></td>
+            <td><span class="category-badge">${item.category}</span></td>
+            <td style="text-align:right"><span class="stock-status ${stockClass}">${item.stock}</span></td>
+            <td style="text-align:center">
+              <button class="action-btn" onclick="openView(${i})">View</button>
+            </td>
+          </tr>
+        `;
+      });
+      document.getElementById("totalItems").textContent =
+        filtered.length + " registered item" + (filtered.length !== 1 ? "s" : "");
+    }
+    // Expose to global for inline onclick
+    window.openView = function(idx) {
+      viewIndex = idx;
+      const item = inventory[idx];
+      document.getElementById("viewDetails").innerHTML = `
+        <img src="${item.img}" alt="${item.name}">
+        <strong>${item.name}</strong><br>
+        <span style="font-size:.97em"><em>Code:</em> ${item.code}</span><br>
+        <span style="font-size:.97em"><em>Category:</em> ${item.category}</span><br>
+        <span style="font-size:.97em"><em>Stock:</em> ${item.stock}</span><br>
+        <span style="font-size:.97em"><em>Date Added:</em> ${item.added}</span><br>
+        <span style="font-size:.97em"><em>Date Updated:</em> ${item.updated}</span><br>
+        <span style="font-size:.97em"><em>Status:</em> ${item.active === false ? "Inactive" : "Active"}</span>
+      `;
+      const toggleBtn = document.getElementById("toggleDisableBtn");
+      toggleBtn.textContent = item.active === false ? "Enable" : "Disable";
+      toggleBtn.className = item.active === false ? "enable-btn" : "disable-btn";
+      document.getElementById("viewModal").classList.add("show");
+    };
+
+    document.getElementById("closeView").onclick = () => {
+      document.getElementById("viewModal").classList.remove("show");
+    };
+
+    document.getElementById("toggleDisableBtn").onclick = function() {
+      if (viewIndex == null) return;
+      inventory[viewIndex].active = !inventory[viewIndex].active;
+      renderTable();
+      window.openView(viewIndex); // refresh modal details
+    };
+
+    document.getElementById("deleteBtn").onclick = function() {
+      if (viewIndex == null) return;
+      if (confirm("Are you sure you want to delete this item?")) {
+        inventory.splice(viewIndex, 1);
+        renderTable();
+        document.getElementById("viewModal").classList.remove("show");
+        viewIndex = null;
+      }
+    };
+
+    // Search
+    document.getElementById("searchInput").addEventListener("input", e => {
+      searchTerm = e.target.value;
+      renderTable();
+    });
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      searchTerm = document.getElementById("searchInput").value;
+      renderTable();
+    });
+
+    // Category Dropdown
+    const categoryBtn = document.getElementById("categoryBtn");
+    const categoryDropdown = document.getElementById("categoryDropdown");
+    let dropdownOpen = false;
+    categoryBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      if (dropdownOpen) {
+        categoryDropdown.classList.remove("show");
+        dropdownOpen = false;
+        return;
+      }
+      categoryDropdown.innerHTML = "";
+      const allBtn = document.createElement("button");
+      allBtn.textContent = "All";
+      allBtn.className = filterCategory === "All" ? "selected" : "";
+      allBtn.onclick = () => {
+        filterCategory = "All";
+        renderTable();
+        categoryDropdown.classList.remove("show");
+        dropdownOpen = false;
+      };
+      categoryDropdown.appendChild(allBtn);
+      categories.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.textContent = cat;
+        btn.className = filterCategory === cat ? "selected" : "";
+        btn.onclick = () => {
+          filterCategory = cat;
+          renderTable();
+          categoryDropdown.classList.remove("show");
+          dropdownOpen = false;
+        };
+        categoryDropdown.appendChild(btn);
+      });
+      categoryDropdown.classList.add("show");
+      dropdownOpen = true;
+    });
+    document.addEventListener("click", () => {
+      categoryDropdown.classList.remove("show");
+      dropdownOpen = false;
+    });
+
+    // Filter modal
+    const filterModal = document.getElementById("filterModal");
+    document.getElementById("openFilter").onclick = () => {
+      document.getElementById("dateAdded").value = filterDateAdded;
+      document.getElementById("dateUpdated").value = filterDateUpdated;
+      filterModal.classList.add("show");
+    };
+    document.getElementById("closeFilter").onclick = () => {
+      filterModal.classList.remove("show");
+    };
+    document.getElementById("filterForm").onsubmit = e => {
+      e.preventDefault();
+      filterDateAdded = document.getElementById("dateAdded").value;
+      filterDateUpdated = document.getElementById("dateUpdated").value;
+      filterModal.classList.remove("show");
+      renderTable();
+    };
+    document.getElementById("resetFilter").onclick = () => {
+      filterDateAdded = "";
+      filterDateUpdated = "";
+      document.getElementById("dateAdded").value = "";
+      document.getElementById("dateUpdated").value = "";
+      filterModal.classList.remove("show");
+      renderTable();
+    };
+    filterModal.onclick = e => {
+      if (e.target === filterModal) filterModal.classList.remove("show");
+    };
+
+    // Add Item Modal functionality
+    document.getElementById("addBtn").onclick = () => {
+      // Populate category dropdown
+      const addCategory = document.getElementById("addCategory");
+      addCategory.innerHTML = "";
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        addCategory.appendChild(option);
+      });
+      document.getElementById("addName").value = "";
+      document.getElementById("addCode").value = "";
+      document.getElementById("addStock").value = "";
+      document.getElementById("addImg").value = "/files/imges/";
+      document.getElementById("addItemModal").classList.add("show");
+    };
+    document.getElementById("closeAddItem").onclick = () => {
+      document.getElementById("addItemModal").classList.remove("show");
+    };
+    document.getElementById("addItemForm").onsubmit = function(e) {
+      e.preventDefault();
+      let now = new Date();
+      let today = now.toISOString().slice(0,10);
+      inventory.unshift({
+        name: document.getElementById("addName").value,
+        code: document.getElementById("addCode").value,
+        category: document.getElementById("addCategory").value,
+        stock: Number(document.getElementById("addStock").value),
+        img: document.getElementById("addImg").value,
+        added: today,
+        updated: today,
+        active: true
+      });
+      renderTable();
+      document.getElementById("addItemModal").classList.remove("show");
+    };
+
+    // Highlight nav item
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      const path = new URL(link.href, window.location.origin).pathname;
+      if (!link.href.includes('#logout') && window.location.pathname.endsWith(path)) {
+        link.classList.add('active');
+      }
+    });
+    // Dark mode toggle
+    const darkToggle = document.getElementById('darkmode');
+    if (localStorage.getItem('scentoraDark') === '1') {
+      document.body.classList.add('darkmode');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+    });
+
+    // Initial render
+    renderTable();
+  </script>
 </body>
 </html>
