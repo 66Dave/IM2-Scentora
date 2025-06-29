@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login | Scentora</title>
   <style>
+    /* [Same styles — kept unchanged] */
+    /* ...your full CSS here (not repeated for brevity)... */
     /* Root and Base */
     * {
       margin: 0;
@@ -204,18 +206,20 @@
       }
     }
   </style>
+  
 </head>
 <body>
 
   <section class="hero">
     <video autoplay muted loop playsinline>
-      <source src="/files/videos/bg.mp4" type="video/mp4" />
+      <source src="/IM2-Scentora/files/videos/bg.mp4" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
 
     <div class="login-container">
       <h2>Login to Scentora</h2>
-      <form id="login-form">
+      <!-- ✅ FIXED: added method + action -->
+      <form id="login-form" action="/IM2-Scentora/files/admin/loginpage.php" method="POST">
         <input type="text" name="username" placeholder="Username" required />
         <input type="password" name="password" placeholder="Password" required />
         <button type="submit">Login</button>
@@ -239,14 +243,8 @@
   </div>
 
   <script>
-    document.getElementById("login-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const username = e.target.username.value;
-      alert(`Logged in as ${username}`);
-      // You can add a redirect or AJAX login logic here
-    });
-
-    // Optional: close modal on outside click
+    // ✅ Removed custom JS that interferes with PHP login
+    // ✅ Keep this for closing modal on background click
     window.addEventListener("click", function (e) {
       const modal = document.getElementById("forgotModal");
       if (e.target === modal) {

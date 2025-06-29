@@ -1,24 +1,29 @@
 <?php
+session_start();
+
 $servername = "localhost";
-$db_username = "root"; // THIS IS DEFAULT FOR XAMPP, IF YOU GUYS WANT TO DEPLOY IT IN A DOMAND OR GITHUB PAGE, WE WILL HAVE TO CHANGE IT RA
+$db_username = "root";
 $db_password = "";
 $dbname = "scentoradb";
 
-//for connection
+// Create connection
 $conn = new mysqli($servername, $db_username, $db_password, $dbname);
 
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-//get details
+
+// Get user input
 $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
 
 if (empty($username) || empty($password)) {
-    die("Please provide both username and password.");
+    die("<h2>Please enter both username and password.</h2><p><a href='loginpage.php'>Back</a></p>");
 }
 
-$sql = "SELECT * FROM User WHERE Name = ?";
+// Prepare and execute SQL
+$sql = "SELECT * FROM user WHERE Name = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
 $stmt->execute();
@@ -27,19 +32,22 @@ $result = $stmt->get_result();
 if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
 
-    if (password_verify($password, $user['Password'])) {
-        // Redirect to dashboard.html on successful login
-        header("Location: dashboard.html");
+    // Compare plain text password directly
+    if ($password === $user['Password']) {
+        // Start session and redirect
+        $_SESSION['username'] = $user['Name'];
+        header("Location: dashboard.html"); // Make sure this file exists!
         exit();
     } else {
         echo "<h2>Login failed. Incorrect password.</h2>";
-        echo '<p><a href="loginpage.html">Try again</a></p>';
+        echo '<p><a href="loginpage.php">Try again</a></p>';
     }
 } else {
     echo "<h2>Login failed. User not found.</h2>";
-    echo '<p><a href="loginpage.html">Try again</a></p>';
+    echo '<p><a href="loginpage.php">Try again</a></p>';
 }
 
+// Close connections
 $stmt->close();
 $conn->close();
 ?>
