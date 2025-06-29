@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login | Scentora</title>
   <style>
-    /* [Same styles — kept unchanged] */
-    /* ...your full CSS here (not repeated for brevity)... */
-    /* Root and Base */
     * {
       margin: 0;
       padding: 0;
@@ -27,7 +24,6 @@
       --lavender-accent: #b497bd;
     }
 
-    /* Hero Background */
     .hero {
       position: relative;
       width: 100vw;
@@ -59,7 +55,6 @@
       background: rgba(0, 0, 0, 0.4);
     }
 
-    /* Login Container */
     .login-container {
       position: relative;
       z-index: 2;
@@ -122,7 +117,12 @@
       color: var(--lavender-accent);
     }
 
-    /* Modal Styles */
+    #error-message {
+      color: red;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
     .modal {
       position: fixed;
       top: 0;
@@ -152,10 +152,6 @@
       margin-bottom: 1rem;
     }
 
-    .modal-content p {
-      margin-bottom: 1.5rem;
-    }
-
     .modal-content .email-btn {
       padding: 0.7rem 1.5rem;
       background-color: var(--lavender-accent);
@@ -181,32 +177,16 @@
       cursor: pointer;
     }
 
-    .modal-content .close-btn:hover {
-      color: #000;
-    }
-
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     @media (max-width: 500px) {
-      .login-container h2 {
-        font-size: 1.5rem;
-      }
-
-      .login-container {
-        padding: 1.5rem;
-      }
+      .login-container h2 { font-size: 1.5rem; }
+      .login-container { padding: 1.5rem; }
     }
   </style>
-  
 </head>
 <body>
 
@@ -218,11 +198,11 @@
 
     <div class="login-container">
       <h2>Login to Scentora</h2>
-      <!-- ✅ FIXED: added method + action -->
-      <form id="login-form" action="/IM2-Scentora/files/admin/loginpage.php" method="POST">
+      <form id="login-form">
         <input type="text" name="username" placeholder="Username" required />
         <input type="password" name="password" placeholder="Password" required />
         <button type="submit">Login</button>
+        <p id="error-message"></p>
       </form>
       <button class="forgot-btn" onclick="document.getElementById('forgotModal').style.display = 'flex'">Forgot Password?</button>
     </div>
@@ -243,15 +223,34 @@
   </div>
 
   <script>
-    // ✅ Removed custom JS that interferes with PHP login
-    // ✅ Keep this for closing modal on background click
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const errorBox = document.getElementById("error-message");
+      errorBox.textContent = "";
+
+      fetch("/IM2-Scentora/files/admin/loginpage.php", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.text())
+      .then(response => {
+        if (response.trim() === "success") {
+          window.location.href = "/IM2-Scentora/files/admin/dashboard.html";
+        } else {
+          errorBox.textContent = response;
+        }
+      })
+      .catch(() => {
+        errorBox.textContent = "Server error. Please try again later.";
+      });
+    });
+
     window.addEventListener("click", function (e) {
       const modal = document.getElementById("forgotModal");
-      if (e.target === modal) {
-        modal.style.display = "none";
-      }
+      if (e.target === modal) modal.style.display = "none";
     });
   </script>
-
 </body>
 </html>
