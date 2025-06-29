@@ -102,6 +102,7 @@
       <div class="view-details" id="viewDetails"></div>
       <div class="modal-btns">
         <button class="disable-btn" id="toggleDisableBtn"></button>
+        <button class="edit-btn" id="editBtn">Edit</button>
         <button class="delete-btn" id="deleteBtn">Delete</button>
       </div>
     </div>
@@ -379,6 +380,75 @@
 
     // Initial render
     renderTable();
+
+    document.getElementById("logout-link").onclick = function(e) {
+      e.preventDefault();
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+      }
+    };
+
+    document.getElementById("editBtn").onclick = function() {
+      if (viewIndex == null) return;
+      const item = inventory[viewIndex];
+      // Populate add item modal with current item data
+      const addCategory = document.getElementById("addCategory");
+      addCategory.innerHTML = "";
+      categories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      if (cat === item.category) option.selected = true;
+      addCategory.appendChild(option);
+      });
+      document.getElementById("addName").value = item.name;
+      document.getElementById("addCode").value = item.code;
+      document.getElementById("addStock").value = item.stock;
+      document.getElementById("addImg").value = item.img;
+      // Change button text to "Save"
+      const addBtn = document.querySelector("#addItemForm button[type='submit']");
+      const originalBtnText = addBtn.textContent;
+      addBtn.textContent = "Save";
+      // Hide the view modal
+      document.getElementById("viewModal").classList.remove("show");
+      // Show modal
+      document.getElementById("addItemModal").classList.add("show");
+
+      // Temporarily override form submit for editing
+      const form = document.getElementById("addItemForm");
+      const originalHandler = form.onsubmit;
+      form.onsubmit = function(e) {
+      e.preventDefault();
+      if (confirm("Do you want to save the changes?")) {
+        let now = new Date();
+        let today = now.toISOString().slice(0,10);
+        inventory[viewIndex] = {
+        name: document.getElementById("addName").value,
+        code: document.getElementById("addCode").value,
+        category: document.getElementById("addCategory").value,
+        stock: Number(document.getElementById("addStock").value),
+        img: document.getElementById("addImg").value,
+        added: item.added,
+        updated: today,
+        active: item.active
+        };
+        renderTable();
+        document.getElementById("addItemModal").classList.remove("show");
+        addBtn.textContent = originalBtnText;
+        alert("Changes saved.");
+        form.onsubmit = originalHandler;
+      } else {
+        // Do nothing, stay in modal
+      }
+      };
+
+      // If modal closed, restore original handler and button text
+      document.getElementById("closeAddItem").onclick = () => {
+      document.getElementById("addItemModal").classList.remove("show");
+      addBtn.textContent = originalBtnText;
+      form.onsubmit = originalHandler;
+      };
+    };
   </script>
 </body>
 </html>
