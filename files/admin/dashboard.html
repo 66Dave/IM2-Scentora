@@ -1,4 +1,5 @@
-<!-- HEAD -->
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -124,7 +125,6 @@
       margin: auto;
       padding: 2rem;
       gap: 2rem;
-      transition: background 0.5s ease, color 0.5s ease;
     }
 
     .sidebar {
@@ -202,8 +202,6 @@
       font-weight: 500;
       transition: background 0.2s, color 0.2s, transform 0.2s;
       box-shadow: var(--shadow);
-      display: inline-block;
-      margin-bottom: 1rem;
     }
 
     .quick-link:hover {
@@ -216,8 +214,8 @@
       display: flex;
       gap: 1.5rem;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
       justify-content: center;
+      margin-bottom: 1rem;
     }
 
     .overview-widget {
@@ -257,15 +255,15 @@
     }
 
     body.darkmode {
-      --primary: #c5b3ea;
-      --accent: #3b2e4a;
-      --background: #1e142d;
-      --card: #2a1d3b;
-      --sidebar: #2e2041;
-      --text: #f8f0ff;
-      --nav-bg: rgba(53, 42, 71, 0.86);
-      --white: #f2e9ff;
-      --shadow: 0 2px 10px rgba(31,12,54,0.15);
+       --primary: #b89fff;
+      --accent: #28294b;
+      --background: #191922;
+      --card: #232336;
+      --sidebar: #232336;
+      --text: #f7f5fa;
+      --nav-bg: rgba(32, 31, 50, 0.92);
+      --white: #e9e9ff;
+      --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
     }
 
     @keyframes fadein {
@@ -275,7 +273,6 @@
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">Scentora</div>
     <div class="nav-links">
@@ -298,7 +295,6 @@
     </aside>
 
     <section class="dashboard-main">
-      <!-- Overview Page -->
       <div id="overview" class="dashboard-page active">
         <div class="welcome-card">
           Welcome to your <strong>Scentora Dashboard</strong>!
@@ -314,7 +310,6 @@
         </div>
       </div>
 
-      <!-- Statistics Page -->
       <div id="stats" class="dashboard-page">
         <h2 style="color:var(--primary);">Statistics Overview</h2>
         <div class="overview-grid">
@@ -325,17 +320,21 @@
         </div>
       </div>
 
+      <div id="orders" class="dashboard-page">
+        <h2 style="color:var(--primary);">Orders</h2>
+        <p>No orders to display.</p>
+      </div>
+    </section>
+  </div>
 
   <script>
-    // Highlight nav item (skip logout)
     document.querySelectorAll('.nav-links a').forEach(link => {
-      const path = new URL(link.href).pathname;
+      const path = new URL(link.href, window.location.origin).pathname;
       if (!link.href.includes('#logout') && window.location.pathname.endsWith(path)) {
         link.classList.add('active');
       }
     });
 
-    // Sidebar page switcher
     function showPage(page, event) {
       event.preventDefault();
       document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
@@ -344,7 +343,6 @@
       document.getElementById(page).classList.add('active');
     }
 
-    // Dark mode toggle
     const darkToggle = document.getElementById('darkmode');
     if (localStorage.getItem('scentoraDark') === '1') {
       document.body.classList.add('darkmode');
