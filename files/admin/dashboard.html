@@ -352,6 +352,12 @@
       document.body.classList.toggle('darkmode', darkToggle.checked);
       localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
+    document.getElementById("logout-link").onclick = function(e) {
+      e.preventDefault();
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+      }
+    };
   </script>
 </body>
 </html>
