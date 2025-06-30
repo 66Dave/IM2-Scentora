@@ -270,11 +270,17 @@
       from { opacity: 0; }
       to   { opacity: 1; }
     }
+    .header_contents {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Scentora</div>
+    <div class="header_contents">
     <div class="nav-links">
       <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
@@ -284,6 +290,7 @@
     <div class="toggle-switch">
       <label for="darkmode">Dark mode</label>
       <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+    </div>
     </div>
   </header>
 
