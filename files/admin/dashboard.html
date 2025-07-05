@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scentora | Dashboard</title>
   <style>
     :root {
@@ -22,8 +22,8 @@
       font-family: 'Segoe UI', sans-serif;
       background: var(--background);
       color: var(--text);
-      padding-top: 74px;
       margin: 0;
+      padding-top: 74px;
       transition: background 0.5s ease, color 0.5s ease;
     }
 
@@ -34,7 +34,6 @@
       right: 0;
       background: var(--nav-bg);
       backdrop-filter: var(--nav-blur);
-      -webkit-backdrop-filter: var(--nav-blur);
       color: var(--white);
       padding: 1rem 2rem;
       display: flex;
@@ -255,7 +254,7 @@
     }
 
     body.darkmode {
-       --primary: #b89fff;
+      --primary: #b89fff;
       --accent: #28294b;
       --background: #191922;
       --card: #232336;
@@ -270,27 +269,21 @@
       from { opacity: 0; }
       to   { opacity: 1; }
     }
-    .header_contents {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-    }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Scentora</div>
-    <div class="header_contents">
     <div class="nav-links">
-      <a href="dashboard.html">Dashboard</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
-      <a href ="shop.html">Shop</a>
+      <a href="shop.html">Shop</a>
+      <a href="orders.html">Orders</a>
       <a href="#logout" id="logout-link">Logout</a>
     </div>
     <div class="toggle-switch">
       <label for="darkmode">Dark mode</label>
       <input type="checkbox" id="darkmode" title="Toggle dark mode" />
-    </div>
     </div>
   </header>
 
@@ -308,7 +301,6 @@
           Welcome to your <strong>Scentora Dashboard</strong>!
         </div>
         <div class="quick-links">
-          <a class="quick-link" href="#">Add New Perfume</a>
           <a class="quick-link" href="inventory_seller.html">View Inventory</a>
         </div>
         <div class="overview-grid">
@@ -360,6 +352,7 @@
       document.body.classList.toggle('darkmode', darkToggle.checked);
       localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
+
     document.getElementById("logout-link").onclick = function(e) {
       e.preventDefault();
       if (confirm("Are you sure you want to logout?")) {

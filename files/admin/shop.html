@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scentora | Shop</title>
   <style>
     :root {
@@ -12,64 +12,47 @@
       --card: #fff7ff;
       --sidebar: #efe2fa;
       --text: #392e44;
-      --nav-bg: #a182c9; /* <-- change this line */
+      --nav-bg: rgba(114, 69, 173, 0.7);
       --nav-blur: blur(10px);
       --white: #fff;
       --shadow: 0 2px 6px rgba(161,130,201,0.12);
-      --badge: #6b5097;
-      --badge-blue: #5e8fff;
     }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background: var(--background);
       color: var(--text);
       margin: 0;
-      padding: 0;
+      padding-top: 74px;
       transition: background 0.5s ease, color 0.5s ease;
     }
+
     header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       background: var(--nav-bg);
       backdrop-filter: var(--nav-blur);
-      -webkit-backdrop-filter: var(--nav-blur);
       color: var(--white);
       padding: 1rem 2rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      align-items: center;
+      z-index: 1000;
     }
+
     .logo {
       font-size: 1.5rem;
       font-weight: bold;
       letter-spacing: 1px;
-      color: var(--white);
-      margin-right: 2rem;
     }
-    .search-bar {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      margin: 0 2rem;
-    }
-    .search-bar input {
-      width: 100%;
-      padding: 0.6rem 1rem;
-      border-radius: 999px;
-      border: none;
-      background: var(--card);
-      color: var(--text);
-      font-size: 1rem;
-      box-shadow: var(--shadow);
-      outline: none;
-      margin-right: 0.5rem;
-    }
+
     .nav-links {
       display: flex;
       gap: 1rem;
-      align-items: center;
     }
+
     .nav-links a {
       text-decoration: none;
       color: var(--white);
@@ -79,38 +62,29 @@
       border-radius: 999px;
       transition: all 0.3s ease;
     }
-    .nav-links a.active, .nav-links a:hover {
+
+    .nav-links a:not([href="#logout"]).active {
       background: var(--white);
       color: var(--primary);
       font-weight: 600;
       box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
     }
-    .view-all-btn {
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 999px;
-      padding: 0.6rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      margin-left: 1rem;
-      transition: background 0.2s;
-      box-shadow: var(--shadow);
+
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
     }
-    .view-all-btn:hover {
-      background: #8663b9;
-    }
+
     .toggle-switch {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-left: 1.5rem;
     }
+
     .toggle-switch label {
       font-size: 0.96rem;
       color: var(--white);
     }
+
     .toggle-switch input[type="checkbox"] {
       width: 40px;
       height: 20px;
@@ -122,9 +96,11 @@
       transition: background 0.3s;
       cursor: pointer;
     }
+
     .toggle-switch input[type="checkbox"]:checked {
       background: #392e44;
     }
+
     .toggle-switch input[type="checkbox"]::before {
       content: "";
       position: absolute;
@@ -136,160 +112,101 @@
       background: #fff;
       transition: 0.3s;
     }
+
     .toggle-switch input[type="checkbox"]:checked::before {
       transform: translateX(19px);
       background: #a182c9;
     }
-    .carousel {
-      margin: 2rem auto 1.5rem auto;
-      max-width: 1100px;
-      background: var(--accent);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 1.5rem 2rem 2rem 2rem;
+
+    .shop-products {
       display: flex;
-      gap: 1.5rem;
-      overflow-x: auto;
-      align-items: stretch;
+      gap: 2rem;
+      padding: 2rem;
     }
-    .carousel-card {
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .product-card {
       background: var(--card);
       border-radius: 12px;
       box-shadow: var(--shadow);
-      min-width: 260px;
-      max-width: 280px;
-      flex: 1 0 260px;
-      padding: 1.2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-right: 1rem;
-    }
-    .carousel-card:last-child {
-      margin-right: 0;
-    }
-    .carousel-card img {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      object-fit: cover;
-      max-height: 120px;
-    }
-    .carousel-card h3 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.15rem;
-      color: var(--primary);
-    }
-    .carousel-card p {
-      margin: 0 0 1rem 0;
-      color: var(--text);
-      font-size: 1rem;
-    }
-    .carousel-card .details-btn {
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1.2rem;
-      font-size: 0.98rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 0.5rem;
-    }
-    .carousel-card .details-btn:hover {
-      background: #8663b9;
-    }
-    .carousel-card .offer {
-      background: var(--badge-blue);
-      color: var(--white);
-      font-size: 0.98rem;
-      border-radius: 6px;
-      padding: 0.4rem 0.8rem;
-      margin-top: 0.7rem;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-    }
-    .section-title {
+      padding: 1rem;
       text-align: center;
-      font-size: 1.4rem;
-      color: var(--primary);
-      margin: 2.5rem 0 1.2rem 0;
-      font-weight: 600;
-      letter-spacing: 1px;
     }
-    .top-picks {
-      display: flex;
-      gap: 1.5rem;
-      max-width: 1100px;
-      margin: 0 auto 2.5rem auto;
-      overflow-x: auto;
-      padding-bottom: 1rem;
-    }
-    .product-card {
-      background: var(--card);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      min-width: 180px;
-      max-width: 200px;
-      flex: 1 0 180px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1rem 1rem 1.2rem 1rem;
-      position: relative;
-      margin-bottom: 0.5rem;
-    }
+
     .product-card img {
       width: 100%;
-      height: 140px;
+      height: 200px;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 0.8rem;
     }
-    .product-card .badge {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: var(--badge);
-      color: var(--white);
-      font-size: 0.85rem;
-      border-radius: 999px;
-      padding: 0.25rem 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      box-shadow: 0 1px 4px rgba(161,130,201,0.10);
-    }
-    .product-card .badge.blue {
-      background: var(--badge-blue);
-    }
-    .product-card h4 {
-      margin: 0.5rem 0 0.2rem 0;
-      font-size: 1.08rem;
+
+    .product-card h3 {
+      font-size: 1.2rem;
       color: var(--primary);
-      text-align: center;
     }
+
     .product-card p {
-      margin: 0 0 0.7rem 0;
-      font-size: 0.97rem;
+      font-size: 1rem;
       color: var(--text);
-      text-align: center;
     }
-    .product-card .explore-btn {
+
+    .product-card .details-btn {
       background: var(--primary);
       color: var(--white);
+      padding: 0.6rem 1.2rem;
       border: none;
       border-radius: 6px;
-      padding: 0.45rem 1.1rem;
-      font-size: 0.97rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
+      font-size: 1rem;
     }
-    .product-card .explore-btn:hover {
-      background: #8663b9;
+
+    .sidebar {
+      width: 200px;
+      background: var(--sidebar);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
     }
+
+    .sidebar h3 {
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+
+    .sidebar select,
+    .sidebar input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--card);
+    }
+
+    /* Search bar adjustments */
+    .search-bar {
+      flex: 1;
+      margin-left: 2rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      border: 2px solid var(--primary); /* Clear border */
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+      box-shadow: var(--shadow);
+      outline: none;
+    }
+
+    /* Dark Mode */
     body.darkmode {
       --primary: #b89fff;
       --accent: #28294b;
@@ -297,48 +214,24 @@
       --card: #232336;
       --sidebar: #232336;
       --text: #f7f5fa;
-      --nav-bg: #201f32; /* <-- change this if you want a solid color in dark mode */
+      --nav-bg: rgba(32, 31, 50, 0.92);
       --white: #e9e9ff;
       --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
-    }
-    @media (max-width: 900px) {
-      .carousel, .top-picks {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-left: 1rem;
-        padding-right: 1rem;
-      }
-      .carousel-card, .product-card {
-        min-width: 220px;
-        max-width: 240px;
-      }
-    }
-    @media (max-width: 600px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.7rem;
-        padding: 1rem 1rem;
-      }
-      .search-bar {
-        margin: 0.7rem 0;
-      }
-      .carousel, .top-picks {
-        gap: 1rem;
-      }
     }
   </style>
 </head>
 <body>
+
   <header>
     <div class="logo">Scentora</div>
     <div class="search-bar">
-      <input type="text" placeholder="Search" />
+      <input type="text" id="searchInput" placeholder="Search for products" />
     </div>
     <nav class="nav-links">
       <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
       <a href="shop.html" class="active">Shop</a>
+      <a href="orders.html">Orders</a>
       <a href="#logout" id="logout-link">Logout</a>
     </nav>
     <div class="toggle-switch">
@@ -347,80 +240,48 @@
     </div>
   </header>
 
-  <section class="carousel">
-    <div class="carousel-card">
-      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Elegant Scents" />
-      <h3>Elegant Scents</h3>
-      <p>Crystal Blossom</p>
-      <button class="details-btn">Details</button>
-    </div>
-    <div class="carousel-card">
-      <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Exclusive" />
-      <h3>Exclusive</h3>
-      <p>by ScentCrafters</p>
-      <button class="details-btn">Details</button>
-    </div>
-    <div class="carousel-card">
-      <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Limited Time Offer" />
-      <h3>Limited Time Offer</h3>
-      <div class="offer">Apply code "SCENT23" at checkout</div>
+  <section class="shop-products">
+    <aside class="sidebar">
+      <h3>Filters</h3>
+      <div>
+        <label>Category:</label>
+        <select>
+          <option>All</option>
+          <option>Floral</option>
+          <option>Woody</option>
+          <option>Citrus</option>
+        </select>
+      </div>
+      <div>
+        <label>Price Range:</label>
+        <input type="range" min="0" max="500" step="10" />
+      </div>
+    </aside>
+
+    <div class="product-grid" id="productGrid">
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Elegant Scents" />
+        <h3>Elegant Scents</h3>
+        <p>$99.99</p>
+        <p>★★★★☆</p>
+        <button class="details-btn">View Details</button>
+      </div>
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Exclusive" />
+        <h3>Exclusive</h3>
+        <p>$119.99</p>
+        <p>★★★★☆</p>
+        <button class="details-btn">View Details</button>
+      </div>
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Limited Time Offer" />
+        <h3>Limited Time Offer</h3>
+        <div class="offer">Apply code "SCENT23" at checkout</div>
+      </div>
     </div>
   </section>
 
-  <div class="section-title">Top Picks</div>
-  <section class="top-picks">
-    <div class="product-card">
-      <span class="badge">Explore</span>
-      <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Perfume 1" />
-      <h4>Amber Night</h4>
-      <p>Warm, spicy, and mysterious.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-    <div class="product-card">
-      <span class="badge">Explore</span>
-      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Perfume 2" />
-      <h4>Crystal Blossom</h4>
-      <p>Fresh floral notes for spring.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-    <div class="product-card">
-      <span class="badge">Explore</span>
-      <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Perfume 3" />
-      <h4>Midnight Oud</h4>
-      <p>Deep, woody, and elegant.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-    <div class="product-card">
-      <span class="badge blue">Discover</span>
-      <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Perfume 4" />
-      <h4>Oceanic Mist</h4>
-      <p>Clean, aquatic freshness.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-    <div class="product-card">
-      <span class="badge blue">Personal</span>
-      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Perfume 5" />
-      <h4>Garden Escape</h4>
-      <p>Green, leafy, and uplifting.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-    <div class="product-card">
-      <span class="badge">Explore</span>
-      <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Perfume 6" />
-      <h4>Urban Musk</h4>
-      <p>Modern, musky, and bold.</p>
-      <button class="explore-btn">Explore</button>
-    </div>
-  </section>
   <script>
-    // Highlight active nav link
-    document.querySelectorAll('.nav-links a').forEach(link => {
-      const path = new URL(link.href, window.location.origin).pathname;
-      if (!link.href.includes('#logout') && window.location.pathname.endsWith(path)) {
-        link.classList.add('active');
-      }
-    });
-
     // Dark mode toggle
     const darkToggle = document.getElementById('darkmode');
     if (localStorage.getItem('scentoraDark') === '1') {
@@ -432,46 +293,31 @@
       localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
 
-    // Logout confirmation
-    document.getElementById("logout-link").onclick = function(e) {
-      e.preventDefault();
-      if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const productGrid = document.getElementById('productGrid');
+    
+    searchInput.addEventListener('input', function() {
+      const filter = searchInput.value.toLowerCase();
+      const productCards = productGrid.getElementsByClassName('product-card');
+      
+      for (let i = 0; i < productCards.length; i++) {
+        const productName = productCards[i].getElementsByTagName('h3')[0];
+        if (productName) {
+          const textValue = productName.textContent || productName.innerText;
+          if (textValue.toLowerCase().indexOf(filter) > -1) {
+            productCards[i].style.display = "";
+          } else {
+            productCards[i].style.display = "none";
+          }
+        }
       }
-    };
-  </script>
-</body>
-</html>
-  <script>
-  
-    document.querySelectorAll('.nav-links a').forEach(link => {
-      const path = new URL(link.href, window.location.origin).pathname;
-      if (!link.href.includes('#logout') && window.location.pathname.endsWith(path)) {
-        link.classList.add('active');
-      }
-    });
-
-    // Dark mode toggle
-    const darkToggle = document.getElementById('darkmode');
-    if (localStorage.getItem('scentoraDark') === '1') {
-      document.body.classList.add('darkmode');
-      darkToggle.checked = true;
-    }
-    darkToggle.addEventListener('change', () => {
-      document.body.classList.toggle('darkmode', darkToggle.checked);
-      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
 
     // Logout confirmation
     document.getElementById("logout-link").onclick = function(e) {
       e.preventDefault();
       if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
-      }
-    };
-  </script>
-</body>
-</html>
         window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
       }
     };
