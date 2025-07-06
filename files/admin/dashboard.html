@@ -41,6 +41,11 @@
       align-items: center;
       z-index: 1000;
     }
+    
+    .header_contents {
+    display: flex;
+    gap: 1.5rem;
+    }
 
     .logo {
       font-size: 1.5rem;
@@ -269,21 +274,24 @@
       from { opacity: 0; }
       to   { opacity: 1; }
     }
+
+    
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Scentora</div>
+    <div class="header_contents">
     <div class="nav-links">
-      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
-      <a href="shop.html">Shop</a>
-      <a href="orders.html">Orders</a>
+      <a href ="shop.html">Shop</a>
       <a href="#logout" id="logout-link">Logout</a>
     </div>
     <div class="toggle-switch">
       <label for="darkmode">Dark mode</label>
       <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+    </div>
     </div>
   </header>
 

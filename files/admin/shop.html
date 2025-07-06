@@ -180,7 +180,7 @@
 
     .sidebar select,
     .sidebar input {
-      width: 100%;
+      width: 90%;
       padding: 0.6rem;
       margin-bottom: 1rem;
       border-radius: 8px;
@@ -192,11 +192,12 @@
     .search-bar {
       flex: 1;
       margin-left: 2rem;
+      margin-right: 2.5rem;
     }
 
     .search-bar input {
       width: 100%;
-      padding: 0.7rem 1rem;
+      padding: 0.5rem 1rem;
       border-radius: 999px;
       border: 2px solid var(--primary); /* Clear border */
       background: var(--card);
@@ -218,6 +219,10 @@
       --white: #e9e9ff;
       --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
     }
+    .header_contents {
+    display: flex;
+    gap: 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -227,6 +232,7 @@
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search for products" />
     </div>
+    <div class="header_contents">
     <nav class="nav-links">
       <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
@@ -237,6 +243,7 @@
     <div class="toggle-switch">
       <label for="darkmode">Dark mode</label>
       <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+    </div>
     </div>
   </header>
 
