@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 28, 2025 at 03:42 PM
+-- Generation Time: Jul 08, 2025 at 06:01 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -121,8 +121,22 @@ CREATE TABLE `product` (
   `User_ID` int(11) DEFAULT NULL,
   `Product_Name` varchar(100) NOT NULL,
   `Product_Price` decimal(10,2) NOT NULL,
-  `Stock_Status` varchar(50) NOT NULL
+  `Stock_Status` varchar(50) NOT NULL,
+  `Product_Code` varchar(50) DEFAULT NULL,
+  `Category` varchar(50) DEFAULT NULL,
+  `Image_URL` varchar(255) DEFAULT NULL,
+  `Date_Added` date DEFAULT NULL,
+  `Date_Updated` date DEFAULT NULL,
+  `Is_Active` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product`
+--
+
+INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Status`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`) VALUES
+(2, 1, 'Test1', 1.00, 'In stock (32 pcs)', '123', 'Floral', '/files/imges/', '2025-07-08', '2025-07-08', 1),
+(3, 1, 'Dert', 21.00, 'In stock (2 pcs)', '344', 'Floral', '/files/imges/', '2025-07-08', '2025-07-08', 1);
 
 -- --------------------------------------------------------
 
@@ -200,6 +214,12 @@ ALTER TABLE `user`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `product`
+--
+ALTER TABLE `product`
+  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `user`
