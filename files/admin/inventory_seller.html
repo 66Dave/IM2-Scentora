@@ -25,7 +25,7 @@
   <div class="inventory-main-container">
     <div class="inventory-title-row">
       <h2>Items</h2>
-      <span class="total-items" id="totalItems">3 registered items</span>
+      <span class="total-items" id="totalItems"> registered items</span>
     </div>
     <div class="inventory-controls">
       <button class="add-btn" id="addBtn">Add Item</button>
@@ -44,6 +44,7 @@
             <th style="width:36px"></th>
             <th>Product</th>
             <th>Category</th>
+            <th style="text-align:right">Price</th>
             <th style="text-align:right">Stock</th>
             <th style="text-align:center">Actions</th>
           </tr>
@@ -85,12 +86,14 @@
         <input type="text" id="addName" required placeholder="Perfume name">
         <label>Code:</label>
         <input type="text" id="addCode" required placeholder="Code (e.g. FLR123)">
-        <label>Category:</label>
-        <select id="addCategory" required></select>
+        <label>Price:</label>
+        <input type="number" step="0.01" min="0" id="addPrice" required placeholder=" e.g. 129.99">
         <label>Stock:</label>
         <input type="number" min="0" id="addStock" required placeholder="Stock quantity">
         <label>Image URL:</label>
         <input type="text" id="addImg" required placeholder="e.g. /files/imges/yourimg.png">
+        <label>Category:</label>
+        <select id="addCategory" required></select>
         <div class="modal-btns">
           <button type="submit">Add</button>
         </div>
@@ -116,38 +119,7 @@
       "Floral", "Citrus", "Woody", "Oriental",
       "Fresh", "Fruity", "Gourmand", "Chypre", "Fougere", "Leather"
     ];
-    let inventory = [
-      {
-        name: "Floral Essence",
-        category: "Floral",
-        stock: 12,
-        img: "/IM2-Scentora/files/imges/flo_es.png",
-        code: "FLO001",
-        added: "2024-06-25",
-        updated: "2024-06-28",
-        active: true
-      },
-      {
-        name: "Citrus Delight",
-        category: "Citrus",
-        stock: 30,
-        img: "/IM2-Scentora/files/imges/ci_de.png",
-        code: "CIT002",
-        added: "2024-06-26",
-        updated: "2024-06-27",
-        active: true
-      },
-      {
-        name: "Woody Musk",
-        category: "Woody",
-        stock: 0,
-        img: "/IM2-Scentora/files/imges/wo_mu.png",
-        code: "WOO003",
-        added: "2024-06-20",
-        updated: "2024-06-28",
-        active: true
-      }
-    ];
+    let inventory = [];
 
     let filterCategory = "All";
     let filterDateAdded = "";
@@ -160,6 +132,16 @@
       if (stock <= 12) return "stock-low";
       return "stock-in";
     }
+
+    function loadInventoryItems() {
+      fetch("inventory_fetch.php")
+        .then(res => res.json())
+        .then(data => {
+          inventory = data;
+          renderTable();
+        });
+    }
+    document.addEventListener("DOMContentLoaded", loadInventoryItems);
 
     function renderTable() {
       const tbody = document.querySelector("#inventoryTable tbody");
@@ -193,6 +175,7 @@
             <td><img src="${item.img}" class="product-thumb" alt="${item.name}" /></td>
             <td><span class="product-name">${item.name}</span></td>
             <td><span class="category-badge">${item.category}</span></td>
+            <td style="text-align:right">₱${Number(item.price).toFixed(2)}</td>
             <td style="text-align:right"><span class="stock-status ${stockClass}">${item.stock}</span></td>
             <td style="text-align:center">
               <button class="action-btn" onclick="openView(${i})">View</button>
@@ -227,20 +210,53 @@
       document.getElementById("viewModal").classList.remove("show");
     };
 
-    document.getElementById("toggleDisableBtn").onclick = function() {
+    document.getElementById("toggleDisableBtn").onclick = function () {
       if (viewIndex == null) return;
-      inventory[viewIndex].active = !inventory[viewIndex].active;
-      renderTable();
-      window.openView(viewIndex); // refresh modal details
+      const item = inventory[viewIndex];
+      const newStatus = item.active ? 0 : 1;
+
+      const formData = new FormData();
+      formData.append("id", item.id);
+      formData.append("active", newStatus);
+
+      fetch("toggle_product_status.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then(res => res.text())
+        .then(result => {
+          if (result.includes("success")) {
+            item.active = !!newStatus;
+            renderTable();
+            openView(viewIndex);
+          } else {
+            alert("Failed to update product status: " + result);
+          }
+        });
     };
 
     document.getElementById("deleteBtn").onclick = function() {
       if (viewIndex == null) return;
       if (confirm("Are you sure you want to delete this item?")) {
-        inventory.splice(viewIndex, 1);
-        renderTable();
-        document.getElementById("viewModal").classList.remove("show");
-        viewIndex = null;
+        const item = inventory[viewIndex];
+        const formData = new FormData();
+        formData.append("id", item.id);
+
+        fetch("delete_product.php", {
+          method: "POST",
+          body: formData
+        })
+          .then(res => res.text())
+          .then(result => {
+            if (result.includes("success")) {
+              alert("Item deleted.");
+              loadInventoryItems();
+              document.getElementById("viewModal").classList.remove("show");
+              viewIndex = null;
+            } else {
+              alert("Delete failed: " + result);
+            }
+          });
       }
     };
 
@@ -347,20 +363,34 @@
     };
     document.getElementById("addItemForm").onsubmit = function(e) {
       e.preventDefault();
-      let now = new Date();
-      let today = now.toISOString().slice(0,10);
-      inventory.unshift({
-        name: document.getElementById("addName").value,
-        code: document.getElementById("addCode").value,
-        category: document.getElementById("addCategory").value,
-        stock: Number(document.getElementById("addStock").value),
-        img: document.getElementById("addImg").value,
-        added: today,
-        updated: today,
-        active: true
-      });
-      renderTable();
-      document.getElementById("addItemModal").classList.remove("show");
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const formData = new FormData();
+      formData.append("name", document.getElementById("addName").value);
+      formData.append("code", document.getElementById("addCode").value);
+      formData.append("price", document.getElementById("addPrice").value);
+      formData.append("stock", document.getElementById("addStock").value);
+      formData.append("image", document.getElementById("addImg").value);
+      formData.append("category", document.getElementById("addCategory").value);
+      formData.append("added", today);
+      formData.append("updated", today);
+
+      fetch("inventory_seller.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(res => res.text())
+        .then(result => {
+          if (result.includes("success")) {
+            alert("Item saved!");
+            this.reset();
+            document.getElementById("addItemModal").classList.remove("show");
+            loadInventoryItems(); // Re-fetch items from DB
+          } else {
+            alert("Insert failed: " + result);
+          }
+        });
     };
 
     // Highlight nav item
@@ -381,8 +411,7 @@
       localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
     });
 
-    // Initial render
-    renderTable();
+    loadInventoryItems(); // Pulls live data from the DB
 
     document.getElementById("logout-link").onclick = function(e) {
       e.preventDefault();
@@ -421,28 +450,37 @@
       const form = document.getElementById("addItemForm");
       const originalHandler = form.onsubmit;
       form.onsubmit = function(e) {
-      e.preventDefault();
-      if (confirm("Do you want to save the changes?")) {
-        let now = new Date();
-        let today = now.toISOString().slice(0,10);
-        inventory[viewIndex] = {
-        name: document.getElementById("addName").value,
-        code: document.getElementById("addCode").value,
-        category: document.getElementById("addCategory").value,
-        stock: Number(document.getElementById("addStock").value),
-        img: document.getElementById("addImg").value,
-        added: item.added,
-        updated: today,
-        active: item.active
-        };
-        renderTable();
-        document.getElementById("addItemModal").classList.remove("show");
-        addBtn.textContent = originalBtnText;
-        alert("Changes saved.");
-        form.onsubmit = originalHandler;
-      } else {
-        // Do nothing, stay in modal
-      }
+        e.preventDefault();
+        if (!confirm("Do you want to save the changes?")) return;
+
+        const today = new Date().toISOString().slice(0, 10);
+        const item = inventory[viewIndex];
+
+        const formData = new FormData();
+        formData.append("id", item.id);
+        formData.append("name", document.getElementById("addName").value);
+        formData.append("code", document.getElementById("addCode").value);
+        formData.append("category", document.getElementById("addCategory").value);
+        formData.append("stock", document.getElementById("addStock").value);
+        formData.append("image", document.getElementById("addImg").value);
+        formData.append("updated", today);
+
+        fetch("update_product.php", {
+          method: "POST",
+          body: formData
+        })
+          .then(res => res.text())
+          .then(result => {
+            if (result.includes("success")) {
+              alert("Changes saved.");
+              form.onsubmit = originalHandler;
+              document.getElementById("addItemModal").classList.remove("show");
+              addBtn.textContent = originalBtnText;
+              loadInventoryItems();
+            } else {
+              // dO NOTHING (STAy in the modal)
+            }
+          });
       };
 
       // If modal closed, restore original handler and button text
