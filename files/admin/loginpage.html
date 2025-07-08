@@ -103,18 +103,23 @@
       color: white;
     }
 
-    .forgot-btn {
+    .forgot-link {
+      display: inline-block;
+      margin-top: 0.7rem;
+      color: #1976d2;
+      text-decoration: underline;
+      font-size: 0.95rem;
+      cursor: pointer;
       background: none;
       border: none;
-      color: var(--white);
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 0.95rem;
-      margin-top: 1rem;
+      padding: 0;
+      transition: color 0.2s;
+      float: right;
     }
 
-    .forgot-btn:hover {
-      color: var(--lavender-accent);
+    .forgot-link:hover {
+      color: #0d47a1;
+      text-decoration: underline;
     }
 
     #error-message {
@@ -202,9 +207,9 @@
         <input type="text" name="username" placeholder="Username" required />
         <input type="password" name="password" placeholder="Password" required />
         <button type="submit">Login</button>
+        <a href="#" class="forgot-link" onclick="document.getElementById('forgotModal').style.display = 'flex'; return false;">Forgot Password?</a>
         <p id="error-message"></p>
       </form>
-      <button class="forgot-btn" onclick="document.getElementById('forgotModal').style.display = 'flex'">Forgot Password?</button>
     </div>
   </section>
 
