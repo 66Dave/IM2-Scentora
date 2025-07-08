@@ -237,7 +237,6 @@
       <a href="dashboard.html">Dashboard</a>
       <a href="inventory_seller.html">Inventory</a>
       <a href="shop.html" class="active">Shop</a>
-      <a href="orders.html">Orders</a>
       <a href="#logout" id="logout-link">Logout</a>
     </nav>
     <div class="toggle-switch">
@@ -260,31 +259,13 @@
         </select>
       </div>
       <div>
-        <label>Price Range:</label>
-        <input type="range" min="0" max="500" step="10" />
+        <label>Price Range: <span id="priceValue">$0 - $500</span></label>
+        <input type="range" min="0" max="500" step="10" id="priceRange" />
       </div>
     </aside>
 
     <div class="product-grid" id="productGrid">
-      <div class="product-card">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Elegant Scents" />
-        <h3>Elegant Scents</h3>
-        <p>$99.99</p>
-        <p>★★★★☆</p>
-        <button class="details-btn">View Details</button>
-      </div>
-      <div class="product-card">
-        <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Exclusive" />
-        <h3>Exclusive</h3>
-        <p>$119.99</p>
-        <p>★★★★☆</p>
-        <button class="details-btn">View Details</button>
-      </div>
-      <div class="product-card">
-        <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Limited Time Offer" />
-        <h3>Limited Time Offer</h3>
-        <div class="offer">Apply code "SCENT23" at checkout</div>
-      </div>
+      <!--Will Be Populated by js-->
     </div>
   </section>
 
@@ -320,6 +301,12 @@
         }
       }
     });
+    // Price range filter
+        const priceRange = document.getElementById('priceRange');
+        const priceValue = document.getElementById('priceValue');
+        priceRange.addEventListener('input', function() {
+          priceValue.textContent = `$0 - $${priceRange.value}`;
+        });
 
     // Logout confirmation
     document.getElementById("logout-link").onclick = function(e) {
@@ -328,6 +315,26 @@
         window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
       }
     };
+    fetch("shop.php")
+      .then(response => response.json())
+      .then(products => {
+        const grid = document.getElementById("productGrid");
+        grid.innerHTML = "";
+
+        products.forEach(product => {
+          const card = document.createElement("div");
+          card.className = "product-card";
+            card.innerHTML = `
+            <img src="https://via.placeholder.com/400x300?text=${encodeURIComponent(product.Product_Name)}" alt="${product.Product_Name}" />
+            <h3>${product.Product_Name}</h3>
+            <p>$${parseFloat(product.Product_Price).toFixed(2)}</p>
+            <p>${product.Stock_Status}</p>
+            <button class="details-btn" style="cursor: pointer;" onclick="window.location.href='inventory_seller.html'">View Details</button>
+          `;
+          grid.appendChild(card);
+        });
+      });
+
   </script>
 </body>
 </html>
