@@ -371,6 +371,7 @@
       formData.append("code", document.getElementById("addCode").value);
       formData.append("price", document.getElementById("addPrice").value);
       formData.append("stock", document.getElementById("addStock").value);
+      formData.append("price", document.getElementById("addPrice").value);
       formData.append("image", document.getElementById("addImg").value);
       formData.append("category", document.getElementById("addCategory").value);
       formData.append("added", today);
@@ -437,6 +438,7 @@
       document.getElementById("addCode").value = item.code;
       document.getElementById("addStock").value = item.stock;
       document.getElementById("addImg").value = item.img;
+      document.getElementById("addPrice").value = item.price;
       // Change button text to "Save"
       const addBtn = document.querySelector("#addItemForm button[type='submit']");
       const originalBtnText = addBtn.textContent;
@@ -464,6 +466,7 @@
         formData.append("stock", document.getElementById("addStock").value);
         formData.append("image", document.getElementById("addImg").value);
         formData.append("updated", today);
+        formData.append("price", document.getElementById("addPrice").value);
 
         fetch("update_product.php", {
           method: "POST",
@@ -472,7 +475,6 @@
           .then(res => res.text())
           .then(result => {
             if (result.includes("success")) {
-              alert("Changes saved.");
               form.onsubmit = originalHandler;
               document.getElementById("addItemModal").classList.remove("show");
               addBtn.textContent = originalBtnText;

@@ -8,7 +8,7 @@ $conn = new mysqli($host, $username, $password, $database);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-$sql = "SELECT Product_Name, Product_Price, Stock_Status FROM product WHERE Is_Active = 1";
+$sql = "SELECT Product_Name, Product_Price, Stock_Status, Category FROM product WHERE Is_Active = 1";
 $result = $conn->query($sql);
 
 $products = [];
