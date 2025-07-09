@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Us | Scentora</title>
+  <style>
+    /* Reset & Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html,
+    body {
+      width: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      background: transparent;
+    }
+
+    :root {
+      --lavender-light: #c89bce;
+      --white: #ffffff;
+      --mauve: #917489;
+      --lavender-accent: #b497bd;
+      --navbar-bg: rgba(145, 116, 137, 0.95);
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--navbar-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--white);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-links a:hover {
+      color: var(--lavender-accent);
+    }
+
+    /* About Us Section */
+    .about-section {
+      background: transparent;
+      padding: 8rem 2rem 4rem 2rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      color: var(--mauve);
+      margin-bottom: 1rem;
+    }
+
+    .divider {
+      width: 4rem;
+      height: 3px;
+      background: var(--lavender-accent);
+      margin: 0 auto;
+      border-radius: 2px;
+    }
+
+    /* Video Section */
+    .video-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .video-container video {
+      width: 48%;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .text-content {
+      width: 48%;
+    }
+
+    .about-card p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #555;
+    }
+
+    .about-card h3 {
+      font-size: 1.8rem;
+      color: var(--mauve);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* Future Horizons Section */
+    .future-horizons {
+      background: var(--lavender-light);
+      padding: 2.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(145, 116, 137, 0.1);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Animation */
+     .slide-in-left {
+      opacity: 0;
+      transform: translateX(-60px);
+      transition: opacity 0.8s ease, transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .slide-in-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .slide-in-right {
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.8s ease, transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .slide-in-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .video-container {
+        flex-direction: column;
+      }
+
+      .video-container video,
+      .video-container .text-content {
+        width: 100%;
+      }
+
+      .video-container video {
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Video Background -->
+  <video autoplay muted loop playsinline id="about-bg-video" style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-1;">
+    <source src="/IM2-Scentora/files/videos/whitebg.mp4" type="video/mp4" />
+    Your browser does not support HTML5 video.
+  </video>
+
+  <!-- Navbar -->
+  <header>
+    <div class="logo">Scentora</div>
+    <nav class="nav-links">
+      <a href="/IM2-Scentora/index.html">Home</a>
+      <a href="/IM2-Scentora/shop.html">Shop</a>
+      <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
+    </nav>
+  </header>
+
+  <!-- About Us Section -->
+  <section id="about-us" class="about-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>About Us</h2>
+        <div class="divider"></div>
+      </div>
+
+      <!-- Introduction -->
+      <div class="video-container">
+        <div class="text-content slide-in-right">
+          <h3>Introduction</h3>
+          <p>Welcome to Scentora, where elegance meets affordability. We are dedicated to bringing you a carefully curated selection of perfumes that range from everyday essentials to luxurious fragrances, all at prices that are easy on your wallet. Whether you're looking to indulge in a sophisticated scent or find a go-to fragrance for everyday wear, Scentora has something for everyone.</p>
+        </div>
+        <video class="slide-in-left" autoplay muted loop>
+          <source src="/IM2-Scentora/files/videos/dior.mp4" type="video/mp4" />
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+
+      <!-- Add space between Introduction and Our Mission -->
+      <div style="height: 3rem;"></div>
+
+      <!-- Our Mission (image right, text left) -->
+      <div class="video-container">
+        <div class="text-content slide-in-right">
+          <h3>Our Mission</h3>
+          <p>At Scentora, our mission is to offer high-quality, accessible fragrances for every personality and occasion. We believe fragrance is an experience that can uplift your mood and confidence, and we strive to make that experience available to everyone. What sets us apart is our commitment to quality, affordability, and helping you find the perfect scent for every moment.</p>
+        </div>
+        <img 
+          src="/IM2-Scentora/files/imges/mission.jpg" 
+          alt="Our Mission" 
+          class="slide-in-left"
+          style="width:48%; height:auto; object-fit:cover;"
+        />
+      </div>
+
+      <!-- Add space between Our Mission and Our Philosophy -->
+      <div style="height: 3rem;"></div>
+
+      <!-- Our Philosophy (image left, text right) -->
+      <div class="video-container">
+        <img 
+          src="/IM2-Scentora/files/imges/philosophy.jpg" 
+          alt="Our Philosophy" 
+          class="slide-in-left"
+          style="width:48%; height:auto; object-fit:cover;"
+        />
+        <div class="text-content slide-in-right">
+          <h3>Our Philosophy</h3>
+          <p>At Scentora, we believe that the right fragrance has the power to elevate your mood, boost your confidence, and make every moment memorable. Our mission is to provide high-quality perfumes that suit every occasion and personality, making luxury scents accessible to all. We want to make it easy for you to find the perfect fragrance, no matter your taste or budget.</p>
+        </div>
+      </div>
+
+      <!-- CEO Section -->
+      <div class="future-horizons" style="background: #fff; border: 2px solid #eee; position: relative;">
+        <h3>
+          CEO
+          <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#b497bd; margin-left:8px; vertical-align:middle;"></span>
+        </h3>
+        <p style="font-style: italic; text-align:center;">"At Scentora, we are passionate about making luxury fragrances accessible to everyone. Every scent tells a story, and we want yours to be unforgettable."</p>
+        <p style="text-align:right; margin-top:1rem;"><strong>- Jane Doe, CEO</strong></p>
+      </div>
+
+      <!-- Developer Section -->
+      <div class="future-horizons" style="background: #fff; border: 2px solid #eee; position: relative; display: flex; align-items: center; gap: 2rem; text-align:left;">
+        <img 
+          src="/IM2-Scentora/files/imges/developer.jpg" 
+          alt="Developer" 
+          style="width:220px; height:220px; object-fit:cover; border-radius:50%; box-shadow:0 4px 16px rgba(145,116,137,0.12); margin-left:0;"
+        />
+        <div style="flex:1;">
+          <h3>
+            Lead Developer
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#b497bd; margin-left:8px; vertical-align:middle;"></span>
+          </h3>
+          <p style="font-style: italic; text-align:center;">"Building Scentora has been a journey of innovation and creativity. We strive to deliver a seamless and delightful experience for every customer."</p>
+          <p style="text-align:right; margin-top:1rem;">- Khit Joshua Magbanua,Lead Developer</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Slide-in effect for left/right elements
+    window.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.slide-in-left, .slide-in-right').forEach(function (el, idx) {
+        setTimeout(function () {
+          el.classList.add('visible');
+        }, 200 + idx * 100);
+      });
+    });
+  </script>
+</body></body>
+</html>
