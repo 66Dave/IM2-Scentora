@@ -88,40 +88,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: #c89bce;
         }
         header {
-            position: absolute;
-            top: 0;
             width: 100%;
-            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            padding: 1.2rem 2.5rem 1.2rem 2.5rem;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: 10;
+            box-sizing: border-box;
         }
         .logo {
-            font-size: 2rem;
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: bold;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
             color: #fff;
-            letter-spacing: 2px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            cursor: default;
-            pointer-events: none;
-            margin-left: 0;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.18);
         }
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
         }
         .nav-links a {
-            text-decoration: none;
             color: #fff;
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 500;
-            font-size: 1rem;
-            transition: color 0.3s ease;
+            text-decoration: none;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
             padding: 0.25rem 0.5rem;
         }
         .nav-links a:hover {
