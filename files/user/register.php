@@ -1,7 +1,4 @@
 <?php
-
-//filepath: c:\xampp\htdocs\IM2-Scentora\files\user\register.php <-
-
 // Database connection
 $host = "localhost";
 $user = "root";
@@ -9,7 +6,7 @@ $pass = "";
 $db = "scentoradb";
 $conn = new mysqli($host, $user, $pass, $db);
 
-$name = $email = $address = $password = $confirm_password = "";
+$name = $email = $password = $confirm_password = "";
 $errors = [];
 $success = "";
 
@@ -17,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get and sanitize input
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
-    $address = trim($_POST["address"]);
     $password = $_POST["password"];
     $confirm_password = $_POST["confirm_password"];
 
@@ -25,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($name)) $errors[] = "Name is required.";
     if (empty($email)) $errors[] = "Email is required.";
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Invalid email format.";
-    if (empty($address)) $errors[] = "Address is required.";
     if (empty($password)) $errors[] = "Password is required.";
     if (strlen($password) < 8) $errors[] = "Password must be at least 8 characters.";
     if ($password !== $confirm_password) $errors[] = "Passwords do not match.";
@@ -46,11 +41,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $user_type = "Consumer";
-        $stmt = $conn->prepare("INSERT INTO user (Name, Email, Address, User_Type, Password) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $name, $email, $address, $user_type, $hashed_password);
+        $stmt = $conn->prepare("INSERT INTO user (Name, Email, User_Type, Password) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $email, $user_type, $hashed_password);
         if ($stmt->execute()) {
             $success = "Registration successful! You may now log in.";
-            $name = $email = $address = "";
+            $name = $email = "";
         } else {
             $errors[] = "Registration failed. Please try again.";
         }
@@ -64,256 +59,354 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Register | Scentora</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #917489;
+            --accent: #b497bd;
+            --bg: #f7f5fa;
+            --white: #fff;
+            --error: #ffb3b3;
+            --success: #d4edda;
+            --shadow: 0 8px 32px 0 rgba(145, 116, 137, 0.10);
+            --lavender-border: #b497bd;
+            --navbar-bg: rgba(255,255,255,0.85);
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            overflow: hidden; /* Prevent scrolling */
+        }
         body {
             min-height: 100vh;
-            margin: 0;
+            min-width: 100vw;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            flex-direction: column;
             position: relative;
-            overflow: hidden;
         }
+        /* Moving background video */
         .bg-video {
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             object-fit: cover;
             z-index: -2;
-            min-width: 100%;
-            min-height: 100%;
+            min-width: 100vw;
+            min-height: 100vh;
             background: #c89bce;
         }
-        .bg-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(40, 20, 40, 0.35);
-            z-index: -1;
-        }
-        .register-container {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(8px);
-            padding: 1.2rem 1rem 1rem 1rem; /* reduced padding */
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 32px rgba(145, 116, 137, 0.18);
+        /* Modern Navbar (matches about us) */
+        header {
+            position: absolute;
+            top: 0;
             width: 100%;
-            max-width: 370px;
-            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+        .logo {
+            font-size: 2rem; /* Match homepage */
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            cursor: default;
+            pointer-events: none;
+            margin-left: 0; /* Remove extra margin if present */
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #fff;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: 500;
+            font-size: 1rem; /* Match homepage */
+            transition: color 0.3s ease;
+            padding: 0.25rem 0.5rem;
+        }
+        .nav-links a:hover {
+            color: #b497bd;
+        }
+        /* Container and Form */
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Add top padding equal to navbar height */
+            padding-top: 6.5rem;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .form-container {
+            background: var(--white);
+            border-radius: 2.5rem;
+            box-shadow: var(--shadow);
+            padding: 3.5rem 3rem 2.5rem 3rem;
+            width: 50vw; /* Reduce width to give navbar more space */
+            max-width: 700px;
+            height: 75vh;
+            min-width: 0;
+            min-height: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            gap: 1.2rem;
+            position: relative;
+            z-index: 2;
+            border: 4px solid var(--lavender-border);
+            justify-content: center;
+            /* Ensure the box doesn't go under the navbar */
+            margin-top: 0;
         }
-        .register-container h2 {
+        .form-container h2 {
             text-align: center;
-            color: #6c4f6b;
-            margin-bottom: 0.7rem; /* reduced margin */
-            font-size: 1.7rem; /* slightly smaller */
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             letter-spacing: 1px;
         }
-        .register-container form {
-            width: 100%;
+        .step {
+            display: none;
+            animation: fadeIn 1s;
+        }
+        .step.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px);}
+            to { opacity: 1; transform: none;}
+        }
+        .input-row {
             display: flex;
             flex-direction: column;
-            gap: 0.6rem; /* reduced gap */
-        }
-        .register-container label {
-            font-weight: 500;
-            color: #6c4f6b;
-            margin-bottom: 0.1rem; /* reduced margin */
-            font-size: 0.97rem;
-        }
-        .register-container input[type="text"],
-        .register-container input[type="email"],
-        .register-container input[type="password"] {
-            padding: 0.5rem; /* reduced padding */
-            border: 1.2px solid #c89bce;
-            border-radius: 0.5rem;
-            font-size: 0.97rem;
-            outline: none;
-            background: rgba(255,255,255,0.7);
-            transition: border 0.2s;
-            margin-bottom: 0.1rem; /* reduced margin */
-        }
-        .register-container input:focus {
-            border-color: #917489;
-        }
-        .register-container .btn {
-            background: linear-gradient(90deg, #917489 0%, #b497bd 100%);
-            color: #fff;
-            border: none;
-            padding: 0.6rem; /* reduced padding */
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 0.3rem; /* reduced margin */
-            transition: background 0.2s;
+            gap: 1.2rem;
             width: 100%;
         }
-        .register-container .btn + .btn {
-            margin-top: 0.3rem !important; /* ensure login button is close to register */
+        .input-group {
+            width: 100%;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
         }
-        .register-container .btn:hover {
-            background: linear-gradient(90deg, #b497bd 0%, #917489 100%);
+        .input-group label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
         }
-        .register-container .error, .register-container .success {
-            padding: 0.5rem 0.7rem; /* reduced padding */
-            border-radius: 0.5rem;
-            margin-bottom: 0.4rem; /* reduced margin */
-            font-size: 0.95rem;
+        .input-group input {
+            width: 100%;
+            padding: 1.2rem 1.2rem;
+            border: 1.5px solid #e0d6e6;
+            border-radius: 0.8rem;
+            font-size: 1.15rem;
+            background: #f8f6fb;
+            transition: border 0.2s;
         }
-        .success, .error {
-            opacity: 0;
-            transition: opacity 0.5s;
+        .input-group input:focus {
+            border-color: var(--accent);
+            outline: none;
+            background: #fff;
         }
-        .success.visible, .error.visible {
-            opacity: 1;
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
         }
-        #client-error {
-            color: #b1003a;
-            background: none;
+        .btn {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: #fff;
             border: none;
-            padding: 0;
-            margin: 0.2rem 0 0.4rem 0; /* reduced margin */
-            font-size: 0.95rem;
-            min-height: 1em;
-            box-shadow: none;
-            display: block;
+            padding: 1.1rem 0;
+            border-radius: 0.8rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 0.5rem;
+            width: 100%;
+            max-width: 220px;
+        }
+        .btn:hover {
+            background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .error, .success {
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.7rem;
+            border-radius: 0.7rem;
+            font-size: 1.1rem;
             text-align: center;
+        }
+        .error {
+            background: var(--error);
+            color: #721c24;
+        }
+        .success {
+            background: var(--success);
+            color: #155724;
         }
         .signin-link {
-            margin-top: 0.5rem;
             text-align: center;
-            font-size: 1rem;
+            margin-top: 1.2rem;
+            font-size: 1.1rem;
         }
         .signin-link a {
-            color: #1976d2;
+            color: var(--accent);
             text-decoration: underline;
-            cursor: pointer;
-            font-weight: 500;
-            transition: color 0.2s;
+            font-weight: 600;
         }
-        .signin-link a:hover {
-            color: #0d47a1;
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #f1eaf5;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            position: relative;
         }
-        @media (max-width: 500px) {
-            .register-container {
-                padding: 0.7rem 0.2rem;
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            width: 50%; /* Initial width for step 1 */
+            transition: width 1s cubic-bezier(.4,0,.2,1), background 0.5s;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        /* Responsive */
+        @media (max-width: 900px) {
+            header {
+                padding: 1rem 0.5rem;
+            }
+            .nav-links {
+                gap: 1rem;
+            }
+            .form-container {
+                width: 90vw;
                 max-width: 98vw;
             }
-            .register-container h2 {
-                font-size: 1.2rem;
+        }
+        @media (max-width: 600px) {
+            .container {
+                min-height: 100vh;
+                padding-top: 6.5rem;
+            }
+            .form-container {
+                min-height: unset;
+                height: 99vh;
+                width: 99vw;
+                padding: 1rem 0.2rem;
+            }
+            .form-container h2 {
+                font-size: 1.3rem;
             }
         }
     </style>
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    var form = document.getElementById("regForm");
-    var clientError = document.getElementById("client-error");
-    var successDiv = document.getElementById("success-message");
-    var errorDiv = document.getElementById("server-error");
-
-    form.addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        // Client-side validation
-        var password = form.password.value;
-        var confirm = form.confirm_password.value;
-        clientError.innerText = "";
-        if (password.length < 8) {
-            clientError.innerText = "Password must be at least 8 characters.";
-            return;
-        }
-        if (password !== confirm) {
-            clientError.innerText = "Passwords do not match.";
-            return;
-        }
-
-        // Prepare form data
-        var formData = new FormData(form);
-
-        // AJAX request
-        fetch("register_action.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Clear previous messages
-            if (errorDiv) errorDiv.remove();
-            if (successDiv) successDiv.remove();
-
-            if (data.errors && data.errors.length > 0) {
-                var err = document.createElement("div");
-                err.className = "error visible";
-                err.id = "server-error";
-                err.innerHTML = data.errors.join("<br>");
-                form.parentNode.insertBefore(err, form);
-            } else if (data.success) {
-                var succ = document.createElement("div");
-                succ.className = "success visible";
-                succ.id = "success-message";
-                succ.innerText = data.success;
-                form.parentNode.insertBefore(succ, form);
-                setTimeout(function() {
-                    succ.classList.remove("visible");
-                    setTimeout(function() { succ.style.display = "none"; }, 500);
-                }, 4000);
-                form.reset();
+        document.addEventListener("DOMContentLoaded", function() {
+            let currentStep = 1;
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const nextBtn = document.getElementById('next-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const progress = document.getElementById('progress');
+            function updateProgress() {
+                progress.style.width = currentStep === 1 ? "50%" : "100%";
             }
-        });
-    });
+            updateProgress();
 
-    // Add click event for sign in link
-    var signinLink = document.getElementById("signin-link");
-    if (signinLink) {
-        signinLink.addEventListener("click", function(e) {
-            e.preventDefault();
-            window.location.href = "loginpage.html";
+            nextBtn.addEventListener('click', function() {
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                currentStep = 2;
+                updateProgress();
+            });
+
+            prevBtn.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step1.classList.add('active');
+                currentStep = 1;
+                updateProgress();
+            });
         });
-    }
-});
     </script>
 </head>
 <body>
     <video class="bg-video" src="/IM2-Scentora/files/videos/bg.mp4" autoplay loop muted playsinline></video>
-    <div class="bg-overlay"></div>
-    <div class="register-container">
-        <h2>User Registration</h2>
-        <?php if (!empty($errors)): ?>
-    <div class="error">
-        <?php foreach ($errors as $e) echo htmlspecialchars($e) . "<br>"; ?>
-    </div>
-<?php endif; ?>
-<?php if ($success): ?>
-    <div class="success" id="success-message"><?php echo $success; ?></div>
-<?php endif; ?>
-        <form id="regForm" autocomplete="off">
-            <label for="name">Full Name</label>
-            <input type="text" name="name" id="name" required>
-
-            <label for="email">Email</label>
-            <input type="email" name="email" id="email" required>
-
-            <label for="address">Address</label>
-            <input type="text" name="address" id="address" required>
-
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" required minlength="8">
-
-            <label for="confirm_password">Confirm Password</label>
-            <input type="password" name="confirm_password" id="confirm_password" required minlength="8">
-            <span id="client-error"></span>
-
-            <button type="submit" class="btn">Register</button>
-            <!-- Replace login button with sign in text link -->
-            <div class="signin-link">
-                Already have an account? <a href="#" id="signin-link">Sign in</a>
+    <header>
+        <div class="logo">Scentora</div>
+        <nav class="nav-links">
+            <a href="/IM2-Scentora/index.html">Home</a>
+            <a href="/IM2-Scentora/shop.html">Shop</a>
+            <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="form-container">
+            <h2>Create Your Account</h2>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
             </div>
-        </form>
+            <?php if (!empty($errors)): ?>
+                <div class="error"><?php echo implode('<br>', $errors); ?></div>
+            <?php endif; ?>
+            <?php if ($success): ?>
+                <div class="success"><?php echo $success; ?></div>
+            <?php endif; ?>
+            <form id="regForm" method="POST" autocomplete="off" style="width:100%;">
+                <div id="step1" class="step active">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" name="name" id="name" required value="<?php echo htmlspecialchars($name); ?>">
+                        </div>
+                        <div class="input-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" required value="<?php echo htmlspecialchars($email); ?>">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" id="next-btn" class="btn">Next</button>
+                    </div>
+                </div>
+                <div id="step2" class="step">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <input type="password" name="password" id="password" required minlength="8">
+                        </div>
+                        <div class="input-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" name="confirm_password" id="confirm_password" required minlength="8">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" id="prev-btn" class="btn" style="background:#eee;color:#917489;">Back</button>
+                        <button type="submit" id="submit-btn" class="btn">Register</button>
+                    </div>
+                </div>
+            </form>
+            <div class="signin-link">
+                Already have an account? <a href="loginpage.html">Sign in</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>
