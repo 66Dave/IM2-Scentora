@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             --white: #fff;
             --error: #ffb3b3;
             --success: #d4edda;
-            --shadow: 0 8px 32px 0 rgba(145, 116, 137, 0.10);
+            --shadow: 0 8px 32px 0 rgba(145,116,137,0.10);
             --lavender-border: #b497bd;
             --navbar-bg: rgba(255,255,255,0.85);
         }
@@ -99,43 +99,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             min-height: 100vh;
             background: #c89bce;
         }
-        /* Modern Navbar (matches about us) */
+        /* Header styles - make smaller to match homepage.html */
         header {
-            position: absolute;
-            top: 0;
             width: 100%;
-            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            padding:  1rem 2rem;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: 10;
+            box-sizing: border-box;
         }
         .logo {
-            font-size: 2rem; /* Match homepage */
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: bold;
-            color: #fff;
-            letter-spacing: 2px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            cursor: default;
-            pointer-events: none;
-            margin-left: 0; /* Remove extra margin if present */
+            font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
         }
         .nav-links a {
-            text-decoration: none;
-            color: #fff;
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 500;
-            font-size: 1rem; /* Match homepage */
-            transition: color 0.3s ease;
-            padding: 0.25rem 0.5rem;
+          text-decoration: none;
+  color: var(--white);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+  padding: 0.25rem 0.5rem;
         }
         .nav-links a:hover {
             color: #b497bd;
