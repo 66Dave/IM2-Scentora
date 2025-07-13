@@ -404,7 +404,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </form>
             <div class="signin-link">
-                Already have an account? <a href="loginpage.html">Sign in</a>
+                Already have an account? <a href="signin.php">Sign in</a>
             </div>
         </div>
     </div>
