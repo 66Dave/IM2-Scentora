@@ -348,9 +348,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <div class="logo">Scentora</div>
         <nav class="nav-links">
-            <a href="/IM2-Scentora/user/homepage.html">Home</a>
-            <a href="/IM2-Scentora/user/shop.html">Shop</a>
-            <a href="/IM2-Scentora/user/aboutus.html">About us</a>
+            <a href="/IM2-Scentora/index.html">Home</a>
+            <a href="/IM2-Scentora/shop.html">Shop</a>
+            <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
         </nav>
     </header>
     <div class="container">
@@ -401,6 +401,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="signin-link">
                 Already have an account? <a href="signin.php">Sign in</a>
             </div>
+            <div style="margin-top: 1.2rem; text-align: center;">
+    <a href="forgotpassword.php" style="display:inline-block; margin:0 0.5rem 0.5rem 0.5rem; color:#917489; text-decoration:underline; font-weight:600;">Forgot Password?</a>
+    <a href="changepassword.php" style="display:inline-block; margin:0 0.5rem 0.5rem 0.5rem; color:#917489; text-decoration:underline; font-weight:600;">Change Password</a>
+</div>
         </div>
     </div>
 </body>
