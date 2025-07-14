@@ -189,6 +189,7 @@
       color: white;
     }
 
+    /* Search bar adjustments */
     .search-bar {
       flex: 1;
       margin-left: 2rem;
@@ -199,7 +200,7 @@
       width: 100%;
       padding: 0.5rem 1rem;
       border-radius: 999px;
-      border: 2px solid var(--primary);
+      border: 2px solid var(--primary); /* Clear border */
       background: var(--card);
       color: var(--text);
       font-size: 1rem;
@@ -207,9 +208,80 @@
       outline: none;
     }
 
+    /* Dark Mode */
+    body.darkmode {
+      --primary: #b89fff;
+      --accent: #28294b;
+      --background: #191922;
+      --card: #232336;
+      --sidebar: #232336;
+      --text: #f7f5fa;
+      --nav-bg: rgba(32, 31, 50, 0.92);
+      --white: #e9e9ff;
+      --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
+    }
     .header_contents {
+    display: flex;
+    gap: 1.5rem;
+    }
+    .pricefilter_en_dis{
       display: flex;
-      gap: 1.5rem;
+      margin-top: 1rem;
+      gap: 0.5rem;
+    }
+    /* New card styles */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .img {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .save {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .save:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .text {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .h3 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .p {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin: 0;
     }
 
     .icon-box {
@@ -240,17 +312,16 @@
       <input type="text" id="searchInput" placeholder="Search for products" />
     </div>
     <div class="header_contents">
-      <nav class="nav-links">
-        <!-- Cart and Profile Icons -->
-        <a href="userCart.html">Cart</a>
-        <a href="#">Profile</a>
-        <a href="shop.html" class="active">Shop</a>
-        <a href="#logout" id="logout-link">Logout</a>
-      </nav>
-      <div class="toggle-switch">
-        <label for="darkmode">Dark mode</label>
-        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
-      </div>
+    <nav class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="inventory_seller.html">Inventory</a>
+      <a href="shop.html" class="active">Shop</a>
+      <a href="#logout" id="logout-link">Logout</a>
+    </nav>
+    <div class="toggle-switch">
+      <label for="darkmode">Dark mode</label>
+      <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+    </div>
     </div>
   </header>
 
@@ -269,86 +340,85 @@
     </aside>
 
     <div class="product-grid" id="productGrid">
-      <!-- Will be populated by JavaScript -->
+      <!--Will Be Populated by js-->
     </div>
   </section>
-
   <script>
-    // Dark mode toggle
-    const darkToggle = document.getElementById('darkmode');
-    if (localStorage.getItem('scentoraDark') === '1') {
-      document.body.classList.add('darkmode');
-      darkToggle.checked = true;
-    }
-    darkToggle.addEventListener('change', () => {
-      document.body.classList.toggle('darkmode', darkToggle.checked);
-      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
-    });
+//Dark mode toggle
+const darkToggle = document.getElementById('darkmode');
+if (localStorage.getItem('scentoraDark') === '1') {
+  document.body.classList.add('darkmode');
+  darkToggle.checked = true;
+}
+darkToggle.addEventListener('change', () => {
+  document.body.classList.toggle('darkmode', darkToggle.checked);
+  localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+});
 
-    // Logout confirmation
-    document.getElementById("logout-link").onclick = function(e) {
-      e.preventDefault();
-      if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "/IM2-Scentora/files/user/signin.php";
-      }
-    };
+//Logout confirmation
+document.getElementById("logout-link").onclick = function(e) {
+  e.preventDefault();
+  if (confirm("Are you sure you want to logout?")) {
+    window.location.href = "/IM2-Scentora/files/user/signin.php";
+  }
+};
 
-    // Product data store
-    let allProducts = [];
+//Product data store
+let allProducts = [];
 
-    // Element references
-    const categorySelect = document.querySelector(".sidebar select");
-    const searchInput = document.getElementById("searchInput");
-    const productGrid = document.getElementById("productGrid");
+//Element references
+const categorySelect = document.querySelector(".sidebar select");
+const searchInput = document.getElementById("searchInput");
+const productGrid = document.getElementById("productGrid");
 
-    // Combined filter renderer
-    function renderFilteredProducts() {
-      const filterText = searchInput.value.toLowerCase();
-      const selectedCategory = categorySelect.value;
+//Combined filter renderer
+function renderFilteredProducts() {
+  const filterText = searchInput.value.toLowerCase();
+  const selectedCategory = categorySelect.value;
 
-      productGrid.innerHTML = "";
+  productGrid.innerHTML = "";
 
-      allProducts
-        .filter(product => {
-          const name = product.Product_Name.toLowerCase();
-          const category = product.Category?.toLowerCase() || "";
+  allProducts
+    .filter(product => {
+      const name = product.Product_Name.toLowerCase();
+      const category = product.Category?.toLowerCase() || "";
 
-          const nameCheck = name.includes(filterText);
-          const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
+      const nameCheck = name.includes(filterText);
+      const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
 
-          return nameCheck && categoryCheck;
-        })
-        .forEach(product => {
-          const card = document.createElement("div");
-          card.className = "product-card";
-          card.innerHTML = `
-            <div class="card">
-              <div class="img">
-              </div>
-              <div class="text">
-                <p class="h3">${product.Product_Name}</p>
-                <p class="p">${product.Product_Desc}</p>
-                <div class="icon-box" onclick="addToCart('${product.Product_ID}')">
-                  <p class="span">Add To Cart</p>
-                </div>
-              </div>
+      return nameCheck && categoryCheck;
+    })
+    .forEach(product => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.innerHTML = `
+        <div class="card">
+          <div class="img">
+          </div>
+          <div class="text">
+            <p class="h3">${product.Product_Name}</p>
+            <p class="p">${product.Product_Desc}</p>
+            <div class="icon-box" onclick="addToCart('${product.Product_ID}')">
+              <p class="span">Add To Cart</p>
             </div>
-          `;
-          productGrid.appendChild(card);
-        });
-    }
+          </div>
+        </div>
+      `;
+      productGrid.appendChild(card);
+    });
+}
 
-    // Filter listeners
-    categorySelect.addEventListener("change", renderFilteredProducts);
-    searchInput.addEventListener("input", renderFilteredProducts);
+//Filter listeners
+categorySelect.addEventListener("change", renderFilteredProducts);
+searchInput.addEventListener("input", renderFilteredProducts);
 
-    // Initial product fetch
-    fetch("shop.php")
-      .then(response => response.json())
-      .then(products => {
-        allProducts = products;
-        renderFilteredProducts();
-      });
+//Initial product fetch
+fetch("shop.php")
+  .then(response => response.json())
+  .then(products => {
+    allProducts = products;
+    renderFilteredProducts();
+  });
   </script>
 </body>
 </html>
