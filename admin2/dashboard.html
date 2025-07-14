@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scentora | Dashboard</title>
+  <style>
+    :root {
+      --primary: #a182c9;
+      --accent: #e5d6f7;
+      --background: #f7f5fa;
+      --card: #fff7ff;
+      --sidebar: #efe2fa;
+      --text: #392e44;
+      --nav-bg: rgba(114, 69, 173, 0.7);
+      --nav-blur: blur(10px);
+      --white: #fff;
+      --shadow: 0 2px 6px rgba(161,130,201,0.12);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding-top: 74px;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: var(--nav-blur);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .header_contents {
+    display: flex;
+    gap: 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:not([href="#logout"]).active {
+      background: var(--white);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-switch label {
+      font-size: 0.96rem;
+      color: var(--white);
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #bda6e7;
+      outline: none;
+      border-radius: 15px;
+      position: relative;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked {
+      background: #392e44;
+    }
+
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      top: 1px;
+      left: 2px;
+      background: #fff;
+      transition: 0.3s;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked::before {
+      transform: translateX(19px);
+      background: #a182c9;
+    }
+
+    .dashboard-container {
+      display: flex;
+      max-width: 1200px;
+      margin: auto;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar);
+      border-radius: 12px;
+      padding: 1.4rem 1rem 1rem 1.4rem;
+      box-shadow: var(--shadow);
+      height: fit-content;
+      margin-top: 0.5rem;
+    }
+
+    .sidebar h3 {
+      color: var(--primary);
+      margin-bottom: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      display: block;
+      margin-bottom: 0.8rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 0.4rem 0.7rem;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .sidebar a.active,
+    .sidebar a:hover {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .dashboard-main {
+      flex: 1;
+    }
+
+    .dashboard-page {
+      display: none;
+      animation: fadein 0.5s;
+    }
+
+    .dashboard-page.active {
+      display: block;
+    }
+
+    .welcome-card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .quick-link {
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 8px;
+      padding: 1.2rem 2.5rem;
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    .quick-link:hover {
+      background: #8663b9;
+      color: #f2e9ff;
+      transform: translateY(-3px) scale(1.04);
+    }
+
+    .overview-grid {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .overview-widget {
+      background: var(--accent);
+      color: var(--primary);
+      flex: 1 1 200px;
+      min-width: 180px;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .stat-card {
+      background: var(--card);
+      flex: 1 1 250px;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      min-width: 210px;
+      text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .stat-card h4 {
+      font-size: 1.08rem;
+      color: #6b5097;
+    }
+
+    .stat-card p {
+      font-size: 2.2rem;
+      color: var(--primary);
+      font-weight: bold;
+      margin-top: 0.7rem;
+    }
+
+    body.darkmode {
+      --primary: #b89fff;
+      --accent: #28294b;
+      --background: #191922;
+      --card: #232336;
+      --sidebar: #232336;
+      --text: #f7f5fa;
+      --nav-bg: rgba(32, 31, 50, 0.92);
+      --white: #e9e9ff;
+      --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Scentora</div>
+    <div class="header_contents">
+      <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory_seller.html">Inventory</a>
+        <a href="shop.html">Shop</a>
+        <a href="#logout" id="logout-link">Logout</a>
+      </div>
+      <div class="toggle-switch">
+        <label for="darkmode">Dark mode</label>
+        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h3>Dashboard</h3>
+      <a href="#" id="overview-link" class="active" onclick="showPage('overview', event)">Overview</a>
+      <a href="#" id="stats-link" onclick="showPage('stats', event)">Statistics</a>
+      <a href="#" id="orders-link" onclick="showPage('orders', event)">Orders</a>
+    </aside>
+
+    <section class="dashboard-main">
+      <div id="overview" class="dashboard-page active">
+        <div class="welcome-card">
+          Welcome to your <strong>Scentora Dashboard</strong>!
+        </div>
+        <div class="quick-links">
+          <a class="quick-link" href="inventory_seller.html">View Inventory</a>
+        </div>
+        <div class="overview-grid">
+          <div class="overview-widget">Perfume Products<br><span id="count-products">--</span></div>
+          <div class="overview-widget">Stock Alerts<br><span id="count-alerts">--</span></div>
+          <div class="overview-widget">New Orders<br><span id="count-orders">--</span></div>
+        </div>
+      </div>
+
+      <div id="stats" class="dashboard-page">
+        <h2 style="color:var(--primary);">Statistics Overview</h2>
+        <div class="overview-grid">
+          <div class="stat-card"><h4>Total Perfumes</h4><p id="stat-total">0</p></div>
+          <div class="stat-card"><h4>In Stock</h4><p id="stat-in-stock">0</p></div>
+          <div class="stat-card"><h4>Out of Stock</h4><p id="stat-out-stock">0</p></div>
+          <div class="stat-card"><h4>Total Orders</h4><p id="stat-orders">0</p></div>
+        </div>
+      </div>
+
+      <div id="orders" class="dashboard-page">
+        <h2 style="color:var(--primary);">Orders</h2>
+        <p>No orders to display.</p>
+      </div>
+    </section>
+  </div>
+  <script>
+    //Sidebar navigation
+function showPage(page, event) {
+  event.preventDefault();
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.dashboard-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`${page}-link`).classList.add('active');
+  document.getElementById(page).classList.add('active');
+}
+
+//Dark mode toggle
+const darkToggle = document.getElementById('darkmode');
+if (localStorage.getItem('scentoraDark') === '1') {
+  document.body.classList.add('darkmode');
+  darkToggle.checked = true;
+}
+darkToggle.addEventListener('change', () => {
+  document.body.classList.toggle('darkmode', darkToggle.checked);
+  localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+});
+
+//Logout confirmation
+document.getElementById("logout-link").onclick = function(e) {
+  e.preventDefault();
+  if (confirm("Are you sure you want to logout?")) {
+    window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+  }
+};
+
+//Real-time dashboard data fetch
+fetch("dashboard_data.php")
+  .then(res => res.json())
+  .then(data => {
+    // Overview section
+    document.getElementById("count-products").textContent = data.totalProducts;
+    document.getElementById("count-alerts").textContent = data.stockAlerts;
+    document.getElementById("count-orders").textContent = data.newOrders;
+
+    // Stats section
+    document.getElementById("stat-total").textContent = data.totalProducts;
+    document.getElementById("stat-in-stock").textContent = data.inStock;
+    document.getElementById("stat-out-stock").textContent = data.outOfStock;
+    document.getElementById("stat-orders").textContent = data.totalOrders;
+  })
+  .catch(err => {
+    console.error("Dashboard fetch failed:", err);
+  });
+  </script>
+</body>
+</html>
