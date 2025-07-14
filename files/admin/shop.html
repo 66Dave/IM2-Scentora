@@ -229,6 +229,9 @@
       margin-top: 1rem;
       gap: 0.5rem;
     }
+    .price-inputs-row input[type="number"] {
+  width: 80px;
+}
   </style>
 </head>
 <body>
@@ -264,11 +267,12 @@
           <option>Citrus</option>
         </select>
       </div>
-      <div>
+      <div class="price-inputs-row">
       <div class="pricefilter_en_dis">
-        <input type="checkbox" id="enablePriceFilter" style="width: 15px;"/><label style="font-size: 14px;">Price Range: <span id="priceValue">$0 - $500</span></label>
+        <input type="checkbox" id="enablePriceFilter" value="Enable/Disable Filter" style="width: 15px;"/><label style="font-size: 14px;">Price Range: </label>
       </div>
-        <input type="range" min="0" max="500" step="10" id="priceRange" />
+        <input type="number" id="minPrice" placeholder="Min" min="0" />
+        <input type="number" id="maxPrice" placeholder="Max" min="0" />
       </div>
     </aside>
 
@@ -302,19 +306,27 @@ let allProducts = [];
 //Element references
 const categorySelect = document.querySelector(".sidebar select");
 const searchInput = document.getElementById("searchInput");
-const priceRange = document.getElementById("priceRange");
-const priceValue = document.getElementById("priceValue");
 const productGrid = document.getElementById("productGrid");
 
 //Combined filter renderer
+document.getElementById("minPrice").addEventListener("input", renderFilteredProducts);
+document.getElementById("maxPrice").addEventListener("input", renderFilteredProducts);
 document.getElementById("enablePriceFilter").addEventListener("change", renderFilteredProducts);
 function renderFilteredProducts() {
   const enablePrice = document.getElementById("enablePriceFilter").checked;
-  const maxPrice = parseFloat(priceRange.value) || 500;
+  const minPriceInput = document.getElementById("minPrice");
+  const maxPriceInput = document.getElementById("maxPrice");
+
+  const minPrice = parseFloat(minPriceInput.value) || 0;
+  const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+
+  console.log({ minPrice, maxPrice, enablePrice });
+
   const filterText = searchInput.value.toLowerCase();
   const selectedCategory = categorySelect.value;
 
-  productGrid.innerHTML = "";
+  const grid = document.getElementById("productGrid");
+  grid.innerHTML = "";
 
   allProducts
     .filter(product => {
@@ -322,7 +334,8 @@ function renderFilteredProducts() {
       const name = product.Product_Name.toLowerCase();
       const category = product.Category?.toLowerCase() || "";
 
-      const priceCheck = !enablePrice || price <= maxPrice;
+      const validPriceRange = !isNaN(minPrice) && !isNaN(maxPrice);
+      const priceCheck = !enablePrice || (validPriceRange && price >= minPrice && price <= maxPrice);
       const nameCheck = name.includes(filterText);
       const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
 
@@ -336,19 +349,15 @@ function renderFilteredProducts() {
         <h3>${product.Product_Name}</h3>
         <p>$${parseFloat(product.Product_Price).toFixed(2)}</p>
         <p>${product.Stock_Status}</p>
-        <button class="details-btn" style='cursor: pointer;' onclick="window.location.href='inventory_seller.html ">View Details</button>
+        <button class="details-btn" onclick="window.location.href='inventory_seller.html'">View Details</button>
       `;
-      productGrid.appendChild(card);
+      grid.appendChild(card);
     });
 }
 
 //Filter listeners
 categorySelect.addEventListener("change", renderFilteredProducts);
 searchInput.addEventListener("input", renderFilteredProducts);
-priceRange.addEventListener("input", function () {
-  priceValue.textContent = `$0 - $${priceRange.value}`;
-  renderFilteredProducts();
-});
 
 //Initial product fetch
 fetch("shop.php")
