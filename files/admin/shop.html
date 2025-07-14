@@ -359,7 +359,7 @@ darkToggle.addEventListener('change', () => {
 document.getElementById("logout-link").onclick = function(e) {
   e.preventDefault();
   if (confirm("Are you sure you want to logout?")) {
-    window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
+    window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
   }
 };
 
@@ -380,12 +380,10 @@ function renderFilteredProducts() {
 
   allProducts
     .filter(product => {
-      const name = product.Product_Name.toLowerCase();
-      const category = product.Category?.toLowerCase() || "";
-
+      const name = (product.name || "").toLowerCase();
+      const category = (product.category || "").toLowerCase();
       const nameCheck = name.includes(filterText);
       const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
-
       return nameCheck && categoryCheck;
     })
     .forEach(product => {
@@ -394,11 +392,12 @@ function renderFilteredProducts() {
       card.innerHTML = `
         <div class="card">
           <div class="img">
+            <img src="${product.img}" alt="${product.name}" />
           </div>
           <div class="text">
-            <p class="h3">${product.Product_Name}</p>
-            <p class="p">${product.Product_Desc}</p>
-            <div class="icon-box" onclick="addToCart('${product.Product_ID}')">
+            <p class="h3">${product.name}</p>
+            <p class="p">${product.desc || ""}</p>
+            <div class="icon-box" onclick="addToCart('${product.id}')">
               <p class="span">Add To Cart</p>
             </div>
           </div>

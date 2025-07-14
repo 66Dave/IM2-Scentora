@@ -14,7 +14,19 @@ $name = $_POST['name'];
 $code = $_POST['code'];
 $category = $_POST['category'];
 $stock = intval($_POST['stock']);
-$image = $_POST['image'];
+$image = '';
+if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    $uploadDir = 'uploads/';
+    $filename = basename($_FILES['image']['name']);
+    $targetPath = $uploadDir . $filename;
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+        $image = $targetPath;
+    }
+}
+
+if (empty($image)) {
+    $image = $_POST['currentImage'] ?? '';
+}
 $price = floatval($_POST['price'] ?? 0);
 $updated = $_POST['updated'];
 $stock_status = $stock > 0 ? "In stock ($stock pcs)" : "Out of stock";
