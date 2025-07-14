@@ -444,7 +444,7 @@ categorySelect.addEventListener("change", renderFilteredProducts);
 searchInput.addEventListener("input", renderFilteredProducts);
 
 //Initial product fetch
-fetch("shop.php")
+fetch("shop_user.php")
   .then(response => response.json())
   .then(products => {
     allProducts = products;
