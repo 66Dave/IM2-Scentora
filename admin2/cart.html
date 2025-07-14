@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scentora | Cart</title>
+  <link rel="stylesheet" href="/IM2-Scentora/files/admin/inventory.css" />
+  <style>
+    .cart-container {
+      max-width: 1200px;
+      margin: 40px auto 0 auto;
+      padding: 2rem;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      gap: 1rem;
+    }
+
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .item-price {
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .quantity-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+      padding: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .remove-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .cart-summary {
+      background: var(--accent);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+    }
+
+    .checkout-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Scentora</div>
+    <div class="header_contents">
+      <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory_seller.html">Inventory</a>
+        <a href="shop.html">Shop</a>
+        <a href="cart.html" class="active">Cart</a>
+        <a href="#logout" id="logout-link">Logout</a>
+      </div>
+      <div class="toggle-switch">
+        <label for="darkmode">Dark mode</label>
+        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+      </div>
+    </div>
+  </header>
+
+  <div class="cart-container">
+    <h2 style="color: var(--primary); margin-bottom: 2rem;">Shopping Cart</h2>
+    
+    <div id="cartItems">
+      <!-- Cart items will be populated here -->
+    </div>
+
+    <div id="cartSummary" class="cart-summary" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Total: ₱<span id="totalAmount">0.00</span></h3>
+        <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+      </div>
+    </div>
+
+    <div id="emptyCart" class="empty-cart" style="display: none;">
+      <h3>Your cart is empty</h3>
+      <p>Add some products to get started!</p>
+      <a href="shop.html" style="color: var(--primary);">Continue Shopping</a>
+    </div>
+  </div>
+
+  <script>
+    // Load cart items
+    function loadCart() {
+      fetch('get_cart.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayCartItems(data.cart_items, data.total_amount);
+          } else {
+            console.error('Failed to load cart:', data.message);
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function displayCartItems(items, total) {
+      const cartItems = document.getElementById('cartItems');
+      const cartSummary = document.getElementById('cartSummary');
+      const emptyCart = document.getElementById('emptyCart');
+      const totalAmount = document.getElementById('totalAmount');
+
+      if (items.length === 0) {
+        cartItems.innerHTML = '';
+        cartSummary.style.display = 'none';
+        emptyCart.style.display = 'block';
+        return;
+      }
+
+      emptyCart.style.display = 'none';
+      cartSummary.style.display = 'block';
+      totalAmount.textContent = total.toFixed(2);
+
+      cartItems.innerHTML = items.map(item => `
+        <div class="cart-item">
+          <img src="${item.img}" alt="${item.name}" />
+          <div class="item-details">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">₱${item.price}</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn" onclick="updateQuantity(${item.cart_id}, ${item.quantity - 1})">-</button>
+              <input type="number" class="quantity-input" value="${item.quantity}" 
+                     onchange="updateQuantity(${item.cart_id}, this.value)" min="1" max="${item.available_stock}">
+              <button class="quantity-btn" onclick="updateQuantity(${item.cart_id}, ${item.quantity + 1})">+</button>
+            </div>
+            <div>Subtotal: ₱${item.subtotal.toFixed(2)}</div>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart(${item.cart_id})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function updateQuantity(cartId, newQuantity) {
+      if (newQuantity < 1) return;
+
+      const formData = new FormData();
+      formData.append('cart_id', cartId);
+      formData.append('quantity', newQuantity);
+
+      fetch('update_cart.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          loadCart(); // Reload cart
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+
+    function removeFromCart(cartId) {
+      if (!confirm('Remove this item from cart?')) return;
+
+      const formData = new FormData();
+      formData.append('cart_id', cartId);
+
+      fetch('remove_from_cart.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          loadCart(); // Reload cart
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+
+    function proceedToCheckout() {
+      window.location.href = 'checkout.html';
+    }
+
+    // Dark mode and logout functionality (from your existing code)
+    const darkToggle = document.getElementById('darkmode');
+    if (localStorage.getItem('scentoraDark') === '1') {
+      document.body.classList.add('darkmode');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+    });
+
+    document.getElementById("logout-link").onclick = function(e) {
+      e.preventDefault();
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+      }
+    };
+
+    // Load cart on page load
+    document.addEventListener('DOMContentLoaded', loadCart);
+  </script>
+</body>
+</html>
