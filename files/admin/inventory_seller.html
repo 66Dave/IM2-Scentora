@@ -5,6 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scentora | Inventory</title>
   <link rel="stylesheet" href="/IM2-Scentora/files/admin/inventory.css" />
+  <style>
+/* Modern Pagination Styles */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5em 0 0.5em 0;
+  gap: 1.2em;
+  font-family: inherit;
+}
+
+.pagination-controls button {
+  background: var(--lavender-accent, #917489);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1.3em;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px rgba(145, 116, 137, 0.08);
+  outline: none;
+  letter-spacing: 0.03em;
+}
+
+.pagination-controls button:disabled {
+  background: #e2d6e6;
+  color: #b3a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pagination-controls button:not(:disabled):hover {
+  background: var(--primary, #5a3e6e);
+  color: #fff;
+}
+
+.pagination-controls #pageInfo {
+  font-size: 1.05rem;
+  color: var(--primary, #5a3e6e);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+  </style>
 </head>
 <body>
   <header>
@@ -14,7 +59,7 @@
         <a href="dashboard.html">Dashboard</a>
         <a href="inventory_seller.html">Inventory</a>
         <a href="shop.html">Shop</a>
-        <a href="#logout" id="logout-link">Logout</a>
+        <a href="loginpage.php" id="logout-link">Logout</a>
       </div>
       <div class="toggle-switch">
         <label for="darkmode">Dark mode</label>
@@ -54,6 +99,12 @@
         </tbody>
       </table>
     </div>
+    <!-- Pagination Controls -->
+<div class="pagination-controls" id="paginationControls" style="display:flex;justify-content:center;align-items:center;margin:1em 0;gap:1em;">
+  <button id="prevPageBtn" style="display:none;">&larr; Prev</button>
+  <span id="pageInfo"></span>
+  <button id="nextPageBtn" style="display:none;">Next &rarr;</button>
+</div>
   </div>
   <!-- Filter Modal -->
 <div class="modal" id="filterModal">
@@ -68,6 +119,10 @@
       <div style="margin-top:1em;">
         <label for="dateUpdated">Date updated:</label>
         <input type="date" id="dateUpdated" name="dateUpdated">
+      </div>
+      <div style="margin-top:1em;">
+        <label for="brandFilter">Brand:</label>
+        <input type="text" id="brandFilter" name="brandFilter" placeholder="Brand name">
       </div>
       <div class="modal-btns" style="margin-top:1.5em;">
         <button type="submit">Apply</button>
@@ -134,8 +189,11 @@ let inventory = [];
 let filterCategory = "All";
 let filterDateAdded = "";
 let filterDateUpdated = "";
+let filterBrand = "";
 let searchTerm = "";
 let viewIndex = null;
+let currentPage = 1;
+const itemsPerPage = 5;
 
 function getStockClass(stock) {
   if (stock === 0) return "stock-out";
@@ -158,16 +216,27 @@ function renderTable() {
     let match = true;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      match = item.name.toLowerCase().includes(term) || item.code.toLowerCase().includes(term);
+      match = item.name.toLowerCase().includes(term) ||
+              item.code.toLowerCase().includes(term) ||
+              (item.brand && item.brand.toLowerCase().includes(term));
     }
     if (filterCategory !== "All") match = match && item.category === filterCategory;
     if (filterDateAdded) match = match && item.added === filterDateAdded;
     if (filterDateUpdated) match = match && item.updated === filterDateUpdated;
+    if (filterBrand) match = match && (item.brand && item.brand.toLowerCase().includes(filterBrand));
     return match;
   });
 
+  // Pagination logic
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (currentPage > totalPages) currentPage = totalPages || 1;
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const pageItems = filtered.slice(startIdx, endIdx);
+
   tbody.innerHTML = "";
-  filtered.forEach(item => {
+  pageItems.forEach(item => {
     const stockClass = getStockClass(item.stock);
     tbody.innerHTML += `
       <tr class="${item.active === false ? 'disabled-row' : ''}">
@@ -184,7 +253,27 @@ function renderTable() {
   });
 
   document.getElementById("totalItems").textContent =
-    filtered.length + " registered item" + (filtered.length !== 1 ? "s" : "");
+    totalItems + " registered item" + (totalItems !== 1 ? "s" : "");
+
+  // Update pagination controls
+  const prevBtn = document.getElementById("prevPageBtn");
+  const nextBtn = document.getElementById("nextPageBtn");
+
+  document.getElementById("pageInfo").textContent = `Page ${totalItems === 0 ? 0 : currentPage} of ${totalPages || 1}`;
+
+  // Show/hide Prev button
+  if (currentPage > 1) {
+    prevBtn.style.display = "";
+  } else {
+    prevBtn.style.display = "none";
+  }
+
+  // Show/hide Next button
+  if (currentPage < totalPages) {
+    nextBtn.style.display = "";
+  } else {
+    nextBtn.style.display = "none";
+  }
 }
 
 window.openView = function(idx) {
@@ -272,6 +361,7 @@ const filterModal = document.getElementById("filterModal");
 document.getElementById("openFilter").onclick = () => {
   document.getElementById("dateAdded").value = filterDateAdded;
   document.getElementById("dateUpdated").value = filterDateUpdated;
+  document.getElementById("brandFilter").value = filterBrand;
   filterModal.classList.add("show");
 };
 
@@ -283,6 +373,7 @@ document.getElementById("filterForm").onsubmit = e => {
   e.preventDefault();
   filterDateAdded = document.getElementById("dateAdded").value;
   filterDateUpdated = document.getElementById("dateUpdated").value;
+  filterBrand = document.getElementById("brandFilter").value.trim().toLowerCase();
   filterModal.classList.remove("show");
   renderTable();
 };
@@ -290,8 +381,10 @@ document.getElementById("filterForm").onsubmit = e => {
 document.getElementById("resetFilter").onclick = () => {
   filterDateAdded = "";
   filterDateUpdated = "";
+  filterBrand = "";
   document.getElementById("dateAdded").value = "";
   document.getElementById("dateUpdated").value = "";
+  document.getElementById("brandFilter").value = "";
   filterModal.classList.remove("show");
   renderTable();
 };
@@ -513,10 +606,37 @@ darkToggle.addEventListener('change', () => {
 document.getElementById("logout-link").onclick = function(e) {
   e.preventDefault();
   if (confirm("Are you sure you want to logout?")) {
-    window.location.href = "/IM2-Scentora/files/admin/loginpage.html";
+    window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
   }
 };
 
+// Pagination controls
+document.getElementById("prevPageBtn").onclick = function() {
+  if (currentPage > 1) {
+    currentPage--;
+    renderTable();
+  }
+};
+document.getElementById("nextPageBtn").onclick = function() {
+  const filtered = inventory.filter(item => {
+    let match = true;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      match = item.name.toLowerCase().includes(term) ||
+              item.code.toLowerCase().includes(term) ||
+              (item.brand && item.brand.toLowerCase().includes(term));
+    }
+    if (filterCategory !== "All") match = match && item.category === filterCategory;
+    if (filterDateAdded) match = match && item.added === filterDateAdded;
+    if (filterDateUpdated) match = match && item.updated === filterDateUpdated;
+    return match;
+  });
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    renderTable();
+  }
+};
 // Final Load Call
 document.addEventListener("DOMContentLoaded", loadInventoryItems);
 </script>

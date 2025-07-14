@@ -641,12 +641,14 @@ function renderFilteredProducts() {
   allProducts
     .filter(product => {
       const name = product.Product_Name.toLowerCase();
+      const brand = (product.Brand || '').toLowerCase();
       const category = product.Category?.toLowerCase() || "";
 
-      const nameCheck = name.includes(filterText);
+      // Search matches name or brand
+      const nameOrBrandCheck = name.includes(filterText) || brand.includes(filterText);
       const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
 
-      return nameCheck && categoryCheck;
+      return nameOrBrandCheck && categoryCheck;
     })
     .forEach(product => {
         const card = document.createElement("div");
@@ -755,9 +757,20 @@ document.addEventListener('keydown', function(event) {
 });
 
 function addToCart(productId) {
-  // Implement add to cart functionality
-  console.log('Adding to cart:', productId);
-  // You can add the product to a cart storage system
+  fetch("add_to_cart.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "product_id=" + encodeURIComponent(productId) + "&quantity=1"
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result === "added" || result === "updated") {
+      alert("Added to cart!");
+    } else {
+      alert("Could not add to cart: " + result);
+    }
+  })
+  .catch(() => alert("Error adding to cart."));
 }
 
 // Add these helper functions
