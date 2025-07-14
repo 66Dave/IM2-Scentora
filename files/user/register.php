@@ -399,7 +399,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </form>
             <div class="signin-link">
-                Already have an account? <a href="signin.php">Sign in</a>
+                Already have an account? <a href="/IM2-Scentora/files/admin/loginpage.php">Sign in</a>
             </div>
             <div style="margin-top: 1.2rem; text-align: center;">
 </div>
