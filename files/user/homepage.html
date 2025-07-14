@@ -11,11 +11,11 @@
   <!-- Header -->
   <header>
     <div class="logo">Scentora</div>
-    <div class="nav-links">
-      <a href="#">Home</a>
-      <a href="#">Shop</a>
-      <a href="#">About us</a>
-    </div>
+    <nav class="nav-links">
+      <a href="/IM2-Scentora/files/user/homepage.html">Home</a>
+      <a href="/IM2-Scentora/files/user/shop_user.html">Shop</a>
+      <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
+    </nav>
   </header>
 
   <!-- Hero Section -->
@@ -24,10 +24,47 @@
       <source src="/IM2-Scentora/files/videos/bg.mp4" type="video/mp4" />
       Your browser does not support HTML5 video.
     </video>
-    <div class="hero-content">
-      <h1>Discover Your Signature Scent</h1>
-      <p>Explore the finest selection of luxurious perfumes that define elegance, beauty, and individuality.</p>
-      <button id="explore-btn">Explore Collection</button>
+    <div class="hero-content" style="
+      background: rgba(161, 130, 201, 0.12);
+      border-radius: 2rem;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      margin: 4rem auto 0 auto;
+      box-shadow: 0 8px 32px 0 rgba(145, 116, 137, 0.10);
+      text-align: center;
+      backdrop-filter: blur(4px);
+      color: #fff; /* Make all text inside white */
+    ">
+      <h1 style="font-size:2.3rem; font-weight:700; color:#fff; margin-bottom:1rem; letter-spacing:1px;">
+        Discover Your Signature Scent
+      </h1>
+      <p style="font-size:1.15rem; color:#fff; margin-bottom:2rem;">
+        Explore the finest selection of luxurious perfumes that define elegance, beauty, and individuality.
+      </p>
+      <button id="register-btn"
+        onclick="window.location.href='register.php'"
+        style="
+          background: linear-gradient(90deg, #917489 0%, #c89bce 100%);
+          color: #fff;
+          font-size: 1.15rem;
+          font-weight: 600;
+          border: none;
+          border-radius: 2rem;
+          padding: 0.9rem 2.2rem;
+          box-shadow: 0 2px 8px rgba(145, 116, 137, 0.10);
+          cursor: pointer;
+          transition: background 0.2s, transform 0.2s;
+          margin-bottom: 0.7rem;
+        "
+        onmouseover="this.style.background='linear-gradient(90deg, #b497bd 0%, #917489 100%)'"
+        onmouseout="this.style.background='linear-gradient(90deg, #917489 0%, #c89bce 100%)'"
+      >
+        Register Now
+      </button>
+      <div style="margin-top: 0.7rem; font-size: 1rem; color: #fff;">
+        Already have an account?
+        <a href="signin.php" style="color:#fff; text-decoration:underline; font-weight:500;">Sign in</a>
+      </div>
     </div>
   </section>
 

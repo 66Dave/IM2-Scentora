@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $errors[] = "Incorrect password.";
             } else {
                 // Redirect to shop.html after successful login
-                header("Location: /IM2-Scentora/files/admin/shop.html");
+                header("Location: /IM2-Scentora/files/admin/shop_user.html");
                 exit();
             }
         }
@@ -246,8 +246,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <div class="logo">Scentora</div>
         <nav class="nav-links">
-            <a href="/IM2-Scentora/index.html">Home</a>
-            <a href="/IM2-Scentora/shop.html">Shop</a>
+            <a href="/IM2-Scentora/files/user/homepage.html">Home</a>
+            <a href="/IM2-Scentora/files/user/shop_user.html">Shop</a>
             <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
         </nav>
     </header>
