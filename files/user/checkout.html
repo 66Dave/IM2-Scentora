@@ -246,7 +246,7 @@
       <label for="payment">Payment Method</label>
       <select id="payment" name="payment" required>
         <option value="">Select payment method</option>
-        <!-- <option value="cod">Cash on Delivery</option> -->
+        <option value="cod">Cash on Delivery</option>
         <option value="gcash">GCash</option>
         <option value="card">Credit/Debit Card</option>
       </select>
@@ -266,69 +266,82 @@
     </form>
   </div>
   <script>
-    // Order summary rendering will be handled by backend/database
-    document.getElementById("checkoutForm").onsubmit = function(e) {
-      e.preventDefault();
-      const paymentMethod = document.getElementById("payment").value;
-      if (paymentMethod !== "gcash" && paymentMethod !== "card") {
-        alert("Only GCash or Credit/Debit Card payments are accepted for checkout.");
-        return;
-      }
-      const proof = document.getElementById("proof").files[0];
-      if (!proof) {
-        alert("Please upload your proof of payment.");
-        return;
-      }
-      const formData = new FormData(this);
-      fetch("payment_api.php", {
-        method: "POST",
-        body: formData
-      })
-      .then(res => res.json())
-      .then(result => {
-        if (result.success) {
-          alert("Order placed! Thank you for shopping with Scentora.");
-          window.location.href = "shop_user.html";
-        } else {
-          alert("Payment failed: " + (result.message || "Please try again."));
+    // Function to load and display cart items
+    async function loadCartItems() {
+        try {
+            const response = await fetch('fetch_cart.php');
+            const cartItems = await response.json();
+            
+            const summaryList = document.getElementById('summaryList');
+            summaryList.innerHTML = ''; // Clear existing items
+            
+            if (cartItems.length === 0) {
+                summaryList.innerHTML = '<li class="summary-item">Your cart is empty</li>';
+                updateTotal(0);
+                return;
+            }
+            
+            cartItems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'summary-item';
+                li.innerHTML = `
+                    <span class="summary-item-name">${item.Product_Name}</span>
+                    <span class="summary-item-qty">${item.Quantity}</span>
+                    <span class="summary-item-price">₱${parseFloat(item.Product_Price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                `;
+                summaryList.appendChild(li);
+            });
+            
+            // Calculate total
+            const total = cartItems.reduce((sum, item) => 
+                sum + (parseFloat(item.Product_Price) * parseInt(item.Quantity)), 0);
+            updateTotal(total);
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            document.getElementById('summaryList').innerHTML = 
+                '<li class="summary-item">Error loading cart items</li>';
         }
-      })
-      .catch(() => alert("Error processing payment."));
+    }
+
+    // Function to update total display
+    function updateTotal(total) {
+        document.getElementById('checkoutTotal').textContent = 
+            `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    // Handle form submission
+    document.getElementById("checkoutForm").onsubmit = async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch("submit_order.php", {
+                method: "POST",
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                window.location.href = "thank_you.html";
+            } else {
+                alert("Order failed: " + result.message);
+            }
+        } catch (error) {
+            console.error("Order error:", error);
+            alert("Error processing order. Please try again.");
+        }
     };
+
+    // Handle logout
     document.getElementById("logout-link").onclick = function(e) {
-      e.preventDefault();
-      if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "/IM2-Scentora/files/logout.php";
-      }
-    };
-    fetch("fetch_cart.php")
-      .then(res => res.json())
-      .then(cart => {
-        const summaryList = document.getElementById("summaryList");
-        const checkoutTotal = document.getElementById("checkoutTotal");
-        if (!cart.length) {
-          summaryList.innerHTML = "<li style='text-align:center;color:#917489;'>Your cart is empty.</li>";
-          checkoutTotal.textContent = "Total: ₱0.00";
-          return;
+        e.preventDefault();
+        if (confirm("Are you sure you want to logout?")) {
+            window.location.href = "/IM2-Scentora/files/logout.php";
         }
-        let total = 0;
-        summaryList.innerHTML = cart.map(item => {
-          const itemTotal = parseFloat(item.Product_Price) * item.Quantity;
-          total += itemTotal;
-          return `
-            <li class="summary-item">
-              <span class="summary-item-name">${item.Product_Name}</span>
-              <span class="summary-item-qty">x${item.Quantity}</span>
-              <span class="summary-item-price">₱${parseFloat(item.Product_Price).toFixed(2)}</span>
-            </li>
-          `;
-        }).join("");
-        checkoutTotal.textContent = "Total: ₱" + total.toFixed(2);
-      })
-      .catch(() => {
-        document.getElementById("summaryList").innerHTML = "<li>Error loading cart.</li>";
-        document.getElementById("checkoutTotal").textContent = "Total: ₱0.00";
-      });
+    };
+
+    // Load cart items when page loads
+    document.addEventListener('DOMContentLoaded', loadCartItems);
   </script>
 </body>
 </html>
