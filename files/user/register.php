@@ -353,9 +353,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <div class="logo">Scentora</div>
         <nav class="nav-links">
-            <a href="/IM2-Scentora/index.html">Home</a>
-            <a href="/IM2-Scentora/shop.html">Shop</a>
-            <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
+            <a href="/IM2-Scentora/user/homepage.html">Home</a>
+            <a href="/IM2-Scentora/user/shop.html">Shop</a>
+            <a href="/IM2-Scentora/user/aboutus.html">About us</a>
         </nav>
     </header>
     <div class="container">
