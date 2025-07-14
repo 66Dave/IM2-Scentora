@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         } else {
             $error = "User not found";
-            error_log("No user found with username: " . $username);
+            error_log("No user found with email: " . $email); // Changed from $username to $email
         }
         $conn->close();
     }
