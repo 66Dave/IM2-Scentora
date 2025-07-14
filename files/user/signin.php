@@ -280,7 +280,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div style="margin-top: 1.2rem; text-align: center;">
                 <a href="forgotpassword.php" style="display:inline-block; margin:0 0.5rem 0.5rem 0.5rem; color:#917489; text-decoration:underline; font-weight:600;">Forgot Password?</a>
-                <a href="changepassword.php" style="display:inline-block; margin:0 0.5rem 0.5rem 0.5rem; color:#917489; text-decoration:underline; font-weight:600;">Change Password</a>
             </div>
         </div>
     </div>
