@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 08, 2025 at 06:01 PM
+-- Generation Time: Jul 14, 2025 at 05:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -127,16 +127,20 @@ CREATE TABLE `product` (
   `Image_URL` varchar(255) DEFAULT NULL,
   `Date_Added` date DEFAULT NULL,
   `Date_Updated` date DEFAULT NULL,
-  `Is_Active` tinyint(1) DEFAULT 1
+  `Is_Active` tinyint(1) DEFAULT 1,
+  `Brand` varchar(100) DEFAULT 'Scentora'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `product`
 --
 
-INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Status`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`) VALUES
-(2, 1, 'Test1', 1.00, 'In stock (32 pcs)', '123', 'Floral', '/files/imges/', '2025-07-08', '2025-07-08', 1),
-(3, 1, 'Dert', 21.00, 'In stock (2 pcs)', '344', 'Floral', '/files/imges/', '2025-07-08', '2025-07-08', 1);
+INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Status`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`, `Brand`) VALUES
+(2, 1, 'Test1', 1.00, 'In stock (32 pcs)', '123', 'Floral', 'uploads/wo_mu.png', '2025-07-08', '2025-07-14', 1, 'Scentora'),
+(3, 1, 'lead dev for sale', 21.00, 'In stock (2 pcs)', '344', 'Floral', 'uploads/developer.jpg', '2025-07-08', '2025-07-14', 1, 'randomhuman'),
+(4, 1, 'random guy', 12.00, 'In stock (12 pcs)', '12', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-14', 1, 'Scentora'),
+(5, 1, 'jabol monster', 69.00, 'In stock (69 pcs)', '69', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-14', 1, 'khit'),
+(6, 1, 'random ass perfume', 100.00, 'In stock (21 pcs)', 'random1', 'Fresh', 'uploads/flo_es.png', '2025-07-14', '2025-07-14', 1, 'Scentora');
 
 -- --------------------------------------------------------
 
@@ -150,17 +154,21 @@ CREATE TABLE `user` (
   `Email` varchar(255) NOT NULL,
   `Address` varchar(255) NOT NULL,
   `User_Type` enum('Admin','Consumer','Employee') NOT NULL,
-  `Password` varchar(255) NOT NULL
+  `Password` varchar(255) NOT NULL,
+  `reset_token` varchar(64) DEFAULT NULL,
+  `reset_expiry` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`) VALUES
-(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123'),
-(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123'),
-(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123');
+INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`, `reset_token`, `reset_expiry`) VALUES
+(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL),
+(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123', NULL, NULL),
+(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123', NULL, NULL),
+(4, 'dave lang', 'dave@test.com', '', 'Consumer', '$2y$10$xKZ57il.hkE15hUT/Xx95uQ7H5cpNwe1zTWE3kO22rmCYBuyiinlu', NULL, NULL),
+(5, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$PQnRSc6.mvGfzS8lm3ra3ejk4MXjVtaxj/Z0ClKJmzVq3Pqfr87iq', 'b0a7dcd93d000baa20844288b58d46209d9fdaa76fa1a9817d65552389f55964', '2025-07-15 16:45:51');
 
 --
 -- Indexes for dumped tables
@@ -219,13 +227,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables

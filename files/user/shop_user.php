@@ -9,15 +9,46 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch all active products (added by admin)
-$sql = "SELECT Product_ID, Product_Name, Product_Price, Stock_Status, Category, Image_URL FROM product WHERE Is_Active = 1";
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+$sql = "SELECT * FROM product WHERE Is_Active = 1";
 $result = $conn->query($sql);
+
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
 
 $products = [];
 while ($row = $result->fetch_assoc()) {
-    $products[] = $row;
+    $imagePath = $row['Image_URL'];
+    // Simplify image path handling
+    if (!empty($imagePath)) {
+        $imagePath = '../admin/' . $imagePath;
+    } else {
+        $imagePath = '../images/placeholder.jpg';
+    }
+
+    $products[] = [
+        'Product_ID' => $row['Product_ID'],
+        'Product_Name' => $row['Product_Name'],
+        'Product_Price' => number_format((float)$row['Product_Price'], 2),
+        'Stock_Status' => $row['Stock_Status'],
+        'Category' => $row['Category'],
+        'Image_URL' => $imagePath,
+        'Product_Code' => $row['Product_Code'],
+        'Brand' => $row['Brand'] ?? 'No Brand Specified',
+        'Description' => $row['Description'] ?? 'No Description Available'
+    ];
 }
-header("Content-Type: application/json");
+
+// Debug output
+if (empty($products)) {
+    error_log("No products found in database");
+}
+
+header('Content-Type: application/json');
 echo json_encode($products);
 $conn->close();
 ?>

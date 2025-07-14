@@ -98,6 +98,9 @@
       <label>Category:</label>
       <select id="addCategory" required></select>
 
+      <label>Brand:</label>
+      <input type="text" id="addBrand" required placeholder="Brand name">
+
       <label>Product Image:</label>
       <input type="file" id="productImageFile" accept="image/*" />
       <img id="previewImage" src="" alt="Preview" style="display:none; max-width:120px; max-height:120px; object-fit:cover; margin-top:10px; border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.1);" />
@@ -191,6 +194,7 @@ window.openView = function(idx) {
     <img src="${item.img || 'uploads/placeholder.jpg'}" alt="${item.name}" style="max-width:120px; margin-bottom:10px;">
     <strong>${item.name}</strong><br>
     <span style="font-size:.97em"><em>Code:</em> ${item.code}</span><br>
+    <span style="font-size:.97em"><em>Brand:</em> ${item.brand}</span><br>
     <span style="font-size:.97em"><em>Category:</em> ${item.category}</span><br>
     <span style="font-size:.97em"><em>Stock:</em> ${item.stock}</span><br>
     <span style="font-size:.97em"><em>Date Added:</em> ${item.added}</span><br>
@@ -332,6 +336,7 @@ document.getElementById("closeAddItem").onclick = () => {
   document.getElementById("addItemModal").classList.remove("show");
 };
 
+// Update the addItemForm onsubmit function
 document.getElementById("addItemForm").onsubmit = function(e) {
   e.preventDefault();
   const today = new Date().toISOString().slice(0, 10);
@@ -341,6 +346,7 @@ document.getElementById("addItemForm").onsubmit = function(e) {
   formData.append("price", document.getElementById("addPrice").value);
   formData.append("stock", document.getElementById("addStock").value);
   formData.append("category", document.getElementById("addCategory").value);
+  formData.append("brand", document.getElementById("addBrand").value); // Add this line
   formData.append("added", today);
   formData.append("updated", today);
 
@@ -365,70 +371,75 @@ document.getElementById("addItemForm").onsubmit = function(e) {
     });
 };
 document.getElementById("editBtn").onclick = function() {
-  if (viewIndex == null) return;
-  const item = inventory[viewIndex];
-  document.getElementById("addItemModal").classList.add("show");
-  const addCategory = document.getElementById("addCategory");
-  addCategory.innerHTML = "";
-  categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
-    if (cat === item.category) option.selected = true;
-    addCategory.appendChild(option);
-  });
+    if (viewIndex == null) return;
+    const item = inventory[viewIndex];
+    
+    // Close the view modal first
+    document.getElementById("viewModal").classList.remove("show");
+    
+    // Then show and populate the edit modal
+    document.getElementById("addItemModal").classList.add("show");
+    
+    // Populate form fields
+    document.getElementById("addName").value = item.name;
+    document.getElementById("addCode").value = item.code;
+    document.getElementById("addPrice").value = item.price;
+    document.getElementById("addStock").value = item.stock;
+    document.getElementById("addBrand").value = item.brand;
+    
+    // Set up category dropdown
+    const addCategory = document.getElementById("addCategory");
+    addCategory.innerHTML = "";
+    categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        if (cat === item.category) option.selected = true;
+        addCategory.appendChild(option);
+    });
 
-  document.getElementById("addName").value = item.name;
-  document.getElementById("addCode").value = item.code;
-  document.getElementById("addPrice").value = item.price;
-  document.getElementById("addStock").value = item.stock;
-  previewImage.src = item.img || 'uploads/placeholder.jpg';
-  previewImage.style.display = "block";
+    // Set up image preview
+    previewImage.src = item.img || 'uploads/placeholder.jpg';
+    previewImage.style.display = "block";
 
-  const addBtn = document.querySelector("#addItemForm button[type='submit']");
-  const originalBtnText = addBtn.textContent;
-  addBtn.textContent = "Save";
+    // Update form submission handler
+    const form = document.getElementById("addItemForm");
+    const originalHandler = form.onsubmit;
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        if (!confirm("Do you want to save the changes?")) return;
 
-  const form = document.getElementById("addItemForm");
-  const originalHandler = form.onsubmit;
-  form.onsubmit = function(e) {
-    e.preventDefault();
-    if (!confirm("Do you want to save the changes?")) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const formData = new FormData();
+        formData.append("id", item.id);
+        formData.append("name", document.getElementById("addName").value);
+        formData.append("code", document.getElementById("addCode").value);
+        formData.append("category", document.getElementById("addCategory").value);
+        formData.append("brand", document.getElementById("addBrand").value);
+        formData.append("stock", document.getElementById("addStock").value);
+        formData.append("price", document.getElementById("addPrice").value);
+        formData.append("updated", today);
+        formData.append("currentImage", item.img || '');
 
-    const today = new Date().toISOString().slice(0, 10);
-    const formData = new FormData();
-    formData.append("id", item.id);
-    formData.append("name", document.getElementById("addName").value);
-    formData.append("code", document.getElementById("addCode").value);
-    formData.append("category", document.getElementById("addCategory").value);
-    formData.append("stock", document.getElementById("addStock").value);
-    formData.append("price", document.getElementById("addPrice").value);
-    formData.append("updated", today);
-    const imageFile = fileInput.files[0];
-    if (imageFile) formData.append("image", imageFile);
+        const imageFile = fileInput.files[0];
+        if (imageFile) formData.append("image", imageFile);
 
-    fetch("update_product.php", {
-      method: "POST",
-      body: formData
-    })
-      .then(res => res.text())
-      .then(result => {
-        if (result.includes("success")) {
-          form.onsubmit = originalHandler;
-          document.getElementById("addItemModal").classList.remove("show");
-          addBtn.textContent = originalBtnText;
-          loadInventoryItems();
-        }
-      });
-  };
-
-  document.getElementById("closeAddItem").onclick = () => {
-    document.getElementById("addItemModal").classList.remove("show");
-    addBtn.textContent = originalBtnText;
-    form.onsubmit = originalHandler;
-  };
-
-  document.getElementById("viewModal").classList.remove("show");
+        fetch("update_product.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.text())
+        .then(result => {
+            if (result.includes("success")) {
+                form.onsubmit = originalHandler;
+                document.getElementById("addItemModal").classList.remove("show");
+                viewIndex = null;
+                loadInventoryItems();
+            } else {
+                alert("Update failed: " + result);
+            }
+        });
+    };
 };
 
 document.getElementById("toggleDisableBtn").onclick = function () {

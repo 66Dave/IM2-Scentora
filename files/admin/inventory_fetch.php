@@ -9,7 +9,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT Product_ID, Product_Name, Product_Code, Category, Product_Price, Stock_Status, Image_URL, Date_Added, Date_Updated, Is_Active
+$sql = "SELECT Product_ID, Product_Name, Product_Code, Category, Product_Price, 
+        Stock_Status, Image_URL, Date_Added, Date_Updated, Is_Active, Brand
         FROM product ORDER BY Product_ID DESC";
 
 $result = $conn->query($sql);
@@ -27,6 +28,7 @@ while ($row = $result->fetch_assoc()) {
         "stock" => $stock,
         "img" => $row['Image_URL'],
         "category" => $row['Category'],
+        "brand" => $row['Brand'],
         "added" => $row['Date_Added'],
         "updated" => $row['Date_Updated'],
         "active" => (bool)$row['Is_Active'], // Default to active

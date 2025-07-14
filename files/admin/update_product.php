@@ -13,6 +13,7 @@ $id = intval($_POST['id']);
 $name = $_POST['name'];
 $code = $_POST['code'];
 $category = $_POST['category'];
+$brand = $_POST['brand']; // Add this line
 $stock = intval($_POST['stock']);
 $image = '';
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -32,11 +33,11 @@ $updated = $_POST['updated'];
 $stock_status = $stock > 0 ? "In stock ($stock pcs)" : "Out of stock";
 
 $sql = "UPDATE product
-        SET Product_Name=?, Product_Code=?, Category=?, Image_URL=?, Stock_Status=?, Product_Price=?, Date_Updated=?
+        SET Product_Name=?, Product_Code=?, Category=?, Brand=?, Image_URL=?, Stock_Status=?, Product_Price=?, Date_Updated=?
         WHERE Product_ID=?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssssi", $name, $code, $category, $image, $stock_status, $price, $updated, $id);
+$stmt->bind_param("ssssssssi", $name, $code, $category, $brand, $image, $stock_status, $price, $updated, $id);
 
 if ($stmt->execute()) {
     echo "success";

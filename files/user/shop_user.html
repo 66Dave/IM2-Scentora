@@ -266,41 +266,68 @@
     }
 
     .text {
-      padding: 1rem;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      text-align: left;
     }
 
-    .h3 {
-      font-size: 1.1rem;
+    .product-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .brand-name {
+      font-size: 0.9rem;
       color: var(--primary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       margin: 0;
     }
 
-    .p {
-      font-size: 0.9rem;
+    .price-tag {
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--text);
       margin: 0;
     }
 
-    .icon-box {
-      background: var(--primary);
-      color: var(--white);
-      padding: 0.6rem;
-      border-radius: 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .icon-box:hover {
-      background: #8e6bbf;
-    }
-
-    .span {
-      margin: 0;
+    .stock-status {
       font-size: 0.9rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 0.25rem;
+    }
+
+    .in-stock {
+      background-color: rgba(72, 187, 120, 0.1);
+      color: #48bb78;
+    }
+
+    .low-stock {
+      background-color: rgba(246, 173, 85, 0.1);
+      color: #f6ad55;
+    }
+
+    .out-stock {
+      background-color: rgba(245, 101, 101, 0.1);
+      color: #f56565;
+    }
+
+    .button-group {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
     }
 
     /* Modal styles */
@@ -441,6 +468,30 @@
       border-radius: 8px 8px 0 0;
     }
 
+    .modal-description {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--accent);
+    }
+
+    .modal-description h3 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-description p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .modal-brand {
+      color: var(--primary);
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
     @media (max-width: 768px) {
       .modal-product-details {
         flex-direction: column;
@@ -517,10 +568,15 @@
       </div>
       <div class="modal-product-info">
         <h2 id="modalName"></h2>
+        <p class="modal-brand">Brand: <span id="modalBrand"></span></p>
         <p class="modal-category">Category: <span id="modalCategory"></span></p>
         <p class="modal-price">Price: ₱<span id="modalPrice"></span></p>
         <p class="modal-stock">Stock Status: <span id="modalStock"></span></p>
         <p class="modal-code">Product Code: <span id="modalCode"></span></p>
+        <div class="modal-description">
+            <h3>Product Information:</h3>
+            <p id="modalDescription"></p>
+        </div>
         <button class="cart-btn modal-cart-btn" onclick="addToCart(currentViewingProduct)">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
@@ -593,38 +649,39 @@ function renderFilteredProducts() {
       return nameCheck && categoryCheck;
     })
     .forEach(product => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-      card.innerHTML = `
-        <div class="card">
-          <div class="img">
-            <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
-          </div>
-          <div class="text">
-            <p class="h3">${product.Product_Name}</p>
-            <p class="p">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
-            <p class="p">${product.Stock_Status}</p>
-            <div class="button-group">
-              <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                View
-              </button>
-              <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
-                  <path d="M20 20a1 1 0 100-2 1 1 0 000 2z"></path>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
-                </svg>
-                Add to Cart
-              </button>
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <div class="card">
+                <div class="img">
+                    <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
+                </div>
+                <div class="text">
+                    <p class="brand-name">${product.Brand || 'Scentora'}</p>
+                    <p class="product-name">${product.Product_Name}</p>
+                    <p class="price-tag">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
+                    <p class="stock-status ${getStockStatusClass(product.Stock_Status)}">${getStockLabel(product.Stock_Status)}</p>
+                    <div class="button-group">
+                        <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            View
+                        </button>
+                        <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
+                                <path d="M20 20a1 1 0 100-2 1 1 0 000 2z"></path>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
+                            </svg>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      `;
-      productGrid.appendChild(card);
+        `;
+        productGrid.appendChild(card);
     });
 }
 
@@ -644,16 +701,76 @@ fetch("shop_user.php")
 // Call this once on page load
 populateCategories();
 
+let currentViewingProduct = null;
+
 function viewProduct(productId) {
-  // Implement view product functionality
-  console.log('Viewing product:', productId);
-  // You can redirect to a product detail page or show a modal
+    currentViewingProduct = productId;
+    const product = allProducts.find(p => p.Product_ID === productId);
+    
+    if (product) {
+        // Debug log to check product data
+        console.log('Product details:', product);
+        
+        // Update modal content
+        document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
+        document.getElementById("modalName").textContent = product.Product_Name;
+        // Check for Brand property case (could be Brand or brand)
+        document.getElementById("modalBrand").textContent = product.Brand || product.brand || 'No brand specified';
+        document.getElementById("modalCategory").textContent = product.Category;
+        document.getElementById("modalPrice").textContent = parseFloat(product.Product_Price).toFixed(2);
+        document.getElementById("modalStock").textContent = product.Stock_Status;
+        document.getElementById("modalCode").textContent = product.Product_Code;
+        document.getElementById("modalDescription").textContent = product.Description || 'No description available.';
+
+        // Show the modal
+        const modal = document.getElementById("productModal");
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
 }
+
+// Add modal close functionality
+const modal = document.getElementById("productModal");
+const closeBtn = document.querySelector(".close-modal");
+
+closeBtn.onclick = function() {
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape" && modal.style.display === "block") {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+});
 
 function addToCart(productId) {
   // Implement add to cart functionality
   console.log('Adding to cart:', productId);
   // You can add the product to a cart storage system
+}
+
+// Add these helper functions
+function getStockStatusClass(status) {
+    if (status.includes('Out of stock')) return 'out-stock';
+    if (status.includes('12')) return 'low-stock';
+    return 'in-stock';
+}
+
+function getStockLabel(status) {
+    if (status.includes('Out of stock')) return '○ Out of Stock';
+    if (status.includes('12')) return '◐ Low Stock';
+    return '● In Stock';
 }
   </script>
 </body>
