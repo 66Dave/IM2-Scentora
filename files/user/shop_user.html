@@ -302,6 +302,154 @@
       margin: 0;
       font-size: 0.9rem;
     }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: relative;
+      background: var(--card);
+      width: 90%;
+      max-width: 800px;
+      margin: 5vh auto;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .close-modal {
+      position: absolute;
+      right: 1.5rem;
+      top: 1rem;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--primary);
+      transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+      color: var(--text);
+    }
+
+    .modal-product-details {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .modal-product-image {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .modal-product-image img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-product-info h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .modal-product-info p {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+      color: var(--text);
+    }
+
+    .modal-product-info span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .modal-cart-btn {
+      margin-top: 1rem;
+      width: 100%;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .view-btn,
+    .cart-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .view-btn {
+      background: var(--sidebar);
+      color: var(--primary);
+    }
+
+    .cart-btn {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .view-btn:hover,
+    .cart-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(161,130,201,0.2);
+    }
+
+    .view-btn:hover {
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    .cart-btn:hover {
+      background: #8e6bbf;
+    }
+
+    .img img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px 8px 0 0;
+    }
+
+    @media (max-width: 768px) {
+      .modal-product-details {
+        flex-direction: column;
+      }
+      
+      .modal-product-image {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -360,6 +508,31 @@
       <!--Will Be Populated by js-->
     </div>
   </section>
+  <div id="productModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <div class="modal-product-details">
+      <div class="modal-product-image">
+        <img id="modalImage" src="" alt="">
+      </div>
+      <div class="modal-product-info">
+        <h2 id="modalName"></h2>
+        <p class="modal-category">Category: <span id="modalCategory"></span></p>
+        <p class="modal-price">Price: ₱<span id="modalPrice"></span></p>
+        <p class="modal-stock">Stock Status: <span id="modalStock"></span></p>
+        <p class="modal-code">Product Code: <span id="modalCode"></span></p>
+        <button class="cart-btn modal-cart-btn" onclick="addToCart(currentViewingProduct)">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
+            <path d="M20 20a1 1 0 100-2 1 1 0 000 2z"></path>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
   <script>
 //Dark mode toggle
 const darkToggle = document.getElementById('darkmode');
@@ -415,7 +588,7 @@ function renderFilteredProducts() {
       const category = product.Category?.toLowerCase() || "";
 
       const nameCheck = name.includes(filterText);
-      const categoryCheck = selectedCategory === "All" || category === selectedCategory;
+      const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
 
       return nameCheck && categoryCheck;
     })
@@ -425,12 +598,28 @@ function renderFilteredProducts() {
       card.innerHTML = `
         <div class="card">
           <div class="img">
+            <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
           </div>
           <div class="text">
             <p class="h3">${product.Product_Name}</p>
-            <p class="p">${product.Product_Desc}</p>
-            <div class="icon-box" onclick="addToCart('${product.Product_ID}')">
-              <p class="span">Add To Cart</p>
+            <p class="p">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
+            <p class="p">${product.Stock_Status}</p>
+            <div class="button-group">
+              <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                View
+              </button>
+              <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
+                  <path d="M20 20a1 1 0 100-2 1 1 0 000 2z"></path>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
+                </svg>
+                Add to Cart
+              </button>
             </div>
           </div>
         </div>
@@ -454,6 +643,18 @@ fetch("shop_user.php")
 
 // Call this once on page load
 populateCategories();
+
+function viewProduct(productId) {
+  // Implement view product functionality
+  console.log('Viewing product:', productId);
+  // You can redirect to a product detail page or show a modal
+}
+
+function addToCart(productId) {
+  // Implement add to cart functionality
+  console.log('Adding to cart:', productId);
+  // You can add the product to a cart storage system
+}
   </script>
 </body>
 </html>
