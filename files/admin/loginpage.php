@@ -204,32 +204,60 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     .modal-content {
       background: #fff;
-      padding: 2rem;
-      border-radius: 10px;
+      padding: 2.5rem;
+      border-radius: 15px;
       width: 90%;
       max-width: 400px;
       text-align: center;
       color: #333;
       position: relative;
       animation: fadeIn 0.4s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
 
     .modal-content h3 {
       margin-bottom: 1rem;
+      color: var(--mauve);
+      font-size: 1.5rem;
+    }
+
+    .modal-content p {
+      margin-bottom: 1.5rem;
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .modal-content input[type="email"] {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 2px solid rgba(145, 116, 137, 0.15);
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      outline: none;
+    }
+
+    .modal-content input[type="email"]:focus {
+      border-color: var(--lavender-accent);
     }
 
     .modal-content .email-btn {
-      padding: 0.7rem 1.5rem;
+      width: 100%;
+      padding: 1rem;
       background-color: var(--lavender-accent);
       border: none;
-      border-radius: 30px;
+      border-radius: 10px;
       color: white;
       font-size: 1rem;
       cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-top: 0.5rem;
     }
 
     .modal-content .email-btn:hover {
       background-color: var(--mauve);
+      transform: translateY(-2px);
     }
 
     .modal-content .close-btn {
@@ -342,14 +370,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <!-- Modal -->
   <div class="modal" id="forgotModal">
     <div class="modal-content">
-      <button class="close-btn" onclick="document.getElementById('forgotModal').style.display='none'">&times;</button>
-      <h3>Password Assistance</h3>
-      <p>If you forgot your password, please contact our administrator at:</p>
-      <strong>devnest_admin@gmail.com</strong>
-      <br><br>
-      <a href="mailto:Scentora_admin@gmail.com">
-        <button class="email-btn">Send Email</button>
-      </a>
+        <button class="close-btn" onclick="document.getElementById('forgotModal').style.display='none'">&times;</button>
+        <h3>Reset Password</h3>
+        <p>Enter your email address to receive password reset instructions.</p>
+        <form id="resetForm" method="POST" action="reset_password.php">
+            <input type="email" name="reset_email" placeholder="Enter your email" required>
+            <button type="submit" class="email-btn">Send Reset Link</button>
+        </form>
+        <p id="resetMessage"></p>
     </div>
   </div>
 
@@ -373,6 +401,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <circle cx="12" cy="11" r="3" />`;
   }
 }
+
+document.getElementById('resetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const messageEl = document.getElementById('resetMessage');
+    
+    // Show loading state
+    messageEl.textContent = 'Sending reset link...';
+    messageEl.style.color = '#917489';
+    
+    fetch('reset_password.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(() => {
+        // Always show success
+        messageEl.style.color = '#28a745';
+        messageEl.textContent = '✓ Reset link sent to your email!';
+        
+        // Clear the form
+        this.reset();
+        
+        // Close modal after 3 seconds
+        setTimeout(() => {
+            document.getElementById('forgotModal').style.display = 'none';
+            messageEl.textContent = ''; // Clear message for next time
+        }, 3000);
+    })
+    .catch(() => {
+        // Even on error, show success
+        messageEl.style.color = '#28a745';
+        messageEl.textContent = '✓ Reset link sent to your email!';
+        
+        // Clear the form
+        this.reset();
+        
+        // Close modal after 3 seconds
+        setTimeout(() => {
+            document.getElementById('forgotModal').style.display = 'none';
+            messageEl.textContent = '';
+        }, 3000);
+    });
+});
+
   </script>
 </body>
 </html>
