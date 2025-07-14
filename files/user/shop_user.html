@@ -342,10 +342,16 @@
       <div>
         <label class="Category">Category:</label>
         <select class="category-select" style="margin-top: 10px;">
-          <option>All</option>
-          <option>Floral</option>
-          <option>Woody</option>
-          <option>Citrus</option>
+          <option value="All">All</option>
+          <option value="Floral">Floral</option>
+          <option value="Woody">Woody</option>
+          <option value="Oriental">Oriental</option>
+           <option value="Fresh">Fresh</option>
+            <option value="Fruity">Fruity</option>
+            <option value="Gourmand">Gourmand</option>
+            <option value="Chypre">Chypre</option>
+            <option value="Fougere">Fougere</option>
+            <option value="Leather"></option>Leather</option>
         </select>
       </div>
     </aside>
@@ -378,9 +384,23 @@ document.getElementById("logout-link").onclick = function(e) {
 let allProducts = [];
 
 //Element references
-const categorySelect = document.querySelector(".sidebar select");
+const categorySelect = document.querySelector(".category-select");
 const searchInput = document.getElementById("searchInput");
 const productGrid = document.getElementById("productGrid");
+
+// Use your full category list
+const allCategoryList = [
+  "Floral", "Citrus", "Woody", "Oriental",
+  "Fresh", "Fruity", "Gourmand", "Chypre", "Fougere", "Leather"
+];
+
+// Populate category options on page load
+function populateCategories() {
+  categorySelect.innerHTML = `<option value="All">All</option>`;
+  allCategoryList.forEach(cat => {
+    categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+  });
+}
 
 //Combined filter renderer
 function renderFilteredProducts() {
@@ -395,7 +415,7 @@ function renderFilteredProducts() {
       const category = product.Category?.toLowerCase() || "";
 
       const nameCheck = name.includes(filterText);
-      const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
+      const categoryCheck = selectedCategory === "All" || category === selectedCategory;
 
       return nameCheck && categoryCheck;
     })
@@ -428,8 +448,12 @@ fetch("shop.php")
   .then(response => response.json())
   .then(products => {
     allProducts = products;
+    populateCategories(allProducts); // Populate categories from products
     renderFilteredProducts();
   });
+
+// Call this once on page load
+populateCategories();
   </script>
 </body>
 </html>
