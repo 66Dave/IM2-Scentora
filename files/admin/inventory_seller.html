@@ -156,6 +156,31 @@
       <label>Brand:</label>
       <input type="text" id="addBrand" required placeholder="Brand name">
 
+      <label for="addDescription">Description:</label>
+      <textarea
+        id="addDescription"
+        required
+        placeholder="Enter a detailed product description"
+        style="
+          width: 100%;
+          min-height: 40px;
+          font-family: inherit;
+          font-size: 1rem;
+          border-radius: 6px;
+          border: 1px solid var(--accent, #e5d6f7);
+          background: var(--card, #fff7ff);
+          color: var(--text, #392e44);
+          padding: 0.7em 1em;
+          margin-bottom: 1em;
+          box-shadow: 0 1px 4px rgba(145, 116, 137, 0.06);
+          transition: border 0.2s, box-shadow 0.2s;
+          outline: none;
+          display: block;
+        "
+        onfocus="this.style.borderColor='#a182c9'; this.style.boxShadow='0 0 0 2px #a182c955';"
+        onblur="this.style.borderColor='var(--accent, #e5d6f7)'; this.style.boxShadow='0 1px 4px rgba(145, 116, 137, 0.06)';"
+      ></textarea>
+
       <label>Product Image:</label>
       <input type="file" id="productImageFile" accept="image/*" />
       <img id="previewImage" src="" alt="Preview" style="display:none; max-width:120px; max-height:120px; object-fit:cover; margin-top:10px; border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.1);" />
@@ -282,13 +307,16 @@ window.openView = function(idx) {
   document.getElementById("viewDetails").innerHTML = `
     <img src="${item.img || 'uploads/placeholder.jpg'}" alt="${item.name}" style="max-width:120px; margin-bottom:10px;">
     <strong>${item.name}</strong><br>
-    <span style="font-size:.97em"><em>Code:</em> ${item.code}</span><br>
-    <span style="font-size:.97em"><em>Brand:</em> ${item.brand}</span><br>
+    <span style="font-size:.97em"><em>Code:</em> ${item.code}</span> &nbsp;|&nbsp;
+    <span style="font-size:.97em"><em>Brand:</em> ${item.brand}</span> &nbsp;|&nbsp;
     <span style="font-size:.97em"><em>Category:</em> ${item.category}</span><br>
-    <span style="font-size:.97em"><em>Stock:</em> ${item.stock}</span><br>
-    <span style="font-size:.97em"><em>Date Added:</em> ${item.added}</span><br>
-    <span style="font-size:.97em"><em>Date Updated:</em> ${item.updated}</span><br>
+    <span style="font-size:.97em"><em>Stock:</em> ${item.stock}</span> &nbsp;|&nbsp;
+    <span style="font-size:.97em"><em>Date Added:</em> ${item.added}</span> &nbsp;|&nbsp;
+    <span style="font-size:.97em"><em>Date Updated:</em> ${item.updated}</span> &nbsp;|&nbsp;
     <span style="font-size:.97em"><em>Status:</em> ${item.active === false ? "Inactive" : "Active"}</span>
+    <div style="margin-top:1em; background:var(--card,#fff7ff); border-radius:10px; padding:1em; box-shadow:0 1px 4px rgba(145,116,137,0.06);">
+      <span style="font-size:1em; color:var(--text,#392e44);"><em>Description:</em><br>${item.description || "<span style='color:#b3a3b8'>(No description)</span>"}</span>
+    </div>
   `;
   const toggleBtn = document.getElementById("toggleDisableBtn");
   toggleBtn.textContent = item.active === false ? "Enable" : "Disable";
@@ -414,6 +442,7 @@ document.getElementById("addBtn").onclick = () => {
   document.getElementById("addItemForm").reset();
   previewImage.style.display = "none";
   fileInput.value = "";
+  document.getElementById("addDescription").value = ""; // Reset description
   const addCategory = document.getElementById("addCategory");
   addCategory.innerHTML = "";
   categories.forEach(cat => {
@@ -442,6 +471,7 @@ document.getElementById("addItemForm").onsubmit = function(e) {
   formData.append("brand", document.getElementById("addBrand").value); // Add this line
   formData.append("added", today);
   formData.append("updated", today);
+  formData.append("description", document.getElementById("addDescription").value);
 
   const imageFile = fileInput.files[0];
   if (imageFile) formData.append("image", imageFile);
@@ -479,7 +509,8 @@ document.getElementById("editBtn").onclick = function() {
     document.getElementById("addPrice").value = item.price;
     document.getElementById("addStock").value = item.stock;
     document.getElementById("addBrand").value = item.brand;
-    
+    document.getElementById("addDescription").value = item.description || "";
+
     // Set up category dropdown
     const addCategory = document.getElementById("addCategory");
     addCategory.innerHTML = "";
@@ -513,6 +544,7 @@ document.getElementById("editBtn").onclick = function() {
         formData.append("price", document.getElementById("addPrice").value);
         formData.append("updated", today);
         formData.append("currentImage", item.img || '');
+        formData.append("description", document.getElementById("addDescription").value); // <-- ADD THIS LINE
 
         const imageFile = fileInput.files[0];
         if (imageFile) formData.append("image", imageFile);
