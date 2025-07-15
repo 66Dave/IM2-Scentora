@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$user_id = $_SESSION['user_id'] ?? 1; // fallback for demo
+$user_id = $_SESSION['user_id'] ?? 1; // fallaback for demo
 
 $sql = "SELECT c.Cart_ID, c.Product_ID, c.Quantity, p.Product_Name, p.Product_Price, p.Image_URL, p.Brand, p.Stock_Status
         FROM cart c
