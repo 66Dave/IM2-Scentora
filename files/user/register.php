@@ -198,6 +198,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
+            box-sizing: border-box;
         }
         .input-group label {
             font-weight: 600;
@@ -285,6 +286,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             left: 0;
             top: 0;
         }
+        /* Password toggle styles */
+.password-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+
+.password-container input {
+    width: 100%;
+    padding: 1.2rem 1.2rem;
+    padding-right: 50px;
+    margin-bottom: 0;
+    border: 1.5px solid #e0d6e6;
+    border-radius: 0.8rem;
+    font-size: 1.15rem;
+    background: #f8f6fb;
+    transition: border 0.2s;
+    box-sizing: border-box;
+}
+
+.password-container input:focus {
+    border-color: var(--accent);
+    outline: none;
+    background: #fff;
+}
+
+/* Make sure input groups maintain proper width */
+.input-group {
+    width: 100%;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    box-sizing: border-box;
+}
+
+/* Update toggle button position */
+.toggle-password {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #917489;
+    padding: 8px;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+#nextBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#nextBtn:disabled:hover {
+    background-color: #cccccc;
+    transform: none;
+}
         /* Responsive */
         @media (max-width: 900px) {
             header {
@@ -341,6 +410,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 updateProgress();
             });
         });
+        // Add these functions to your existing script
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleBtn = passwordInput.nextElementSibling;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+            </svg>`;
+    } else {
+        passwordInput.type = 'password';
+        toggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>`;
+    }
+}
+
+// Add validation for Next button
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    const usernameInput = document.getElementById('username');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function validateInputs() {
+        const emailValid = emailInput.value.trim().length > 0 && emailInput.value.includes('@');
+        const usernameValid = usernameInput.value.trim().length > 0;
+        nextBtn.disabled = !(emailValid && usernameValid);
+    }
+
+    emailInput.addEventListener('input', validateInputs);
+    usernameInput.addEventListener('input', validateInputs);
+});
     </script>
 </head>
 <body>
@@ -385,11 +491,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="input-row">
                         <div class="input-group">
                             <label for="password">Password</label>
-                            <input type="password" name="password" id="password" required minlength="8">
+                            <div class="password-container">
+                                <input type="password" name="password" id="password" required minlength="8">
+                                <button type="button" class="toggle-password" onclick="togglePassword('password')" aria-label="Toggle password visibility">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="input-group">
                             <label for="confirm_password">Confirm Password</label>
-                            <input type="password" name="confirm_password" id="confirm_password" required minlength="8">
+                            <div class="password-container">
+                                <input type="password" name="confirm_password" id="confirm_password" required minlength="8">
+                                <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')" aria-label="Toggle password visibility">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="btn-row">
