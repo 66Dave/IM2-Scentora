@@ -1,471 +1,443 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scentora | Cart</title>
-  <style>
-    :root {
-      --primary: #a182c9;
-      --accent: #917489;
-      --background: #f7f5fa;
-      --card: #fff7ff;
-      --sidebar: #efe2fa;
-      --text: #392e44;
-      --nav-bg: rgba(114, 69, 173, 0.7);
-      --nav-blur: blur(10px);
-      --white: #fff;
-      --shadow: 0 4px 24px rgba(161,130,201,0.14);
-      --border: #e5d6f7;
-    }
-    body {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background: var(--background);
-      color: var(--text);
-      margin: 0;
-      padding-top: 74px;
-      transition: background 0.5s ease, color 0.5s ease;
-    }
-    body.darkmode {
-  background: #1a1625;
-  color: #e2d6e6;
-}
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: var(--nav-bg);
-      backdrop-filter: var(--nav-blur);
-      color: var(--white);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: 0 2px 12px rgba(145, 116, 137, 0.08);
-    }
-    .logo {
-      font-size: 1.7rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: var(--white);
-    }
-    .nav-links {
-      display: flex;
-      gap: 1.2rem;
-      align-items: center;
-    }
-    .nav-links a {
-      text-decoration: none;
-      color: var(--white);
-      font-weight: 500;
-      font-size: 1.08rem;
-      padding: 0.4rem 1rem;
-      border-radius: 999px;
-      transition: background 0.2s, color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .nav-links a.active {
-      background: var(--white);
-      color: var(--primary);
-      font-weight: 600;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
-    }
-    .nav-links a:hover {
-      background-color: rgba(255, 255, 255, 0.18);
-      color: var(--accent);
-    }
-    /* Amazon-style Cart Layout */
-.cart-container {
-  max-width: 700px;
-  margin: 2em auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(145, 116, 137, 0.08);
-  padding: 2em 1.5em;
-}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scentora | Cart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary: #a182c9;
+            --accent: #917489;
+            --background: #f7f5fa;
+            --card: #fff7ff;
+            --sidebar: #efe2fa;
+            --text: #392e44;
+            --nav-bg: rgba(114, 69, 173, 0.7);
+            --nav-blur: blur(10px);
+            --white: #fff;
+            --shadow: 0 4px 24px rgba(161,130,201,0.14);
+            --border: #e5d6f7;
+        }
 
-.cart-container {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(145, 116, 137, 0.08);
-  padding: 2em 1.5em;
-}
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding-top: 74px;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
 
-.cart-title {
-  font-size: 1.5em;
-  font-weight: 700;
-  color: #5a3e6e;
-  margin-bottom: 1em;
-  text-align: left;
-}
+        /* Dark Mode */
+        body.darkmode {
+            background: #1a1625;
+            color: #e2d6e6;
+        }
 
-.cart-title,
-body.darkmode .cart-title {
-  color: #5a3e6e;
-}
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            backdrop-filter: var(--nav-blur);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(145, 116, 137, 0.08);
+        }
 
-.cart-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1em 0;
-}
+        .logo {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--white);
+        }
 
-.cart-item {
-  display: flex;
-  align-items: center;
-  gap: 1.5em;
-  border-bottom: 1px solid #eee;
-  padding: 1em 0;
-}
+        /* Navigation Links */
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
 
-.cart-item:last-child {
-  border-bottom: none;
-}
+        .nav-links a {
+            text-decoration: none;
+            color: var(--white);
+            font-weight: 500;
+            font-size: 1.08rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
 
-.cart-item img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  background: #f7f7fa;
-  border: 1px solid #e2d6e6;
-}
+        .nav-links a.active {
+            background: var(--white);
+            color: var(--primary);
+            font-weight: 600;
+        }
 
-.cart-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3em;
-}
+        /* Cart Container */
+        .cart-container {
+            max-width: 800px;
+            margin: 2em auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2em;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
 
-.cart-item-name {
-  font-size: 1.1em;
-  font-weight: 600;
-  color: #222;
-}
+        /* Add dark mode styles for cart container */
+        body.darkmode .cart-container {
+            background: #2d2438;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
 
-.cart-item-brand {
-  font-size: 0.95em;
-  color: #917489;
-}
+        body.darkmode .cart-item {
+            border-bottom-color: #3d3248;
+        }
 
-.cart-item-price {
-  font-size: 1.05em;
-  font-weight: 500;
-  color: #5a3e6e;
-  margin-top: 0.2em;
-}
+        .cart-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5em;
+        }
 
-.cart-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.7em;
-}
+        /* Cart Items */
+        .cart-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.qty-btn {
-  background: #917489;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.3em 0.9em;
-  font-size: 1.1em;
-  font-weight: 600;
-  cursor: pointer;
-  margin: 0 2px;
-  transition: background 0.2s;
-}
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5em;
+            padding: 1em;
+            border-bottom: 1px solid var(--border);
+        }
 
-.qty-btn:hover {
-  background: #5a3e6e;
-}
+        .cart-item:last-child {
+            border-bottom: none;
+        }
 
-.remove-btn {
-  background: transparent;
-  color: #f56565;
-  border: none;
-  border-radius: 6px;
-  padding: 0.3em 0.9em;
-  font-size: 0.95em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
 
-.remove-btn:hover {
-  background: transparent;
-  color: #c53030;
-}
+        .cart-details {
+            flex: 1;
+        }
 
-.cart-total {
-  font-size: 1.2em;
-  font-weight: 600;
-  color: #5a3e6e;
-  margin: 1.5em 0 1em 0;
-  text-align: right;
-}
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 0.3em;
+        }
 
-.checkout-btn {
-  background: #917489;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.7em 2em;
-  font-size: 1.1em;
-  font-weight: 600;
-  cursor: pointer;
-  float: right;
-  margin-bottom: 1em;
-  transition: background 0.2s;
-}
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: 500;
+        }
 
-.checkout-btn:hover {
-  background: #5a3e6e;
-}
+        /* Cart Actions */
+        .cart-actions {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
 
-body.darkmode .cart-container {
-  background: #23203a;
-  box-shadow: 0 2px 16px rgba(145, 116, 137, 0.18);
-}
-body.darkmode .cart-title,
-body.darkmode .cart-total {
-  color: #e2d6e6;
-}
-body.darkmode .cart-item {
-  border-bottom: 1px solid #2d2540;
-}
-body.darkmode .cart-item img {
-  background: #23203a;
-  border: 1px solid #392e44;
-}
-body.darkmode .cart-item-name {
-  color: #e2d6e6;
-}
-body.darkmode .cart-item-brand {
-  color: #b3a3b8;
-}
-body.darkmode .cart-item-price {
-  color: #c7b3e6;
-}
-body.darkmode .qty-btn,
-body.darkmode .checkout-btn {
-  background: #5a3e6e;
-  color: #fff;
-}
-body.darkmode .qty-btn:hover,
-body.darkmode .checkout-btn:hover {
-  background: #917489;
-}
-body.darkmode .remove-btn {
-  background: transparent;
-  color: #f56565;
-}
-body.darkmode .remove-btn:hover {
-  background: transparent;
-  color: #c53030;
-}
-body.darkmode .nav-links a.active {
-  background: #917489;
-  color: #fff;
-}
-body.darkmode .nav-links a:hover {
-  background-color: rgba(145, 116, 137, 0.18);
-  color: #fff;
-}
-.toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
 
-.toggle-switch label {
-  font-size: 0.96rem;
-  color: var(--white);
-}
+        .qty-btn {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
-.toggle-switch input[type="checkbox"] {
-  width: 40px;
-  height: 20px;
-  appearance: none;
-  background: #bda6e7;
-  outline: none;
-  border-radius: 15px;
-  position: relative;
-  transition: background 0.3s;
-  cursor: pointer;
-}
+        .qty-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-.toggle-switch input[type="checkbox"]:checked {
-  background: #392e44;
-}
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #f56565;
+            cursor: pointer;
+            padding: 0.5em;
+            transition: color 0.2s;
+        }
 
-.toggle-switch input[type="checkbox"]::before {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  top: 1px;
-  left: 2px;
-  background: #fff;
-  transition: 0.3s;
-}
+        .remove-btn:hover {
+            color: #c53030;
+        }
 
-.toggle-switch input[type="checkbox"]:checked::before {
-  transform: translateX(19px);
-  background: #a182c9;
-}
-  </style>
+        /* Cart Total and Checkout */
+        .cart-total {
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: right;
+            margin: 1.5em 0;
+        }
+
+        .checkout-btn {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.8em 2em;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            float: right;
+            transition: background 0.2s;
+        }
+
+        .checkout-btn:hover {
+            background: var(--primary);
+        }
+
+        /* Dark Mode Toggle */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #bda6e7;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: #392e44;
+        }
+
+        .toggle-switch input[type="checkbox"]::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            top: 1px;
+            left: 2px;
+            background: #fff;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::before {
+            transform: translateX(19px);
+            background: #a182c9;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="logo">Scentora</div>
-    <nav class="nav-links">
-      <a href="shop_user.html" title="Shop">shop</a>
-      <a href="#" class="active" title="Cart">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-      </a>
-      <a href="profile.html" title="Profile">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-          <circle cx="12" cy="8" r="4"></circle>
-          <path d="M2 20c0-4 8-6 10-6s10 2 10 6"></path>
-        </svg>
-      </a>
-      <a href="#logout" id="logout-link">Logout</a>
-    </nav>
-    <div class="toggle-switch">
-  <label for="darkmode">Dark mode</label>
-  <input type="checkbox" id="darkmode" title="Toggle dark mode" />
-</div>
-  </header>
-  <div class="cart-container">
-    <div class="cart-title">Your Cart</div>
-    <ul class="cart-list" id="cartList">
-      <!-- Cart items will be rendered here from the database -->
-    </ul>
-    <div class="cart-total" id="cartTotal">Total: ₱0.00</div>
-    <button class="checkout-btn" onclick="checkoutCart()">Checkout</button>
-  </div>
-  <script>
-    // Cart rendering will be handled by the server-side script
-    fetch("fetch_cart.php")
-      .then(res => res.json())
-      .then(cart => {
-        const cartList = document.getElementById("cartList");
-        const cartTotal = document.getElementById("cartTotal");
-        if (!cart.length) {
-          cartList.innerHTML = "<li style='text-align:center;color:#917489;'>Your cart is empty.</li>";
-          cartTotal.textContent = "Total: ₱0.00";
-          return;
+    <header>
+        <div class="logo">Scentora</div>
+        <nav class="nav-links">
+            <a href="shop_user.html">Shop</a>
+            <a href="#" class="active">Cart</a>
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logout-link">Logout</a>
+        </nav>
+        <div class="toggle-switch">
+            <label for="darkmode">Dark mode</label>
+            <input type="checkbox" id="darkmode" title="Toggle dark mode">
+        </div>
+    </header>
+
+    <div class="cart-container">
+        <h1 class="cart-title">Your Cart</h1>
+        <ul id="cartList" class="cart-list">
+            <!-- Cart items will be loaded here -->
+        </ul>
+        <div id="cartTotal" class="cart-total">Total: ₱0.00</div>
+        <button class="checkout-btn" onclick="checkoutCart()">Proceed to Checkout</button>
+    </div>
+
+    <script>
+        // Load cart items
+        async function loadCart() {
+            try {
+                const response = await fetch('fetch_cart.php');
+                const data = await response.json();
+                
+                const cartList = document.getElementById('cartList');
+                if (!data.length) {
+                    cartList.innerHTML = '<li style="text-align:center;color:var(--accent);">Your cart is empty</li>';
+                    return;
+                }
+
+                cartList.innerHTML = data.map(item => `
+                    <li class="cart-item" data-cart-id="${item.Cart_ID}">
+                        <img src="${item.Image_URL}" alt="${item.Product_Name}">
+                        <div class="cart-details">
+                            <div class="cart-item-name">${item.Product_Name}</div>
+                            <div class="cart-item-price">₱${parseFloat(item.Product_Price).toFixed(2)}</div>
+                        </div>
+                        <div class="cart-actions">
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateQuantity(${item.Cart_ID}, ${item.Quantity - 1})" 
+                                    ${item.Quantity <= 1 ? 'disabled' : ''}>-</button>
+                                <span class="cart-item-qty">${item.Quantity}</span>
+                                <button class="qty-btn" onclick="updateQuantity(${item.Cart_ID}, ${item.Quantity + 1})"
+                                    ${item.Quantity >= item.Stock ? 'disabled' : ''}>+</button>
+                            </div>
+                            <button class="remove-btn" onclick="removeItem(${item.Cart_ID})">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+
+                updateTotal();
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                document.getElementById('cartList').innerHTML = 
+                    '<li style="text-align:center;color:var(--accent);">Error loading cart</li>';
+            }
         }
-        let total = 0;
-        cartList.innerHTML = cart.map(item => {
-          const itemTotal = parseFloat(item.Product_Price) * item.Quantity;
-          total += itemTotal;
-          const plusDisabled = item.Quantity >= item.Stock ? "disabled" : "";
-          return `
-            <li class="cart-item" data-cart-id="${item.Cart_ID}">
-              <img src="${item.Image_URL}" alt="${item.Product_Name}">
-              <div class="cart-details">
-                <span class="cart-item-name">${item.Product_Name}</span>
-                <span class="cart-item-brand">${item.Brand || ''}</span>
-                <span class="cart-item-price">₱${parseFloat(item.Product_Price).toFixed(2)}</span>
-                <div>
-                  <button class="qty-btn" onclick="updateCart(${item.Cart_ID}, ${item.Quantity-1})" ${item.Quantity <= 1 ? "disabled" : ""}>−</button>
-                  <span class="cart-item-qty">x${item.Quantity}</span>
-                  <button class="qty-btn" onclick="updateCart(${item.Cart_ID}, ${item.Quantity+1})" ${plusDisabled}>+</button>
-                  <span style="font-size:0.9em;color:#917489;margin-left:8px;">(Stock: ${item.Stock})</span>
-                </div>
-              </div>
-              <div class="cart-actions">
-                <button class="remove-btn" onclick="removeCartItem(${item.Cart_ID})" title="Remove">
-                  <svg width="22" height="22" fill="none" stroke="#f56565" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-                    <rect x="6" y="7" width="12" height="13" rx="2" />
-                    <path d="M3 7h18" />
-                    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    <line x1="10" y1="11" x2="10" y2="17" />
-                    <line x1="14" y1="11" x2="14" y2="17" />
-                  </svg>
-                </button>
-              </div>
-            </li>
-          `;
-        }).join("");
-        cartTotal.textContent = "Total: ₱" + total.toFixed(2);
-      })
-      .catch(() => {
-        document.getElementById("cartList").innerHTML = "<li>Error loading cart.</li>";
-        document.getElementById("cartTotal").textContent = "Total: ₱0.00";
-      });
-    function checkoutCart() {
-      window.location.href = "checkout.html";
-    }
-    document.getElementById("logout-link").onclick = function(e) {
-      e.preventDefault();
-      if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
-      }
-    };
-    function updateCart(cartId, newQty) {
-  if (newQty < 1) {
-    removeCartItem(cartId);
-    return;
-  }
-  fetch("update_cart.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "cart_id=" + encodeURIComponent(cartId) + "&quantity=" + encodeURIComponent(newQty)
-  })
-  .then(res => res.text())
-  .then(result => {
-    if (result === "updated") {
-      location.reload();
-    } else {
-      alert("Could not update cart: " + result);
-    }
-  })
-  .catch(() => alert("Error updating cart."));
-}
 
-function removeCartItem(cartId) {
-  if (!confirm("Remove this item from cart?")) return;
-  fetch("remove_cart.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "cart_id=" + encodeURIComponent(cartId)
-  })
-  .then(res => res.text())
-  .then(result => {
-    if (result === "removed") {
-      location.reload();
-    } else {
-      alert("Could not remove item: " + result);
-    }
-  })
-  .catch(() => alert("Error removing item."));
-}
+        // Update quantity
+        async function updateQuantity(cartId, quantity) {
+            if (quantity < 1) return;
+            
+            try {
+                const response = await fetch('update_cart.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `cart_id=${cartId}&quantity=${quantity}`
+                });
 
-// Dark mode toggle
-const darkToggle = document.getElementById('darkmode');
-if (localStorage.getItem('scentoraDark') === '1') {
-  document.body.classList.add('darkmode');
-  darkToggle.checked = true;
-}
-darkToggle.addEventListener('change', () => {
-  document.body.classList.toggle('darkmode', darkToggle.checked);
-  localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
-});
-  </script>
+                if (!response.ok) throw new Error('Network response was not ok');
+                await loadCart();
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+                alert('Failed to update quantity');
+            }
+        }
+
+        // Remove item
+        async function removeItem(cartId) {
+            if (!confirm('Remove this item from cart?')) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('cart_id', cartId);
+
+                const response = await fetch('remove_cart.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log('Remove response:', data); // Debug log
+
+                if (data.success) {
+                    const item = document.querySelector(`[data-cart-id="${cartId}"]`);
+                    if (item) {
+                        item.remove();
+                        
+                        // Check if cart is empty
+                        const remainingItems = document.querySelectorAll('.cart-item');
+                        if (remainingItems.length === 0) {
+                            document.getElementById('cartList').innerHTML = 
+                                '<li style="text-align:center;color:var(--accent);">Your cart is empty</li>';
+                        }
+                        
+                        // Update total
+                        updateTotal();
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to remove item');
+                }
+            } catch (error) {
+                console.error('Error details:', error);
+                alert('Failed to remove item: ' + error.message);
+            }
+        }
+
+        // Update total
+        function updateTotal() {
+            const items = document.querySelectorAll('.cart-item');
+            const total = Array.from(items).reduce((sum, item) => {
+                const price = parseFloat(item.querySelector('.cart-item-price').textContent.replace('₱', ''));
+                const quantity = parseInt(item.querySelector('.cart-item-qty').textContent);
+                return sum + (price * quantity);
+            }, 0);
+
+            document.getElementById('cartTotal').textContent = 
+                `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        // Checkout
+        function checkoutCart() {
+            window.location.href = 'checkout.html';
+        }
+
+        // Dark mode
+        const darkToggle = document.getElementById('darkmode');
+        if (localStorage.getItem('scentoraDark') === '1') {
+            document.body.classList.add('darkmode');
+            darkToggle.checked = true;
+        }
+
+        darkToggle.addEventListener('change', () => {
+            document.body.classList.toggle('darkmode', darkToggle.checked);
+            localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+        });
+
+        // Logout
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/IM2-Scentora/files/admin/loginpage.php';
+            }
+        });
+
+        // Load cart on page load
+        loadCart();
+    </script>
 </body>
 </html>

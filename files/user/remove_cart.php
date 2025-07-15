@@ -1,54 +1,69 @@
 <?php
 session_start();
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
-$conn = new mysqli($host, $username, $password, $database);
+header('Content-Type: application/json');
 
-$cart_id = intval($_POST['cart_id'] ?? 0);
+// Error logging function
+function logError($message) {
+    error_log(date('Y-m-d H:i:s') . " - Remove Cart Error: " . $message . "\n", 3, "../error.log");
+}
 
-if ($cart_id < 1) {
-    echo "Invalid";
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Please login to continue'
+    ]);
     exit;
 }
 
-$sql = "DELETE FROM cart WHERE Cart_ID=?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $cart_id);
-$stmt->execute();
-echo "removed";
-$stmt->close();
-$conn->close();
+try {
+    // Database connection
+    $conn = new mysqli("localhost", "root", "", "scentoradb");
+    
+    // Check connection
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
+    }
+
+    // Validate cart_id
+    if (!isset($_POST['cart_id'])) {
+        throw new Exception("Cart ID is required");
+    }
+
+    $cart_id = intval($_POST['cart_id']);
+    $user_id = $_SESSION['user_id'];
+
+    // Delete the cart item
+    $sql = "DELETE FROM cart WHERE Cart_ID = ? AND User_ID = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $cart_id, $user_id);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to remove item: " . $stmt->error);
+    }
+
+    if ($stmt->affected_rows === 0) {
+        throw new Exception("Item not found or already removed");
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Item removed successfully'
+    ]);
+
+} catch (Exception $e) {
+    logError($e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
+} finally {
+    // Close statements and connection
+    if (isset($stmt)) {
+        $stmt->close();
+    }
+    if (isset($conn)) {
+        $conn->close();
+    }
+}
 ?>
-<style>
-/* Modern Cart Button Styles */
-.qty-btn, .remove-btn, .checkout-btn {
-  background: #917489;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.35em 1em;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin: 0 2px;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(145, 116, 137, 0.08);
-  outline: none;
-}
-
-.qty-btn:hover, .remove-btn:hover, .checkout-btn:hover {
-  background: #5a3e6e;
-}
-
-.remove-btn {
-  background: #f56565;
-  color: #fff;
-  padding: 0.35em 0.8em;
-}
-
-.remove-btn:hover {
-  background: #c53030;
-}
-</style>
