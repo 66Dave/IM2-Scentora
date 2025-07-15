@@ -22,3 +22,8 @@ echo "updated";
 $stmt->close();
 $conn->close();
 ?>
+/*
+ * This script updates the quantity of a specific item in the cart.
+ * It expects 'cart_id' and 'quantity' via POST.
+ * Returns "updated" on success, "Invalid" if input is not valid.
+ */
