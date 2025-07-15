@@ -190,6 +190,45 @@
       background: linear-gradient(90deg, #917489 0%, var(--primary) 100%);
       transform: scale(1.03);
     }
+    .drag-drop-area {
+      width: 100%;
+      height: 200px;
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+      background: var(--sidebar);
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .drag-drop-area.dragover {
+      background: rgba(161,130,201,0.1);
+      border-color: var(--accent);
+    }
+
+    .drag-drop-area img {
+      max-width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      display: none;
+    }
+
+    .drag-drop-area .placeholder {
+      text-align: center;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    .drag-drop-area .placeholder svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
     @media (max-width: 700px) {
       .checkout-container {
         max-width: 98vw;
@@ -259,8 +298,19 @@
         <option value="joyride">Joyride</option>
       </select>
 
-      <label for="proof">Upload Proof of Payment</label>
-      <input type="file" id="proof" name="proof" accept="image/*,.pdf" required />
+      <label for="proof">Proof of Payment</label>
+      <div class="drag-drop-area" id="dragDropArea">
+        <div class="placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Drag and drop your proof of payment here<br>or click to select file</p>
+        </div>
+        <img id="previewImage" alt="Preview"/>
+        <input type="file" id="proof" name="proof" accept="image/*" required style="display: none;"/>
+      </div>
 
       <button type="submit" class="place-order-btn">Place Order</button>
     </form>
@@ -269,31 +319,25 @@
     // Order summary rendering will be handled by backend/database
     document.getElementById("checkoutForm").onsubmit = function(e) {
       e.preventDefault();
-      const paymentMethod = document.getElementById("payment").value;
-      if (paymentMethod !== "gcash" && paymentMethod !== "card") {
-        alert("Only GCash or Credit/Debit Card payments are accepted for checkout.");
-        return;
-      }
-      const proof = document.getElementById("proof").files[0];
-      if (!proof) {
-        alert("Please upload your proof of payment.");
-        return;
-      }
       const formData = new FormData(this);
-      fetch("payment_api.php", {
+      
+      fetch("process_order.php", {
         method: "POST",
         body: formData
       })
       .then(res => res.json())
       .then(result => {
         if (result.success) {
-          alert("Order placed! Thank you for shopping with Scentora.");
-          window.location.href = "shop_user.html";
+            alert(`Order #${result.order_id} placed successfully!`);
+            window.location.href = "shop_user.html";
         } else {
-          alert("Payment failed: " + (result.message || "Please try again."));
+            alert("Order failed: " + result.message);
         }
       })
-      .catch(() => alert("Error processing payment."));
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Error processing order");
+      });
     };
     document.getElementById("logout-link").onclick = function(e) {
       e.preventDefault();
@@ -329,6 +373,46 @@
         document.getElementById("summaryList").innerHTML = "<li>Error loading cart.</li>";
         document.getElementById("checkoutTotal").textContent = "Total: ₱0.00";
       });
+    // Drag and Drop functionality
+    const dragDropArea = document.getElementById('dragDropArea');
+    const fileInput = document.getElementById('proof');
+    const previewImage = document.getElementById('previewImage');
+
+    dragDropArea.addEventListener('click', () => fileInput.click());
+
+    dragDropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.add('dragover');
+    });
+
+    dragDropArea.addEventListener('dragleave', () => {
+        dragDropArea.classList.remove('dragover');
+    });
+
+    dragDropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handleFile(file);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+            dragDropArea.querySelector('.placeholder').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
   </script>
 </body>
 </html>

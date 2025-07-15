@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 15, 2025 at 03:12 AM
+-- Generation Time: Jul 15, 2025 at 03:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -94,7 +94,12 @@ CREATE TABLE `order` (
   `Order_ID` int(11) NOT NULL,
   `User_ID` int(11) DEFAULT NULL,
   `Order_Date` date DEFAULT NULL,
-  `Amount_Paid` decimal(10,2) DEFAULT NULL
+  `Amount_Paid` decimal(10,2) DEFAULT NULL,
+  `Payment_Method` varchar(50) DEFAULT NULL,
+  `Payment_Proof` varchar(255) DEFAULT NULL,
+  `Shipping_Address` text DEFAULT NULL,
+  `Status` varchar(50) DEFAULT 'Pending',
+  `Total_Amount` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -271,7 +276,8 @@ ALTER TABLE `employeedetails`
 -- Constraints for table `order`
 --
 ALTER TABLE `order`
-  ADD CONSTRAINT `order_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
+  ADD CONSTRAINT `order_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`),
+  ADD CONSTRAINT `order_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
 
 --
 -- Constraints for table `orderdetails`
