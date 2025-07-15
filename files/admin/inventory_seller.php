@@ -34,17 +34,19 @@ $user_id = 1;
 $stock_status = $stock > 0 ? "In stock ($stock pcs)" : "Out of stock";
 
 $brand = $_POST['brand'] ?? '';
-$is_active = $stock > 0 ? 1 : 0;
+$description = $_POST['description'] ?? '';
 
 $sql = "INSERT INTO product (
     User_ID, Product_Name, Product_Price, Stock_Status,
-    Product_Code, Category, Image_URL, Date_Added, Date_Updated, Brand, Is_Active
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    Product_Code, Category, Image_URL, Date_Added, Date_Updated, Brand, Description, Is_Active
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = $conn->prepare($sql);
-$price = floatval($_POST['price'] ?? 0); // default price
-$stmt->bind_param("isdsssssssi", $user_id, $product_name, $price, $stock_status,
-                  $code, $category, $image, $added, $updated, $brand, $is_active);
+$stmt->bind_param(
+    "isdssssssssi",
+    $user_id, $product_name, $price, $stock_status,
+    $code, $category, $image, $added, $updated, $brand, $description, $is_active
+);
 
 if ($stmt->execute()) {
     echo "success";
