@@ -353,37 +353,7 @@
             `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
-    // Validate form inputs
-    function validateForm() {
-        const fullname = document.getElementById('fullname').value.trim();
-        const address = document.getElementById('address').value.trim();
-        const payment = document.getElementById('payment').value;
-        const courier = document.getElementById('courier').value;
-        
-        if (!fullname || fullname.length < 3) {
-            alert('Please enter a valid full name');
-            return false;
-        }
-        
-        if (!address || address.length < 10) {
-            alert('Please enter a complete delivery address');
-            return false;
-        }
-        
-        if (!payment) {
-            alert('Please select a payment method');
-            return false;
-        }
-        
-        if (!courier) {
-            alert('Please select a courier');
-            return false;
-        }
-        
-        return true;
-    }
-
-    // Handle form submission
+    // Handle form submissiona
     document.getElementById("checkoutForm").onsubmit = async function(e) {
         e.preventDefault();
         if (!validateForm()) return;
