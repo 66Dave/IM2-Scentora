@@ -293,6 +293,10 @@
       </select>
 
       <label for="proof">Proof of Payment</label>
+      <!-- Add this container for the QR image -->
+      <div id="paymentQR" style="text-align:center; margin-bottom:1rem; display:none;">
+        <img id="qrImage" src="" alt="Payment QR" style="max-width:180px; max-height:180px; border-radius:12px; box-shadow:0 2px 8px rgba(145,116,137,0.10);" />
+      </div>
       <div class="drag-drop-area" id="dragDropArea">
         <div class="placeholder">
           <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -481,6 +485,24 @@
             reader.readAsDataURL(file);
         }
     }
+
+    // Show QR image based on payment method
+    const paymentSelect = document.getElementById('payment');
+    const paymentQR = document.getElementById('paymentQR');
+    const qrImage = document.getElementById('qrImage');
+
+    paymentSelect.addEventListener('change', function() {
+      if (this.value === 'gcash') {
+        qrImage.src = 'http://localhost/IM2-Scentora/files/imges/gcash_qr.jpg';
+        paymentQR.style.display = 'block';
+      } else if (this.value === 'card') {
+        qrImage.src = 'http://localhost/IM2-Scentora/files/imges/card_qr.jpg';
+        paymentQR.style.display = 'block';
+      } else {
+        paymentQR.style.display = 'none';
+        qrImage.src = '';
+      }
+    });
   </script>
 </body>
 </html>
