@@ -150,8 +150,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     .login-container button {
       width: 100%;
       padding: 0.8rem;
-      background-color: rgba(255, 255, 255, 0.85);
-      color: var(--mauve);
+      background-color: var(--lavender-accent);
+      color: var(--white);
       border: none;
       border-radius: 50px;
       font-size: 1.1rem;
@@ -160,8 +160,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     .login-container button:hover {
-      background-color: var(--lavender-accent);
-      color: white;
+      background-color: var(--mauve);
+      color: var(--white);
     }
 
     .forgot-link {
@@ -290,8 +290,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       display: block;
       width: 100%;
       padding: 0.8rem;
-      background-color: var(--lavender-accent);
-      color: var(--white);
+      background-color: rgba(255, 255, 255, 0.85);
+      color: var(--mauve);
       border: none;
       border-radius: 50px;
       font-size: 1.1rem;
@@ -303,7 +303,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     .signup-btn:hover {
-      background-color: var(--mauve);
+      background-color: var(--lavender-accent);
       color: var(--white);
     }
 
