@@ -353,49 +353,79 @@
             `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
+    // Validate form inputs
+    function validateForm() {
+        const fullname = document.getElementById('fullname').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const payment = document.getElementById('payment').value;
+        const courier = document.getElementById('courier').value;
+        const proofFile = document.getElementById('proof').files[0];
+
+        if (!fullname) {
+            alert('Please enter your full name');
+            return false;
+        }
+
+        if (!address) {
+            alert('Please enter delivery address');
+            return false;
+        }
+
+        if (!payment) {
+            alert('Please select payment method');
+            return false;
+        }
+
+        if (!courier) {
+            alert('Please select courier');
+            return false;
+        }
+
+        if (!proofFile) {
+            alert('Please upload proof of payment');
+            return false;
+        }
+
+        return true;
+    }
+
     // Handle form submissiona
     document.getElementById("checkoutForm").onsubmit = async function(e) {
         e.preventDefault();
-        if (!validateForm()) return;
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Add total amount to form data
-        const total = document.getElementById('checkoutTotal').textContent
-            .replace('Total: ₱', '')
-            .replace(',', '');
-        formData.append('total_amount', total);
-        
-        // Validate payment method and proof
-        const paymentMethod = document.getElementById('payment').value;
-        const proofFile = document.getElementById('proof').files[0];
-        
-        if (paymentMethod !== 'cod' && !proofFile) {
-            alert("Please upload proof of payment for non-COD orders");
-            return;
-        }
         
         try {
+            if (!validateForm()) return;
+            
+            const formData = new FormData(this);
+            
+            // Add total amount
+            const total = document.getElementById('checkoutTotal').textContent
+                .replace('Total: ₱', '')
+                .replace(/,/g, ''); // Remove all commas
+            formData.append('total_amount', total);
+
+            console.log('Submitting order...'); // Debug log
+            
             const response = await fetch("process_order.php", {
                 method: "POST",
                 body: formData
             });
             
+            console.log('Response received'); // Debug log
             const result = await response.json();
             console.log('Server response:', result); // Debug log
             
             if (result.success) {
                 alert(`Order #${result.order_id} placed successfully!`);
                 // Clear cart and redirect
-                localStorage.removeItem('cart');
+                await fetch('clear_cart.php'); // Add this PHP file to clear server-side cart
                 window.location.href = "thank_you.html";
             } else {
                 throw new Error(result.message || "Unknown error occurred");
             }
         } catch (error) {
             console.error("Order processing error:", error);
-            alert(error.message || "Error processing order. Please try again.");
+            alert("Error processing order. Please try again.");
         }
     };
 
