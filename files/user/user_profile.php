@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: /IM2-Scentora/files/admin/loginpage.php");
     exit();
 }
-// Connect to the database (update credentials as needed)
+
 $host = "localhost";
 $user_db = "root";
 $pass_db = "";
@@ -16,20 +16,55 @@ if ($conn->connect_error) {
 }
 
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT Name, Email, Address FROM user WHERE User_ID = ?";
+
+// Handle address update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['address'])) {
+    $new_address = $_POST['address'];
+    $update_sql = "UPDATE user SET Address = ? WHERE User_ID = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    $update_stmt->bind_param("si", $new_address, $user_id);
+    $update_stmt->execute();
+    $update_stmt->close();
+}
+
+// Handle account details update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fullname']) && isset($_POST['email'])) {
+    $new_name = $_POST['fullname'];
+    $new_email = $_POST['email'];
+    $update_sql = "UPDATE user SET Name = ?, Email = ? WHERE User_ID = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    $update_stmt->bind_param("ssi", $new_name, $new_email, $user_id);
+    $update_stmt->execute();
+    $update_stmt->close();
+}
+
+// Handle profile image upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_image'])) {
+    $target_dir = "../uploads/profile/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+    $target_file = $target_dir . basename($_FILES["profile_image"]["name"]);
+    if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
+        $update_sql = "UPDATE user SET Profile_Image = ? WHERE User_ID = ?";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bind_param("si", $target_file, $user_id);
+        $update_stmt->execute();
+        $update_stmt->close();
+    }
+}
+
+// Fetch user info
+$sql = "SELECT Name, Email, Address, Profile_Image FROM user WHERE User_ID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$stmt->bind_result($fullname, $email, $address);
+$stmt->bind_result($fullname, $email, $address, $profile_image);
 $stmt->fetch();
 $stmt->close();
 $conn->close();
 
-// Use Name as username for now
-$username = $fullname;
-
-// Generate avatar
-$profile_pic = "https://ui-avatars.com/api/?name=" . urlencode($fullname) . "&background=a182c9&color=fff&size=256";
+$profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com/api/?name=" . urlencode($fullname) . "&background=a182c9&color=fff&size=256";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -300,7 +335,7 @@ $profile_pic = "https://ui-avatars.com/api/?name=" . urlencode($fullname) . "&ba
           <button type="button" class="edit-btn" onclick="document.getElementById('profile_image').click();">Choose Image</button>
           <button type="submit" class="edit-btn" id="uploadBtn" style="margin-top:0.5rem;">Upload Image</button>
         </form>
-        <h2 id="profileUsername"><?php echo htmlspecialchars($username); ?></h2>
+        <!-- Remove Username display -->
         <div style="font-size:0.95rem;color:var(--text);margin-bottom:1rem;" id="profileEmail"><?php echo htmlspecialchars($email); ?></div>
         <button class="edit-btn" onclick="enableEditDetails()">Edit Details</button>
       </div>
@@ -312,8 +347,7 @@ $profile_pic = "https://ui-avatars.com/api/?name=" . urlencode($fullname) . "&ba
             <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($fullname); ?>" readonly>
             <label for="email">Email</label>
             <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" readonly>
+            <!-- Username field removed -->
             <button type="submit" class="edit-btn" id="saveBtn" style="display:none;">Save</button>
             <button type="button" class="edit-btn" id="cancelBtn" style="display:none;" onclick="cancelEditDetails()">Cancel</button>
           </form>
@@ -360,7 +394,6 @@ $profile_pic = "https://ui-avatars.com/api/?name=" . urlencode($fullname) . "&ba
 function enableEditDetails() {
   document.getElementById('fullname').readOnly = false;
   document.getElementById('email').readOnly = false;
-  document.getElementById('username').readOnly = false;
   document.getElementById('saveBtn').style.display = 'inline-block';
   document.getElementById('cancelBtn').style.display = 'inline-block';
 }
@@ -369,7 +402,6 @@ function enableEditDetails() {
 function cancelEditDetails() {
   document.getElementById('fullname').readOnly = true;
   document.getElementById('email').readOnly = true;
-  document.getElementById('username').readOnly = true;
   document.getElementById('saveBtn').style.display = 'none';
   document.getElementById('cancelBtn').style.display = 'none';
 }
