@@ -274,8 +274,15 @@
       from { opacity: 0; }
       to   { opacity: 1; }
     }
-
-    
+    .order-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -327,7 +334,7 @@
           <div class="stat-card"><h4>Total Orders</h4><p id="stat-orders">0</p></div>
         </div>
       </div>
-
+      
       <div id="orders" class="dashboard-page">
         <h2 style="color:var(--primary);">Orders</h2>
         <p>No orders to display.</p>
@@ -381,6 +388,89 @@ fetch("dashboard_data.php")
   .catch(err => {
     console.error("Dashboard fetch failed:", err);
   });
+  function changeOrderStatus(orderId, newStatus) {
+  fetch("update_order_status.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "order_id=" + encodeURIComponent(orderId) + "&status=" + encodeURIComponent(newStatus)
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result === "updated") {
+      alert("Order has been " + newStatus);
+      loadOrders();
+    } else {
+      alert("Status update failed: " + result);
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("An error occurred while updating order status.");
+  });
+}
+function renderOrders(data) {
+  const container = document.getElementById("orders");
+
+  if (!data.length) {
+    container.innerHTML = "<p>No Order to display.</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+  data.forEach(order => {
+    const itemsHTML = order.items.map(item => `
+      <li>${item.name} × ${item.quantity} — ₱${item.subtotal}</li>
+    `).join("");
+
+    const card = document.createElement("div");
+    card.className = "order-card";
+    card.innerHTML = `
+      <h3>Order #${order.order_id}</h3>
+      <p><strong>Buyer:</strong> ${order.buyer_name}</p>
+      <p><strong>Status:</strong> ${order.status}</p>
+      <p><strong>Total:</strong> ₱${order.total}</p>
+      <p><strong>Items:</strong></p>
+      <ul>${itemsHTML}</ul>
+      <p><strong>Shipping Address:</strong> ${order.address}</p>
+      <p><strong>Payment:</strong> ${order.payment_method}</p>
+      <div class="order-actions">
+        <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+        <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function loadOrders() {
+  fetch("orders_fetch.php")
+    .then(res => res.json())
+    .then(renderOrders)
+    .catch(() => {
+      document.getElementById("orders").innerHTML = "<p>Error loading orders.</p>";
+    });
+}
+
+function changeOrderStatus(orderId, newStatus) {
+  fetch("update_order_status.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "order_id=" + orderId + "&status=" + newStatus
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result === "updated") {
+      alert("Order " + newStatus);
+      loadOrders();
+    } else {
+      alert("Update failed");
+    }
+  });
+}
+
+// Load orders on page ready
+document.addEventListener("DOMContentLoaded", loadOrders);
+</script>
   </script>
 </body>
 </html>
