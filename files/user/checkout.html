@@ -190,6 +190,40 @@
       background: linear-gradient(90deg, #917489 0%, var(--primary) 100%);
       transform: scale(1.03);
     }
+    .drag-drop-area {
+        width: 100%;
+        height: 200px;
+        border: 2px dashed var(--primary);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.2rem;
+        background: var(--sidebar);
+        position: relative;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .drag-drop-area.dragover {
+        background: rgba(161,130,201,0.1);
+        border-color: var(--accent);
+    }
+
+    .drag-drop-area img {
+        max-width: 100%;
+        max-height: 180px;
+        object-fit: contain;
+        display: none;
+    }
+
+    .drag-drop-area .placeholder {
+        text-align: center;
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
     @media (max-width: 700px) {
       .checkout-container {
         max-width: 98vw;
@@ -246,7 +280,6 @@
       <label for="payment">Payment Method</label>
       <select id="payment" name="payment" required>
         <option value="">Select payment method</option>
-        <option value="cod">Cash on Delivery</option>
         <option value="gcash">GCash</option>
         <option value="card">Credit/Debit Card</option>
       </select>
@@ -259,8 +292,19 @@
         <option value="joyride">Joyride</option>
       </select>
 
-      <label for="proof">Upload Proof of Payment</label>
-      <input type="file" id="proof" name="proof" accept="image/*,.pdf" required />
+      <label for="proof">Proof of Payment</label>
+      <div class="drag-drop-area" id="dragDropArea">
+        <div class="placeholder">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Drag and drop your proof of payment here<br>or click to select file</p>
+        </div>
+        <img id="previewImage" alt="Preview"/>
+        <input type="file" id="proof" name="proof" accept="image/*" required style="display: none;"/>
+      </div>
 
       <button type="submit" class="place-order-btn">Place Order</button>
     </form>
@@ -309,26 +353,79 @@
             `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
-    // Handle form submissiona
+    // Validate form inputs
+    function validateForm() {
+        const fullname = document.getElementById('fullname').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const payment = document.getElementById('payment').value;
+        const courier = document.getElementById('courier').value;
+        
+        if (!fullname || fullname.length < 3) {
+            alert('Please enter a valid full name');
+            return false;
+        }
+        
+        if (!address || address.length < 10) {
+            alert('Please enter a complete delivery address');
+            return false;
+        }
+        
+        if (!payment) {
+            alert('Please select a payment method');
+            return false;
+        }
+        
+        if (!courier) {
+            alert('Please select a courier');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Handle form submission
     document.getElementById("checkoutForm").onsubmit = async function(e) {
         e.preventDefault();
+        if (!validateForm()) return;
+        
+        // Get form data
         const formData = new FormData(this);
         
+        // Add total amount to form data
+        const total = document.getElementById('checkoutTotal').textContent
+            .replace('Total: ₱', '')
+            .replace(',', '');
+        formData.append('total_amount', total);
+        
+        // Validate payment method and proof
+        const paymentMethod = document.getElementById('payment').value;
+        const proofFile = document.getElementById('proof').files[0];
+        
+        if (paymentMethod !== 'cod' && !proofFile) {
+            alert("Please upload proof of payment for non-COD orders");
+            return;
+        }
+        
         try {
-            const response = await fetch("submit_order.php", {
+            const response = await fetch("process_order.php", {
                 method: "POST",
                 body: formData
             });
+            
             const result = await response.json();
+            console.log('Server response:', result); // Debug log
             
             if (result.success) {
+                alert(`Order #${result.order_id} placed successfully!`);
+                // Clear cart and redirect
+                localStorage.removeItem('cart');
                 window.location.href = "thank_you.html";
             } else {
-                alert("Order failed: " + result.message);
+                throw new Error(result.message || "Unknown error occurred");
             }
         } catch (error) {
-            console.error("Order error:", error);
-            alert("Error processing order. Please try again.");
+            console.error("Order processing error:", error);
+            alert(error.message || "Error processing order. Please try again.");
         }
     };
 
@@ -342,6 +439,48 @@
 
     // Load cart items when page loads
     document.addEventListener('DOMContentLoaded', loadCartItems);
+
+    // Drag and drop functionality for file upload
+    const dragDropArea = document.getElementById('dragDropArea');
+    const proofInput = document.getElementById('proof');
+    const previewImage = document.getElementById('previewImage');
+
+    dragDropArea.addEventListener('click', () => {
+        proofInput.click();
+    });
+
+    proofInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    dragDropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.add('dragover');
+    });
+
+    dragDropArea.addEventListener('dragleave', () => {
+        dragDropArea.classList.remove('dragover');
+    });
+
+    dragDropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
   </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 14, 2025 at 05:24 PM
+-- Generation Time: Jul 15, 2025 at 04:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,23 +24,16 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admindetails`
+-- Table structure for table `cart`
 --
 
-CREATE TABLE `admindetails` (
+CREATE TABLE `cart` (
+  `Cart_ID` int(11) NOT NULL,
   `User_ID` int(11) NOT NULL,
-  `Admin_Name` varchar(100) NOT NULL,
-  `Admin_Email` varchar(100) NOT NULL,
-  `Consumer_Address` varchar(200) NOT NULL,
-  `Inventory_Information` text DEFAULT NULL
+  `Product_ID` int(11) NOT NULL,
+  `Quantity` int(11) NOT NULL DEFAULT 1,
+  `Date_Added` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `admindetails`
---
-
-INSERT INTO `admindetails` (`User_ID`, `Admin_Name`, `Admin_Email`, `Consumer_Address`, `Inventory_Information`) VALUES
-(1, 'AdminUser', 'admin@gmail.com', 'Cebu City', 'Manages perfume inventory');
 
 -- --------------------------------------------------------
 
@@ -91,10 +84,21 @@ INSERT INTO `employeedetails` (`User_ID`, `Employee_Name`, `Employee_Email`, `Po
 
 CREATE TABLE `order` (
   `Order_ID` int(11) NOT NULL,
-  `User_ID` int(11) DEFAULT NULL,
-  `Order_Date` date DEFAULT NULL,
-  `Amount_Paid` decimal(10,2) DEFAULT NULL
+  `User_ID` int(11) NOT NULL,
+  `Order_Date` datetime DEFAULT current_timestamp(),
+  `Total_Amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `Shipping_Address` text NOT NULL,
+  `Payment_Method` varchar(50) NOT NULL,
+  `Payment_Proof` varchar(255) NOT NULL,
+  `Status` varchar(50) DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order`
+--
+
+INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipping_Address`, `Payment_Method`, `Payment_Proof`, `Status`) VALUES
+(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -109,6 +113,15 @@ CREATE TABLE `orderdetails` (
   `Product_Qty` int(11) DEFAULT NULL,
   `Subtotal` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orderdetails`
+--
+
+INSERT INTO `orderdetails` (`Order_ID`, `Product_ID`, `Product_Price`, `Product_Qty`, `Subtotal`) VALUES
+(1, 2, 1.00, 5, NULL),
+(1, 3, 21.00, 2, NULL),
+(1, 4, 12.00, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -175,10 +188,12 @@ INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Passwor
 --
 
 --
--- Indexes for table `admindetails`
+-- Indexes for table `cart`
 --
-ALTER TABLE `admindetails`
-  ADD PRIMARY KEY (`User_ID`);
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`Cart_ID`),
+  ADD KEY `User_ID` (`User_ID`),
+  ADD KEY `Product_ID` (`Product_ID`);
 
 --
 -- Indexes for table `consumerdetails`
@@ -224,6 +239,18 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `order`
+--
+ALTER TABLE `order`
+  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
@@ -240,10 +267,11 @@ ALTER TABLE `user`
 --
 
 --
--- Constraints for table `admindetails`
+-- Constraints for table `cart`
 --
-ALTER TABLE `admindetails`
-  ADD CONSTRAINT `admindetails_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
+ALTER TABLE `cart`
+  ADD CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`),
+  ADD CONSTRAINT `cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `product` (`Product_ID`);
 
 --
 -- Constraints for table `consumerdetails`
