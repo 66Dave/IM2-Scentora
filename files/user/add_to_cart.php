@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// You should get the user ID froam session in a real app
+// You should get the user ID from session in a real app
 $user_id = $_SESSION['user_id'] ?? 1; // fallback for demo
 $product_id = intval($_POST['product_id'] ?? 0);
 $quantity = intval($_POST['quantity'] ?? 1);

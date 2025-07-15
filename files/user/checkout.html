@@ -309,7 +309,7 @@
             `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
-    // Handle form submissiona
+    // Handle form submission
     document.getElementById("checkoutForm").onsubmit = async function(e) {
         e.preventDefault();
         const formData = new FormData(this);
