@@ -10,7 +10,7 @@ if ($conn->connect_error) {
 }
 
 $sql = "SELECT Product_ID, Product_Name, Product_Code, Category, Product_Price, 
-        Stock_Status, Image_URL, Date_Added, Date_Updated, Is_Active, Brand
+        Stock_Status, Image_URL, Date_Added, Date_Updated, Is_Active, Brand, Description
         FROM product ORDER BY Product_ID DESC";
 
 $result = $conn->query($sql);
@@ -32,6 +32,7 @@ while ($row = $result->fetch_assoc()) {
         "added" => $row['Date_Added'],
         "updated" => $row['Date_Updated'],
         "active" => (bool)$row['Is_Active'], // Default to active
+        "description" => $row['Description'],
     ];
 }
 
