@@ -32,13 +32,14 @@ $price = floatval($_POST['price'] ?? 0);
 $updated = $_POST['updated'];
 $stock_status = $stock > 0 ? "In stock ($stock pcs)" : "Out of stock";
 $is_active = $stock > 0 ? 1 : 0;
+$description = $_POST['description'] ?? '';
 
-$sql = "UPDATE product
-        SET Product_Name=?, Product_Code=?, Category=?, Brand=?, Image_URL=?, Stock_Status=?, Product_Price=?, Date_Updated=?, Is_Active=?
-        WHERE Product_ID=?";
+$sql = "UPDATE product SET
+    Product_Name=?, Product_Code=?, Category=?, Brand=?, Stock_Status=?, Product_Price=?, Date_Updated=?, Image_URL=?, Description=?
+    WHERE Product_ID=?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssssiii", $name, $code, $category, $brand, $image, $stock_status, $price, $updated, $is_active, $id);
+$stmt->bind_param("sssssdsssi", $name, $code, $category, $brand, $stock_status, $price, $updated, $image, $description, $id);
 
 if ($stmt->execute()) {
     echo "success";
