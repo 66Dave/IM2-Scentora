@@ -439,44 +439,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 document.getElementById('resetForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const formData = new FormData(this);
-    const messageEl = document.getElementById('resetMessage');
-    
-    // Show loading state
-    messageEl.textContent = 'Sending reset link...';
-    messageEl.style.color = '#917489';
-    
     fetch('reset_password.php', {
         method: 'POST',
-        body: formData
+        body: new FormData(this)
     })
-    .then(() => {
-        // Always show success
-        messageEl.style.color = '#28a745';
-        messageEl.textContent = '✓ Reset link sent to your email!';
+    .then(res => res.json())
+    .then(data => {
+        const resetMessage = document.getElementById('resetMessage');
+        resetMessage.textContent = data.message;
+        resetMessage.style.color = data.success ? '#4caf50' : '#f44336';
         
-        // Clear the form
-        this.reset();
-        
-        // Close modal after 3 seconds
-        setTimeout(() => {
-            document.getElementById('forgotModal').style.display = 'none';
-            messageEl.textContent = ''; // Clear message for next time
-        }, 3000);
+        if (data.success) {
+            document.getElementById('resetForm').reset();
+            setTimeout(() => {
+                document.getElementById('forgotModal').style.display = 'none';
+            }, 3000);
+        }
     })
-    .catch(() => {
-        // Even on error, show success
-        messageEl.style.color = '#28a745';
-        messageEl.textContent = '✓ Reset link sent to your email!';
-        
-        // Clear the form
-        this.reset();
-        
-        // Close modal after 3 seconds
-        setTimeout(() => {
-            document.getElementById('forgotModal').style.display = 'none';
-            messageEl.textContent = '';
-        }, 3000);
+    .catch(err => {
+        document.getElementById('resetMessage').textContent = 'An error occurred. Please try again.';
+        document.getElementById('resetMessage').style.color = '#f44336';
     });
 });
 

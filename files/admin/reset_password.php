@@ -36,20 +36,19 @@ try {
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            throw new Exception("No account found with this email address");
+            $response['success'] = false;
+            $response['message'] = "Email not found in our records";
+            echo json_encode($response);
+            exit;
         }
 
         // Generate and store reset token
         $token = bin2hex(random_bytes(32));
-        // Set expiry to 24 hours instead of 1 hour
         $expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
         
-        // Debug logging
-        error_log("Generated token: " . $token);
-        error_log("Expiry time set to: " . $expiry);
-
         $stmt = $conn->prepare("UPDATE user SET reset_token = ?, reset_expiry = ? WHERE Email = ?");
         $stmt->bind_param("sss", $token, $expiry, $email);
+        
         if (!$stmt->execute()) {
             throw new Exception("Failed to update reset token");
         }
@@ -89,7 +88,7 @@ try {
         }
 
         $response['success'] = true;
-        $response['message'] = "Reset link has been sent to your email";
+        $response['message'] = "Password reset link has been sent to your email";
     }
 } catch (Exception $e) {
     $response['success'] = false;
