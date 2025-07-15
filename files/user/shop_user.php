@@ -23,7 +23,6 @@ if (!$result) {
 $products = [];
 while ($row = $result->fetch_assoc()) {
     $imagePath = $row['Image_URL'];
-    // Simplify image path handling
     if (!empty($imagePath)) {
         $imagePath = '../admin/' . $imagePath;
     } else {
@@ -38,8 +37,8 @@ while ($row = $result->fetch_assoc()) {
         'Category' => $row['Category'],
         'Image_URL' => $imagePath,
         'Product_Code' => $row['Product_Code'],
-        'Brand' => $row['Brand'] ?? 'No Brand Specified',
-        'Description' => $row['Description'] ?? 'No Description Available'
+        'Brand' => $row['Brand'] ?? 'Scentora',
+        'Description' => $row['Description'] ?? 'No description available'
     ];
 }
 
@@ -48,6 +47,7 @@ if (empty($products)) {
     error_log("No products found in database");
 }
 
+// Return JSON response
 header('Content-Type: application/json');
 echo json_encode($products);
 $conn->close();
