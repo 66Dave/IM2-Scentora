@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 15, 2025 at 04:17 AM
+-- Generation Time: Jul 15, 2025 at 05:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -98,7 +98,11 @@ CREATE TABLE `order` (
 --
 
 INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipping_Address`, `Payment_Method`, `Payment_Proof`, `Status`) VALUES
-(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending');
+(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending'),
+(2, 1, '2025-07-15 10:19:42', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545982_6875babe7d632.jpg', 'Pending'),
+(3, 5, '2025-07-15 10:33:23', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752546803_6875bdf3867a0.jpg', 'Pending'),
+(4, 5, '2025-07-15 10:38:55', 2.00, '123', 'card', '../uploads/proofs/proof_1752547135_6875bf3f11532.jpg', 'Pending'),
+(5, 5, '2025-07-15 10:46:35', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752547595_6875c10b3f2b7.jpg', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -121,7 +125,11 @@ CREATE TABLE `orderdetails` (
 INSERT INTO `orderdetails` (`Order_ID`, `Product_ID`, `Product_Price`, `Product_Qty`, `Subtotal`) VALUES
 (1, 2, 1.00, 5, NULL),
 (1, 3, 21.00, 2, NULL),
-(1, 4, 12.00, 1, NULL);
+(1, 4, 12.00, 1, NULL),
+(2, 2, 1.00, 1, NULL),
+(3, 2, 1.00, 1, NULL),
+(4, 2, 1.00, 2, NULL),
+(5, 2, 1.00, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -169,19 +177,21 @@ CREATE TABLE `user` (
   `User_Type` enum('Admin','Consumer','Employee') NOT NULL,
   `Password` varchar(255) NOT NULL,
   `reset_token` varchar(64) DEFAULT NULL,
-  `reset_expiry` datetime DEFAULT NULL
+  `reset_expiry` datetime DEFAULT NULL,
+  `Profile_Image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`, `reset_token`, `reset_expiry`) VALUES
-(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL),
-(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123', NULL, NULL),
-(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123', NULL, NULL),
-(4, 'dave lang', 'dave@test.com', '', 'Consumer', '$2y$10$xKZ57il.hkE15hUT/Xx95uQ7H5cpNwe1zTWE3kO22rmCYBuyiinlu', NULL, NULL),
-(5, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$PQnRSc6.mvGfzS8lm3ra3ejk4MXjVtaxj/Z0ClKJmzVq3Pqfr87iq', 'b0a7dcd93d000baa20844288b58d46209d9fdaa76fa1a9817d65552389f55964', '2025-07-15 16:45:51');
+INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`, `reset_token`, `reset_expiry`, `Profile_Image`) VALUES
+(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL, NULL),
+(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123', NULL, NULL, NULL),
+(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123', NULL, NULL, NULL),
+(4, 'dave lang', 'dave@test.com', '', 'Consumer', '$2y$10$xKZ57il.hkE15hUT/Xx95uQ7H5cpNwe1zTWE3kO22rmCYBuyiinlu', NULL, NULL, NULL),
+(5, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$PQnRSc6.mvGfzS8lm3ra3ejk4MXjVtaxj/Z0ClKJmzVq3Pqfr87iq', 'b0a7dcd93d000baa20844288b58d46209d9fdaa76fa1a9817d65552389f55964', '2025-07-15 16:45:51', NULL),
+(6, 'Kylle A. Buhi', 'kylle@gmail.com', '-USC - TC', 'Consumer', '$2y$10$cDGbO54mXkyT1KQCPpkw1uBRrLSPUty8Ut5iYuFUiXAdpZ5KUQjvS', NULL, NULL, '../uploads/profile/diagram (10).png');
 
 --
 -- Indexes for dumped tables
@@ -242,13 +252,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `order`
 --
 ALTER TABLE `order`
-  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `product`
@@ -260,7 +270,7 @@ ALTER TABLE `product`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
