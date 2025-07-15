@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 14, 2025 at 05:24 PM
+-- Generation Time: Jul 15, 2025 at 03:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,23 +24,24 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admindetails`
+-- Table structure for table `cart`
 --
 
-CREATE TABLE `admindetails` (
+CREATE TABLE `cart` (
+  `Cart_ID` int(11) NOT NULL,
   `User_ID` int(11) NOT NULL,
-  `Admin_Name` varchar(100) NOT NULL,
-  `Admin_Email` varchar(100) NOT NULL,
-  `Consumer_Address` varchar(200) NOT NULL,
-  `Inventory_Information` text DEFAULT NULL
+  `Product_ID` int(11) NOT NULL,
+  `Quantity` int(11) NOT NULL DEFAULT 1,
+  `Date_Added` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `admindetails`
+-- Dumping data for table `cart`
 --
 
-INSERT INTO `admindetails` (`User_ID`, `Admin_Name`, `Admin_Email`, `Consumer_Address`, `Inventory_Information`) VALUES
-(1, 'AdminUser', 'admin@gmail.com', 'Cebu City', 'Manages perfume inventory');
+INSERT INTO `cart` (`Cart_ID`, `User_ID`, `Product_ID`, `Quantity`, `Date_Added`) VALUES
+(1, 5, 2, 5, '2025-07-15 01:12:05'),
+(2, 5, 3, 2, '2025-07-15 01:12:14');
 
 -- --------------------------------------------------------
 
@@ -175,10 +176,12 @@ INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Passwor
 --
 
 --
--- Indexes for table `admindetails`
+-- Indexes for table `cart`
 --
-ALTER TABLE `admindetails`
-  ADD PRIMARY KEY (`User_ID`);
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`Cart_ID`),
+  ADD KEY `User_ID` (`User_ID`),
+  ADD KEY `Product_ID` (`Product_ID`);
 
 --
 -- Indexes for table `consumerdetails`
@@ -224,6 +227,12 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
@@ -240,10 +249,11 @@ ALTER TABLE `user`
 --
 
 --
--- Constraints for table `admindetails`
+-- Constraints for table `cart`
 --
-ALTER TABLE `admindetails`
-  ADD CONSTRAINT `admindetails_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
+ALTER TABLE `cart`
+  ADD CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`),
+  ADD CONSTRAINT `cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `product` (`Product_ID`);
 
 --
 -- Constraints for table `consumerdetails`
