@@ -197,15 +197,21 @@
     }
 
     .search-bar input {
-      width: 100%;
+      width: 50%;
+      min-width: 180px;
       padding: 0.5rem 1rem;
       border-radius: 999px;
-      border: 2px solid var(--primary); /* Clear border */
+      border: 2px solid var(--primary);
       background: var(--card);
       color: var(--text);
       font-size: 1rem;
       box-shadow: var(--shadow);
       outline: none;
+      transition: width 0.3s cubic-bezier(.4,0,.2,1);
+    }
+
+    .search-bar input.expanded {
+      width: 100%;
     }
 
     /* Dark Mode */
@@ -708,6 +714,12 @@ let currentViewingProduct = null;
 
 const categorySelect = document.querySelector(".category-select");
 const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("focus", function() {
+  this.classList.add("expanded");
+});
+searchInput.addEventListener("blur", function() {
+  this.classList.remove("expanded");
+});
 const productGrid = document.getElementById("productGrid");
 
 //Category filters
