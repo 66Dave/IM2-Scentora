@@ -522,7 +522,11 @@ background:rgba(0,0,0,0.5); z-index:1001;">
   background:var(--card); padding:2rem; border-radius:12px; max-width:500px; width:90%;">
     <h3 style="color:var(--primary); margin-top:0;">Proof of Payment</h3>
     <div style="margin: 1rem 0; text-align: center;">
-      <img id="proofImage" src="" alt="Payment Proof" style="max-width:100%; max-height:70vh; border-radius:8px;">
+      <img id="proofImage" src="" alt="Payment Proof" 
+           style="max-width:100%; max-height:70vh; border-radius:8px; display:none; margin:0 auto;">
+      <div id="imageError" style="display:none; color:red; margin-top:1rem;">
+        Failed to load image. Please check the file path.
+      </div>
     </div>
     <div style="display:flex; justify-content:flex-end;">
       <button onclick="closeProofModal()" style="padding:0.5rem 1rem; border:none; 
@@ -650,10 +654,12 @@ function renderOrders(data) {
       <td>${order.status}</td>
       <td>
         <div class="order-actions">
-          <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
-          <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+          ${order.status === 'Pending' ? `
+            <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+            <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+          ` : ''}
           ${order.payment_proof ? 
-            `<button onclick="showProofModal('${order.payment_proof}')" 
+            `<button onclick="showProofModal('${order.payment_proof.split('/').pop()}')" 
             style="background:#4a90e2;">View Proof</button>` : 
             '<span style="color:var(--text);font-size:0.9rem;">No proof uploaded</span>'
           }
@@ -729,13 +735,53 @@ function goToPendingOrders() {
 
 // Add this in your script section
 function showProofModal(proofUrl) {
+  const proofModal = document.getElementById('proofModal');
   const proofImage = document.getElementById('proofImage');
-  proofImage.src = '../uploads/proofs/' + proofUrl;
-  document.getElementById('proofModal').style.display = 'block';
+  const imageError = document.getElementById('imageError');
+  
+  // Reset error message and image
+  imageError.style.display = 'none';
+  proofImage.style.display = 'none';
+
+  // Show loading state
+  proofModal.style.display = 'block';
+  
+  // Construct proper path based on the proof URL
+  let imagePath;
+  if (proofUrl.includes('/uploads/proofs/')) {
+    imagePath = proofUrl; // Full path already included
+  } else {
+    // Adjust path to point to user folder
+    imagePath = `../user/uploads/proofs/${proofUrl.split('/').pop()}`;
+  }
+
+  // Add console log for debugging
+  console.log('Attempting to load image from:', imagePath);
+
+  // Create a new image to test loading
+  const testImage = new Image();
+  testImage.onload = function() {
+    proofImage.src = imagePath;
+    proofImage.style.display = 'block';
+  };
+
+  testImage.onerror = function() {
+    console.error('Failed to load image from path:', imagePath);
+    imageError.style.display = 'block';
+    proofImage.style.display = 'none';
+  };
+
+  testImage.src = imagePath;
 }
 
 function closeProofModal() {
-  document.getElementById('proofModal').style.display = 'none';
+  const proofModal = document.getElementById('proofModal');
+  const proofImage = document.getElementById('proofImage');
+  const imageError = document.getElementById('imageError');
+  
+  proofModal.style.display = 'none';
+  proofImage.src = '';
+  imageError.style.display = 'none';
 }
 
 // Close modal when clicking outside
