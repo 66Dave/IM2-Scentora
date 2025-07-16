@@ -21,19 +21,19 @@ $stmt->execute();
 $stmt->bind_result($oid, $odate, $total, $status);
 
 echo "<table style='width:100%;border-collapse:collapse;'>";
-echo "<tr style='background:#efe2fa;'><th style='padding:8px;'>Order #</th><th style='padding:8px;'>Date</th><th style='padding:8px;'>Total</th><th style='padding:8px;'>Status</th></tr>";
+echo "<tr style='background:var(--card);'><th style='padding:8px;color:var(--primary);'>Order #</th><th style='padding:8px;color:var(--primary);'>Date</th><th style='padding:8px;color:var(--primary);'>Total</th><th style='padding:8px;color:var(--primary);'>Status</th></tr>";
 $found = false;
 while ($stmt->fetch()) {
     $found = true;
-    echo "<tr>";
-    echo "<td style='padding:8px;border-bottom:1px solid #eee;'>".htmlspecialchars($oid)."</td>";
-    echo "<td style='padding:8px;border-bottom:1px solid #eee;'>".htmlspecialchars($odate)."</td>";
-    echo "<td style='padding:8px;border-bottom:1px solid #eee;'>₱".number_format($total,2)."</td>";
-    echo "<td style='padding:8px;border-bottom:1px solid #eee;'>".htmlspecialchars($status)."</td>";
+    echo "<tr style='background:#2a2236;'>";
+    echo "<td style='padding:8px;border-bottom:1px solid #eee;color:#fff;'>".htmlspecialchars($oid)."</td>";
+    echo "<td style='padding:8px;border-bottom:1px solid #eee;color:#fff;'>".htmlspecialchars($odate)."</td>";
+    echo "<td style='padding:8px;border-bottom:1px solid #eee;color:#fff;'>₱".number_format($total,2)."</td>";
+    echo "<td style='padding:8px;border-bottom:1px solid #eee;color:#fff;'>".htmlspecialchars($status)."</td>";
     echo "</tr>";
 }
 if (!$found) {
-    echo "<tr><td colspan='4' style='padding:16px;text-align:center;'>No orders found.</td></tr>";
+    echo "<tr><td colspan='4' style='padding:16px;text-align:center;background:#2a2236;color:#fff;'>No orders found.</td></tr>";
 }
 echo "</table>";
 $stmt->close();

@@ -242,6 +242,13 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       border: 4px solid var(--primary);
       background: var(--sidebar);
       margin-bottom: 1rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      cursor: default;
+    }
+    .profile-pic.editable {
+      box-shadow: 0 0 0 4px var(--primary), 0 2px 8px rgba(161,130,201,0.15);
+      border-color: #8e6bbf;
+      cursor: pointer;
     }
     body.darkmode .profile-pic {
       border-color: #fff;
@@ -325,6 +332,18 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
     .profile-details .edit-btn:hover {
       background: #8e6bbf;
     }
+    /* Modal color fix */
+    #ordersModal {
+      background: rgba(0,0,0,0.35);
+    }
+    #ordersModal .modal-content {
+      background: var(--card);
+      color: var(--text);
+    }
+    body.darkmode #ordersModal .modal-content {
+      background: #392e44;
+      color: #f7f5fa;
+    }
     @media (max-width: 700px) {
       .profile-container {
         flex-direction: column;
@@ -377,38 +396,29 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
   <main>
     <div class="profile-container">
       <div class="profile-sidebar">
-        <img src="<?php echo htmlspecialchars($profile_pic); ?>" alt="Profile Picture" class="profile-pic" id="profilePic">
         <form id="uploadForm" enctype="multipart/form-data" method="post" style="margin-bottom:1rem;">
-          <input type="file" name="profile_image" id="profile_image" accept="image/*" style="display:none;" onchange="document.getElementById('uploadBtn').innerText='Upload Image'">
-          <button type="button" class="edit-btn" onclick="document.getElementById('profile_image').click();">Choose Image</button>
-          <button type="submit" class="edit-btn" id="uploadBtn" style="margin-top:0.5rem;">Upload Image</button>
+          <input type="file" name="profile_image" id="profile_image" accept="image/*" style="display:none;" onchange="document.getElementById('uploadForm').submit()">
+          <img src="<?php echo htmlspecialchars($profile_pic); ?>" alt="Profile Picture" class="profile-pic" id="profilePic" title="Click to change image" />
         </form>
-        <!-- Remove Username display -->
+        <div style="font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom:0.2rem;"><?php echo htmlspecialchars($fullname); ?></div>
         <div style="font-size:0.95rem;color:var(--text);margin-bottom:1rem;" id="profileEmail"><?php echo htmlspecialchars($email); ?></div>
-        <button class="edit-btn" onclick="enableEditDetails()">Edit Details</button>
-        <button class="edit-btn" style="margin-top:0.5rem;" onclick="showOrdersModal()">View My Orders</button>
       </div>
       <div class="profile-main">
         <section class="profile-section">
-          <h3>Account Details</h3>
-          <form class="profile-details" id="detailsForm" autocomplete="off" method="post">
+          <h3>Account Details & Shipping</h3>
+          <form class="profile-details" id="detailsForm" autocomplete="off" method="post" enctype="multipart/form-data">
             <label for="fullname">Full Name</label>
             <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($fullname); ?>" readonly>
             <label for="email">Email</label>
             <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
-            <!-- Username field removed -->
-            <button type="submit" class="edit-btn" id="saveBtn" style="display:none;">Save</button>
-            <button type="button" class="edit-btn" id="cancelBtn" style="display:none;" onclick="cancelEditDetails()">Cancel</button>
-          </form>
-        </section>
-        <section class="profile-section">
-          <h3>Shipping Address</h3>
-          <form class="profile-details" id="addressForm" autocomplete="off" method="post">
-            <label for="address">Address</label>
+            <label for="address">Shipping Address</label>
             <textarea id="address" name="address" rows="2" readonly><?php echo htmlspecialchars($address); ?></textarea>
-            <button type="button" class="edit-btn" id="editAddressBtn" onclick="enableEditAddress()">Edit</button>
-            <button type="submit" class="edit-btn" id="saveAddressBtn" style="display:none;">Save</button>
-            <button type="button" class="edit-btn" id="cancelAddressBtn" style="display:none;" onclick="cancelEditAddress()">Cancel</button>
+            <div style="display:flex;gap:0.5rem;">
+              <button type="button" class="edit-btn" id="editBtn" onclick="enableEditProfile()">Edit Profile</button>
+              <button type="button" class="edit-btn" id="viewOrdersBtn" onclick="showOrdersModal()">View My Orders</button>
+              <button type="submit" class="edit-btn" id="saveBtn" style="display:none;">Save</button>
+              <button type="button" class="edit-btn" id="cancelBtn" style="display:none;" onclick="cancelEditProfile()">Cancel</button>
+            </div>
           </form>
         </section>
       </div>
@@ -416,7 +426,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
   </main>
   <!-- Orders Modal -->
 <div id="ordersModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:2000; align-items:center; justify-content:center;">
-  <div style="background:#fff; max-width:600px; width:90%; margin:auto; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.18); padding:2rem; position:relative;">
+  <div class="modal-content" style="max-width:600px; width:90%; margin:auto; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.18); padding:2rem; position:relative;">
     <button onclick="closeOrdersModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; color:#a182c9; cursor:pointer;">&times;</button>
     <h2 style="color:#a182c9; margin-top:0;">My Orders</h2>
     <div id="ordersContent">Loading...</div>
@@ -447,37 +457,40 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
   };
 });
 
-// Enable editing for details
-function enableEditDetails() {
+let editingProfile = false;
+
+// Enable editing for all profile fields and image
+function enableEditProfile() {
   document.getElementById('fullname').readOnly = false;
   document.getElementById('email').readOnly = false;
+  document.getElementById('address').readOnly = false;
   document.getElementById('saveBtn').style.display = 'inline-block';
   document.getElementById('cancelBtn').style.display = 'inline-block';
+  document.getElementById('editBtn').style.display = 'none';
+  document.getElementById('viewOrdersBtn').style.display = 'none'; // Hide orders button
+  editingProfile = true;
+  document.getElementById('profilePic').classList.add('editable');
 }
 
-// Cancel editing for details
-function cancelEditDetails() {
+// Cancel editing for all profile fields and image
+function cancelEditProfile() {
   document.getElementById('fullname').readOnly = true;
   document.getElementById('email').readOnly = true;
+  document.getElementById('address').readOnly = true;
   document.getElementById('saveBtn').style.display = 'none';
   document.getElementById('cancelBtn').style.display = 'none';
+  document.getElementById('editBtn').style.display = 'inline-block';
+  document.getElementById('viewOrdersBtn').style.display = 'inline-block'; // Show orders button
+  editingProfile = false;
+  document.getElementById('profilePic').classList.remove('editable');
 }
 
-// Enable editing for address
-function enableEditAddress() {
-  document.getElementById('address').readOnly = false;
-  document.getElementById('saveAddressBtn').style.display = 'inline-block';
-  document.getElementById('cancelAddressBtn').style.display = 'inline-block';
-  document.getElementById('editAddressBtn').style.display = 'none';
-}
-
-// Cancel editing for address
-function cancelEditAddress() {
-  document.getElementById('address').readOnly = true;
-  document.getElementById('saveAddressBtn').style.display = 'none';
-  document.getElementById('cancelAddressBtn').style.display = 'none';
-  document.getElementById('editAddressBtn').style.display = 'inline-block';
-}
+// Make profile image clickable only when editing
+document.getElementById('profilePic').addEventListener('click', function() {
+  if (editingProfile) {
+    document.getElementById('profile_image').click();
+  }
+});
 
 // Show orders modal
 function showOrdersModal() {
