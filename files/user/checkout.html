@@ -42,24 +42,23 @@
       box-shadow: 0 2px 12px rgba(145, 116, 137, 0.08);
     }
     .logo {
-      font-size: 1.7rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: var(--white);
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
     .nav-links {
       display: flex;
-      gap: 1.2rem;
+      gap: 1rem;
       align-items: center;
     }
     .nav-links a {
       text-decoration: none;
       color: var(--white);
       font-weight: 500;
-      font-size: 1.08rem;
+      font-size: 1rem;
       padding: 0.4rem 1rem;
       border-radius: 999px;
-      transition: background 0.2s, color 0.2s;
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
       gap: 0.3rem;
@@ -71,8 +70,46 @@
       box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
     }
     .nav-links a:hover {
-      background-color: rgba(255, 255, 255, 0.18);
+      background-color: rgba(255, 255, 255, 0.2);
       color: var(--accent);
+    }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toggle-switch label {
+      font-size: 0.96rem;
+      color: var(--white);
+    }
+    .toggle-switch input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #bda6e7;
+      outline: none;
+      border-radius: 15px;
+      position: relative;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    .toggle-switch input[type="checkbox"]:checked {
+      background: #392e44;
+    }
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      top: 1px;
+      left: 2px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .toggle-switch input[type="checkbox"]:checked::before {
+      transform: translateX(19px);
+      background: #a182c9;
     }
     .checkout-container {
       max-width: 540px;
@@ -165,6 +202,15 @@
       color: var(--text);
       transition: border 0.2s;
     }
+    /* Ensure all inputs and selects fit inside their parent */
+.checkout-container input,
+.checkout-container select {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+  display: block;
+}
     .form-section input:focus,
     .form-section select:focus {
       border: 1.5px solid var(--primary);
@@ -240,30 +286,52 @@
         padding: 0.7rem 0;
       }
     }
+
+    /* Dark Mode */
+body.darkmode {
+  --primary: #b89fff;
+  --accent: #28294b;
+  --background: #191922;
+  --card: #232336;
+  --sidebar: #232336;
+  --text: #f7f5fa;
+  --nav-bg: rgba(32, 31, 50, 0.92);
+  --white: #e9e9ff;
+  --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
+}
+
+body.darkmode .summary-item-price {
+  color: var(--white);
+}
+
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">Scentora</div>  
-    <nav class="nav-links">
-      <a href="shop_user.html" title="Shop">shop</a>
-        
-      <a href="userCart.html" title="Cart">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-      </a>
-      <a href="profile.html" title="Profile">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-          <circle cx="12" cy="8" r="4"></circle>
-          <path d="M2 20c0-4 8-6 10-6s10 2 10 6"></path>
-        </svg>
-      </a>
-      <a href="#logout" id="logout-link">Logout</a>
-    </nav>
-  </header>
+  <div class="logo">Scentora</div>
+  <nav class="nav-links">
+    <a href="shop_user.html">Shop</a>
+    <a href="orders_user.php">Orders</a>
+    <a href="userCart.html" title="Cart">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+    </a>
+    <a href="user_profile.php" title="Profile">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+      </svg>
+    </a>
+    <a href="#logout" id="logout-link">Logout</a>
+  </nav>
+  <div class="toggle-switch">
+    <label for="darkmode">Dark mode</label>
+    <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+  </div>
+</header>
   <div class="checkout-container">
     <div class="checkout-title">Checkout</div>
     <ul class="summary-list" id="summaryList">
@@ -505,6 +573,20 @@
         qrImage.src = '';
       }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+  const darkToggle = document.getElementById('darkmode');
+  if (darkToggle) {
+    if (localStorage.getItem('scentoraDark') === '1') {
+      document.body.classList.add('darkmode');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+    });
+  }
+});
   </script>
 </body>
 </html>

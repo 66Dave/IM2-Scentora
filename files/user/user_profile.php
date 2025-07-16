@@ -365,35 +365,30 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
 </head>
 <body>
   <header>
-    <div class="logo">Scentora</div>
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search for products" disabled />
-    </div>
-    <div class="header_contents">
-      <nav class="nav-links">
-        <a href="shop_user.html">Shop</a>
-        <a href="orders_user.php">Orders</a>
-        <a href="userCart.html" title="Cart">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-        </a>
-        <a href="user_profile.php" class="active" title="Profile">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
-            <circle cx="12" cy="8" r="4"></circle>
-            <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
-          </svg>
-        </a>
-        <a href="#logout" id="logout-link">Logout</a>
-      </nav>
-      <div class="toggle-switch">
-        <label for="darkmode">Dark mode</label>
-        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
-      </div>
-    </div>
-  </header>
+  <div class="logo">Scentora</div>
+  <nav class="nav-links">
+    <a href="shop_user.html">Shop</a>
+    <a href="orders_user.php">Orders</a>
+    <a href="userCart.html" title="Cart">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+    </a>
+    <a href="user_profile.php" class="active" title="Profile">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+      </svg>
+    </a>
+    <a href="#logout" id="logout-link">Logout</a>
+  </nav>
+  <div class="toggle-switch">
+    <label for="darkmode">Dark mode</label>
+    <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+  </div>
+</header>
   <main>
     <div class="profile-container">
       <div class="profile-sidebar">
