@@ -372,6 +372,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
     <div class="header_contents">
       <nav class="nav-links">
         <a href="shop_user.html">Shop</a>
+        <a href="orders_user.php">Orders</a>
         <a href="userCart.html" title="Cart">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
             <circle cx="9" cy="21" r="1"></circle>
@@ -379,7 +380,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
         </a>
-        <a href="profile.php" class="active" title="Profile">
+        <a href="user_profile.php" class="active" title="Profile">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
             <circle cx="12" cy="8" r="4"></circle>
             <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
