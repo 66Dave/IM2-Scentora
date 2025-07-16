@@ -1,109 +1,100 @@
 <?php
 header('Content-Type: application/json');
+require_once '../includes/db_connect.php';
+
+$month = isset($_GET['month']) && $_GET['month'] !== 'all' ? intval($_GET['month']) : null;
+$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+$limit = 5;
+$offset = ($page - 1) * $limit;
 
 try {
-    $conn = new mysqli("localhost", "root", "", "scentoradb");
-    
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
+    // Base where clause for completed orders
+    $whereClause = "WHERE o.Status = 'Completed'";
+    if ($month) {
+        $whereClause .= " AND MONTH(o.Order_Date) = $month";
     }
 
-    // Get total sales from completed orders only
-    $totalSalesQuery = "
-        SELECT 
-            COALESCE(SUM(Total_Amount), 0) as total
-        FROM `order` 
-        WHERE status = 'Completed'
-    ";
-    
-    $totalResult = $conn->query($totalSalesQuery);
-    if (!$totalResult) {
-        throw new Exception("Total sales query failed: " . $conn->error);
-    }
-    $totalSales = (float)($totalResult->fetch_assoc()['total'] ?? 0);
+    // Get sales statistics
+    $statsQuery = "SELECT 
+        COALESCE(SUM(o.Total_Amount), 0) as totalSales,
+        COUNT(DISTINCT o.Order_ID) as orderCount,
+        COALESCE(AVG(o.Total_Amount), 0) as averageOrderValue
+        FROM `order` o
+        $whereClause";
 
-    // Get monthly sales for completed orders only
-    $monthlySalesQuery = "
-        SELECT 
-            DATE_FORMAT(Order_Date, '%Y-%m') as month,
-            COALESCE(SUM(Total_Amount), 0) as total,
-            COUNT(DISTINCT Order_ID) as order_count
+    $result = $conn->query($statsQuery);
+    $stats = $result->fetch_assoc();
+
+    // Get paginated order details
+    $ordersQuery = "SELECT 
+        o.Order_ID,
+        o.Order_Date,
+        o.Total_Amount,
+        u.Name as Buyer_Name,
+        od.Product_Qty,
+        od.Product_Price,
+        od.Subtotal,
+        p.Product_Name
+        FROM `order` o
+        JOIN user u ON o.User_ID = u.User_ID
+        JOIN orderdetails od ON o.Order_ID = od.Order_ID
+        JOIN product p ON od.Product_ID = p.Product_ID
+        $whereClause
+        ORDER BY o.Order_Date DESC
+        LIMIT $limit OFFSET $offset";
+
+    $result = $conn->query($ordersQuery);
+    $orders = [];
+    while ($row = $result->fetch_assoc()) {
+        $orders[] = $row;
+    }
+
+    // Get total count for pagination
+    $countQuery = "SELECT COUNT(DISTINCT o.Order_ID) as total 
+                   FROM `order` o 
+                   $whereClause";
+    $result = $conn->query($countQuery);
+    $totalItems = $result->fetch_assoc()['total'];
+    $totalPages = ceil($totalItems / $limit);
+
+    // Monthly data for chart
+    $chartQuery = "SELECT 
+        DATE_FORMAT(Order_Date, '%Y-%m') as month,
+        SUM(Total_Amount) as total
         FROM `order`
-        WHERE 
-            status = 'Completed'
-            AND Order_Date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+        WHERE Status = 'Completed'
         GROUP BY DATE_FORMAT(Order_Date, '%Y-%m')
-        ORDER BY month ASC
-    ";
+        ORDER BY month";
 
-    $monthlySales = $conn->query($monthlySalesQuery);
-    if (!$monthlySales) {
-        throw new Exception("Monthly sales query failed: " . $conn->error);
+    $result = $conn->query($chartQuery);
+    $chartData = [];
+    while ($row = $result->fetch_assoc()) {
+        $chartData['labels'][] = date('M Y', strtotime($row['month']));
+        $chartData['values'][] = floatval($row['total']);
     }
 
-    $labels = [];
-    $values = [];
-    $currentMonthSales = 0;
-    $salesByMonth = [];
+    $response = [
+        'totalSales' => number_format($stats['totalSales'], 2, '.', ''),
+        'orderCount' => $stats['orderCount'],
+        'averageOrderValue' => number_format($stats['averageOrderValue'], 2, '.', ''),
+        'orders' => $orders,
+        'pagination' => [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'itemsPerPage' => $limit,
+            'totalItems' => $totalItems
+        ],
+        'labels' => $chartData['labels'] ?? [],
+        'values' => $chartData['values'] ?? [],
+        'monthlySales' => $month ? $stats['totalSales'] : array_sum($chartData['values'] ?? [0])
+    ];
 
-    // Store the monthly data
-    while($row = $monthlySales->fetch_assoc()) {
-        $salesByMonth[$row['month']] = [
-            'total' => (float)$row['total'],
-            'count' => (int)$row['order_count']
-        ];
-    }
-
-    // Generate last 6 months
-    $startDate = new DateTime('first day of -5 months');
-    $endDate = new DateTime('last day of this month');
-    
-    $period = new DatePeriod(
-        $startDate,
-        new DateInterval('P1M'),
-        $endDate->modify('+1 month')
-    );
-
-    foreach ($period as $date) {
-        $monthKey = $date->format('Y-m');
-        $labels[] = $date->format('M Y');
-        
-        if (isset($salesByMonth[$monthKey])) {
-            $values[] = (float)$salesByMonth[$monthKey]['total'];
-            
-            if($monthKey == date('Y-m')) {
-                $currentMonthSales = (float)$salesByMonth[$monthKey]['total'];
-            }
-        } else {
-            $values[] = 0;
-        }
-    }
-
-    // Debug information to verify the data
-    echo json_encode([
-        'totalSales' => number_format($totalSales, 2, '.', ''),
-        'monthlySales' => number_format($currentMonthSales, 2, '.', ''),
-        'labels' => $labels,
-        'values' => array_map(function($val) {
-            return number_format((float)$val, 2, '.', '');
-        }, $values),
-        'debug' => [
-            'rawSales' => $totalSales,
-            'rawMonthly' => $currentMonthSales,
-            'monthlyData' => $salesByMonth,
-            'startDate' => $startDate->format('Y-m-d'),
-            'endDate' => $endDate->format('Y-m-d')
-        ]
-    ]);
+    echo json_encode($response);
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
-    ]);
-} finally {
-    if (isset($conn)) {
-        $conn->close();
-    }
+    echo json_encode(['error' => $e->getMessage()]);
 }
+
+$conn->close();
+?>
