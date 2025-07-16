@@ -5,16 +5,13 @@ try {
     // Updated query to match your database structure
     $query = "SELECT 
         o.Order_ID as order_id,
-        u.Name as buyer_name,
+        u.Email as buyer_email,
         o.Order_Date as order_date,
         o.Total_Amount as total,
         o.Status as status,
-        o.Payment_Proof as payment_proof,
-        o.Shipping_Address as address,
-        o.Payment_Method as payment_method,
-        o.Courier as courier
+        o.Payment_Proof as payment_proof
         FROM `order` o
-        LEFT JOIN user u ON o.User_ID = u.User_ID
+        JOIN user u ON o.User_ID = u.User_ID
         ORDER BY o.Order_Date DESC";
 
     $result = $conn->query($query);
