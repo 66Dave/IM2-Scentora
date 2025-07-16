@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 15, 2025 at 09:06 AM
+-- Generation Time: Jul 16, 2025 at 02:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -41,7 +41,10 @@ CREATE TABLE `cart` (
 
 INSERT INTO `cart` (`Cart_ID`, `User_ID`, `Product_ID`, `Quantity`, `Date_Added`) VALUES
 (12, 7, 5, 1, '2025-07-15 05:55:51'),
-(13, 1, 4, 1, '2025-07-15 07:04:41');
+(13, 1, 4, 1, '2025-07-15 07:04:41'),
+(14, 1, 2, 6, '2025-07-16 00:42:53'),
+(15, 1, 6, 1, '2025-07-16 00:43:25'),
+(16, 1, 5, 1, '2025-07-16 00:44:26');
 
 -- --------------------------------------------------------
 
@@ -98,20 +101,24 @@ CREATE TABLE `order` (
   `Shipping_Address` text NOT NULL,
   `Payment_Method` varchar(50) NOT NULL,
   `Payment_Proof` varchar(255) NOT NULL,
-  `Status` varchar(50) DEFAULT 'Pending'
+  `Status` varchar(50) DEFAULT 'Pending',
+  `Courier` varchar(10) DEFAULT NULL,
+  `Tracking_Number` varchar(10) DEFAULT NULL,
+  `Arrival_Date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order`
 --
 
-INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipping_Address`, `Payment_Method`, `Payment_Proof`, `Status`) VALUES
-(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending'),
-(2, 1, '2025-07-15 10:19:42', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545982_6875babe7d632.jpg', 'Pending'),
-(3, 5, '2025-07-15 10:33:23', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752546803_6875bdf3867a0.jpg', 'Pending'),
-(4, 5, '2025-07-15 10:38:55', 2.00, '123', 'card', '../uploads/proofs/proof_1752547135_6875bf3f11532.jpg', 'Pending'),
-(5, 5, '2025-07-15 10:46:35', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752547595_6875c10b3f2b7.jpg', 'Pending'),
-(6, 6, '2025-07-15 11:46:14', 169.00, 'usc TC', 'gcash', '../uploads/proofs/proof_1752551174_6875cf0692360.png', 'Pending');
+INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipping_Address`, `Payment_Method`, `Payment_Proof`, `Status`, `Courier`, `Tracking_Number`, `Arrival_Date`) VALUES
+(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending', NULL, NULL, NULL),
+(2, 1, '2025-07-15 10:19:42', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545982_6875babe7d632.jpg', 'Pending', NULL, NULL, NULL),
+(3, 5, '2025-07-15 10:33:23', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752546803_6875bdf3867a0.jpg', 'Pending', NULL, NULL, NULL),
+(4, 5, '2025-07-15 10:38:55', 2.00, '123', 'card', '../uploads/proofs/proof_1752547135_6875bf3f11532.jpg', 'Pending', NULL, NULL, NULL),
+(5, 5, '2025-07-15 10:46:35', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752547595_6875c10b3f2b7.jpg', 'Pending', NULL, NULL, NULL),
+(6, 6, '2025-07-15 11:46:14', 169.00, 'usc TC', 'gcash', '../uploads/proofs/proof_1752551174_6875cf0692360.png', 'Pending', NULL, NULL, NULL),
+(7, 2, '2025-07-16 08:53:04', 4.00, '5637', 'gcash', 'proof_1752627184_8672.jpg', 'Declined', 'grab', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -140,7 +147,8 @@ INSERT INTO `orderdetails` (`Order_ID`, `Product_ID`, `Product_Price`, `Product_
 (4, 2, 1.00, 2, NULL),
 (5, 2, 1.00, 1, NULL),
 (6, 5, 69.00, 1, NULL),
-(6, 6, 100.00, 1, NULL);
+(6, 6, 100.00, 1, NULL),
+(7, 2, 1.00, 4, 4.00);
 
 -- --------------------------------------------------------
 
@@ -153,7 +161,7 @@ CREATE TABLE `product` (
   `User_ID` int(11) DEFAULT NULL,
   `Product_Name` varchar(100) NOT NULL,
   `Product_Price` decimal(10,2) NOT NULL,
-  `Stock_Status` varchar(50) NOT NULL,
+  `Stock_Level` int(1) DEFAULT NULL,
   `Product_Code` varchar(50) DEFAULT NULL,
   `Category` varchar(50) DEFAULT NULL,
   `Image_URL` varchar(255) DEFAULT NULL,
@@ -161,19 +169,20 @@ CREATE TABLE `product` (
   `Date_Updated` date DEFAULT NULL,
   `Is_Active` tinyint(1) DEFAULT 1,
   `Brand` varchar(100) DEFAULT 'Scentora',
-  `Description` text DEFAULT NULL
+  `Description` text DEFAULT NULL,
+  `Available_Stocks` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `product`
 --
 
-INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Status`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`, `Brand`, `Description`) VALUES
-(2, 1, 'Test1', 1.00, 'In stock (32 pcs)', '123', 'Floral', 'uploads/wo_mu.png', '2025-07-08', '2025-07-14', 1, 'Scentora', NULL),
-(3, 1, 'lead dev for sale', 21.00, 'In stock (2 pcs)', '344', 'Floral', 'uploads/developer.jpg', '2025-07-08', '2025-07-14', 1, 'randomhuman', NULL),
-(4, 1, 'random guy', 12.00, 'In stock (12 pcs)', '12', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-15', 1, 'Scentora', 'Mega'),
-(5, 1, 'jabol monster', 69.00, 'In stock (69 pcs)', '69', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-15', 1, 'khit', 'Niga'),
-(6, 1, 'random ass perfume', 100.00, 'In stock (21 pcs)', 'random1', 'Fresh', 'uploads/flo_es.png', '2025-07-14', '2025-07-15', 1, 'Scentora', 'Checkkk');
+INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Level`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`, `Brand`, `Description`, `Available_Stocks`) VALUES
+(2, 1, 'Test1', 1.00, 1, '123', 'Floral', 'uploads/wo_mu.png', '2025-07-08', '2025-07-16', 1, 'Scentora', 'vf', 450),
+(3, 1, 'lead dev for sale', 21.00, 2, '344', 'Floral', 'uploads/developer.jpg', '2025-07-08', '2025-07-16', 1, 'randomhuman2', '3ed', 1),
+(4, 1, 'random guy', 12.00, 1, '12', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-16', 1, 'Scentora', 'Mega', 54),
+(5, 1, 'jabol monster', 69.00, 1, '69', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-16', 1, 'khit', 'Niga', 435),
+(6, 1, 'random ass perfume', 100.00, 1, 'random1', 'Fresh', 'uploads/flo_es.png', '2025-07-14', '2025-07-16', 1, 'Scentora', 'Checkkk', 65);
 
 -- --------------------------------------------------------
 
@@ -265,13 +274,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `order`
 --
 ALTER TABLE `order`
-  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `product`
