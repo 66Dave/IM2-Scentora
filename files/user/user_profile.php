@@ -93,6 +93,19 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       padding-top: 74px;
       transition: background 0.5s ease, color 0.5s ease;
     }
+    body.darkmode {
+      --primary: #a182c9;
+      --accent: #392e44;
+      --background: #2a2236;
+      --card: #392e44;
+      --sidebar: #2a2236;
+      --text: #f7f5fa;
+      --nav-bg: rgba(57, 46, 68, 0.85);
+      --white: #2a2236;
+      --shadow: 0 2px 6px rgba(57,46,68,0.22);
+      background: var(--background);
+      color: var(--text);
+    }
     header {
       position: fixed;
       top: 0;
@@ -106,6 +119,10 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       justify-content: space-between;
       align-items: center;
       z-index: 1000;
+    }
+    body.darkmode header {
+      background: var(--nav-bg);
+      color: #fff;
     }
     .logo {
       font-size: 1.5rem;
@@ -148,12 +165,19 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       align-items: center;
       gap: 0.3rem;
     }
+    body.darkmode .nav-links a {
+      color: #fff;
+    }
     .nav-links a:not([href="#logout"]).active,
     .nav-links a.active {
       background: var(--white);
       color: var(--primary);
       font-weight: 600;
       box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+    body.darkmode .nav-links a.active {
+      background: #fff;
+      color: #a182c9;
     }
     .nav-links a:hover {
       background-color: rgba(255, 255, 255, 0.2);
@@ -207,6 +231,9 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       gap: 2.5rem;
       align-items: flex-start;
     }
+    body.darkmode .profile-container {
+      background: #392e44;
+    }
     .profile-pic {
       width: 120px;
       height: 120px;
@@ -215,6 +242,10 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       border: 4px solid var(--primary);
       background: var(--sidebar);
       margin-bottom: 1rem;
+    }
+    body.darkmode .profile-pic {
+      border-color: #fff;
+      background: #392e44;
     }
     .profile-sidebar {
       min-width: 140px;
@@ -234,6 +265,12 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       border-radius: 10px;
       padding: 1.5rem 1.5rem 1rem 1.5rem;
       box-shadow: var(--shadow);
+    }
+    body.darkmode .profile-section,
+    body.darkmode .profile-container,
+    body.darkmode .profile-sidebar {
+      background: var(--card);
+      color: var(--text);
     }
     .profile-section h3 {
       color: var(--primary);
@@ -258,10 +295,21 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       margin-bottom: 1rem;
       box-sizing: border-box;
     }
+    body.darkmode .profile-details input,
+    body.darkmode .profile-details textarea {
+      background: #2a2236;
+      color: #f7f5fa;
+      border: 1px solid #a182c9;
+    }
     .profile-details input[readonly], .profile-details textarea[readonly] {
       background: #f2eafd;
       color: #888;
       cursor: not-allowed;
+    }
+    body.darkmode .profile-details input[readonly],
+    body.darkmode .profile-details textarea[readonly] {
+      background: #392e44;
+      color: #aaa;
     }
     .profile-details .edit-btn {
       background: var(--primary);
@@ -338,6 +386,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
         <!-- Remove Username display -->
         <div style="font-size:0.95rem;color:var(--text);margin-bottom:1rem;" id="profileEmail"><?php echo htmlspecialchars($email); ?></div>
         <button class="edit-btn" onclick="enableEditDetails()">Edit Details</button>
+        <button class="edit-btn" style="margin-top:0.5rem;" onclick="showOrdersModal()">View My Orders</button>
       </div>
       <div class="profile-main">
         <section class="profile-section">
@@ -365,6 +414,14 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       </div>
     </div>
   </main>
+  <!-- Orders Modal -->
+<div id="ordersModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:#fff; max-width:600px; width:90%; margin:auto; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.18); padding:2rem; position:relative;">
+    <button onclick="closeOrdersModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; color:#a182c9; cursor:pointer;">&times;</button>
+    <h2 style="color:#a182c9; margin-top:0;">My Orders</h2>
+    <div id="ordersContent">Loading...</div>
+  </div>
+</div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
   // Dark mode
@@ -420,6 +477,25 @@ function cancelEditAddress() {
   document.getElementById('saveAddressBtn').style.display = 'none';
   document.getElementById('cancelAddressBtn').style.display = 'none';
   document.getElementById('editAddressBtn').style.display = 'inline-block';
+}
+
+// Show orders modal
+function showOrdersModal() {
+  document.getElementById('ordersModal').style.display = 'flex';
+  document.getElementById('ordersContent').innerHTML = 'Loading...';
+  fetch('fetch_user_orders.php')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('ordersContent').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('ordersContent').innerHTML = 'Failed to load orders.';
+    });
+}
+
+// Close orders modal
+function closeOrdersModal() {
+  document.getElementById('ordersModal').style.display = 'none';
 }
   </script>
 </body>
