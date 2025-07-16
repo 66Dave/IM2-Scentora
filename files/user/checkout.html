@@ -350,12 +350,14 @@
                 '<li class="summary-item">Error loading cart items</li>';
         }
     }
+    let checkoutTotalAmount = 0;
 
     // Function to update total display
     function updateTotal(total) {
-        document.getElementById('checkoutTotal').textContent = 
-            `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    }
+      checkoutTotalAmount = total;
+      document.getElementById('checkoutTotal').textContent =
+        `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
 
     // Validate form inputs
     function validateForm() {
@@ -396,42 +398,42 @@
     // Handle form submissiona
     document.getElementById("checkoutForm").onsubmit = async function(e) {
         e.preventDefault();
-        
-        try {
-            if (!validateForm()) return;
-            
-            const formData = new FormData(this);
-            
-            // Add total amount
-            const total = document.getElementById('checkoutTotal').textContent
-                .replace('Total: ₱', '')
-                .replace(/,/g, ''); // Remove all commas
-            formData.append('total_amount', total);
 
-            console.log('Submitting order...'); // Debug log
-            
-            const response = await fetch("process_order.php", {
-                method: "POST",
-                body: formData
-            });
-            
-            console.log('Response received'); // Debug log
-            const result = await response.json();
-            console.log('Server response:', result); // Debug log
-            
-            if (result.success) {
-                alert(`Order #${result.order_id} placed successfully!`);
-                // Clear cart and redirect
-                await fetch('clear_cart.php'); // Add this PHP file to clear server-side cart
-                window.location.href = "thank_you.html";
-            } else {
-                throw new Error(result.message || "Unknown error occurred");
-            }
+        if (!validateForm()) return;
+
+        const formData = new FormData(this);
+        formData.append("total_amount", checkoutTotalAmount);
+
+        try {
+          const response = await fetch("process_order.php", {
+            method: "POST",
+            body: formData,
+          });
+
+          const text = await response.text();
+          let result;
+
+          try {
+            result = JSON.parse(text);
+          } catch (jsonError) {
+            console.error("JSON parse error:", jsonError);
+            console.error("Raw response:", text);
+            alert("Server error. Please check your proof upload and try again.");
+            return;
+          }
+
+          if (result.success) {
+            alert(`Order #${result.order_id} placed successfully!`);
+            await fetch("clear_cart.php");
+            window.location.href = "thank_you.html";
+          } else {
+            throw new Error(result.message || "Unknown error occurred");
+          }
         } catch (error) {
-            console.error("Order processing error:", error);
-            alert("Error processing order. Please try again.");
+          console.error("Order processing error:", error);
+          alert("Error processing order. Please try again.");
         }
-    };
+      };
 
     // Handle logout
     document.getElementById("logout-link").onclick = function(e) {

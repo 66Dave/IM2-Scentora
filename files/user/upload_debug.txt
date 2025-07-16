@@ -1,0 +1,9 @@
+Array
+(
+    [name] => philosophy.jpg
+    [full_path] => philosophy.jpg
+    [type] => image/jpeg
+    [tmp_name] => C:\xampp\tmp\phpE923.tmp
+    [error] => 0
+    [size] => 1113777
+)

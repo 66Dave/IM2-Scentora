@@ -504,7 +504,6 @@
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">Scentora</div>
     <div class="search-bar">
@@ -611,19 +610,18 @@ document.getElementById("logout-link").onclick = function(e) {
 
 //Product data store
 let allProducts = [];
+let currentViewingProduct = null;
 
-//Element references
 const categorySelect = document.querySelector(".category-select");
 const searchInput = document.getElementById("searchInput");
 const productGrid = document.getElementById("productGrid");
 
-// Use your full category list
+//Category filters
 const allCategoryList = [
   "Floral", "Citrus", "Woody", "Oriental",
   "Fresh", "Fruity", "Gourmand", "Chypre", "Fougere", "Leather"
 ];
 
-// Populate category options on page load
 function populateCategories() {
   categorySelect.innerHTML = `<option value="All">All</option>`;
   allCategoryList.forEach(cat => {
@@ -631,7 +629,7 @@ function populateCategories() {
   });
 }
 
-//Combined filter renderer
+//Filter renderer
 function renderFilteredProducts() {
   const filterText = searchInput.value.toLowerCase();
   const selectedCategory = categorySelect.value;
@@ -640,50 +638,37 @@ function renderFilteredProducts() {
 
   allProducts
     .filter(product => {
-      const name = product.Product_Name.toLowerCase();
-      const brand = (product.Brand || '').toLowerCase();
-      const category = product.Category?.toLowerCase() || "";
-
-      // Search matches name or brand
-      const nameOrBrandCheck = name.includes(filterText) || brand.includes(filterText);
-      const categoryCheck = selectedCategory === "All" || category === selectedCategory.toLowerCase();
-
-      return nameOrBrandCheck && categoryCheck;
+      const name = (product.Product_Name || "").toLowerCase();
+      const brand = (product.Brand || "").toLowerCase();
+      const category = (product.Category || "").toLowerCase();
+      return (
+        (name.includes(filterText) || brand.includes(filterText)) &&
+        (selectedCategory === "All" || category === selectedCategory.toLowerCase())
+      );
     })
     .forEach(product => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-            <div class="card">
-                <div class="img">
-                    <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
-                </div>
-                <div class="text">
-                    <p class="brand-name">${product.Brand || 'Scentora'}</p>
-                    <p class="product-name">${product.Product_Name}</p>
-                    <p class="price-tag">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
-                    <p class="stock-status ${getStockStatusClass(product.Stock_Status)}">${getStockLabel(product.Stock_Status)}</p>
-                    <div class="button-group">
-                        <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            View
-                        </button>
-                        <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 20a1 1 0 100-2 1 1 0 000 2z"></path>
-                                <path d="M20 20a1 1 0 100-2 1 1 0 000 2z"></path>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
-                            </svg>
-                            Add to Cart
-                        </button>
-                    </div>
-                </div>
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.innerHTML = `
+        <div class="card">
+          <div class="img">
+            <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
+          </div>
+          <div class="text">
+            <p class="brand-name">${product.Brand || 'Scentora'}</p>
+            <p class="product-name">${product.Product_Name}</p>
+            <p class="price-tag">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
+            <p class="stock-status ${getStockStatusClass(product.Stock_Level)}">
+              ${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)
+            </p>
+            <div class="button-group">
+              <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">View</button>
+              <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">Add to Cart</button>
             </div>
-        `;
-        productGrid.appendChild(card);
+          </div>
+        </div>
+      `;
+      productGrid.appendChild(card);
     });
 }
 
@@ -691,71 +676,56 @@ function renderFilteredProducts() {
 categorySelect.addEventListener("change", renderFilteredProducts);
 searchInput.addEventListener("input", renderFilteredProducts);
 
-//Initial product fetch
+//Fetch products
 fetch("shop_user.php")
   .then(response => response.json())
   .then(products => {
     allProducts = products;
-    populateCategories(allProducts); // Populate categories from products
+    console.log("Products received:", products[0]); // Debug
+    populateCategories();
     renderFilteredProducts();
   });
 
-// Call this once on page load
-populateCategories();
-
-let currentViewingProduct = null;
-
+//Modal logic
 function viewProduct(productId) {
-    currentViewingProduct = productId;
-    const product = allProducts.find(p => p.Product_ID === productId);
-    
-    if (product) {
-        // Debug log to check product data
-        console.log('Product details:', product);
-        
-        // Update modal content
-        document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
-        document.getElementById("modalName").textContent = product.Product_Name;
-        // Check for Brand property case (could be Brand or brand)
-        document.getElementById("modalBrand").textContent = product.Brand || product.brand || 'No brand specified';
-        document.getElementById("modalCategory").textContent = product.Category;
-        document.getElementById("modalPrice").textContent = parseFloat(product.Product_Price).toFixed(2);
-        document.getElementById("modalStock").textContent = product.Stock_Status;
-        document.getElementById("modalCode").textContent = product.Product_Code;
-        document.getElementById("modalDescription").textContent = product.Description || 'No description available.';
+  const product = allProducts.find(p => p.Product_ID === productId);
+  currentViewingProduct = product;
 
-        // Show the modal
-        const modal = document.getElementById("productModal");
-        modal.style.display = "block";
-        document.body.style.overflow = "hidden";
-    }
+  if (product) {
+    document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
+    document.getElementById("modalName").textContent = product.Product_Name;
+    document.getElementById("modalBrand").textContent = product.Brand || 'No brand specified';
+    document.getElementById("modalCategory").textContent = product.Category;
+    document.getElementById("modalPrice").textContent = parseFloat(product.Product_Price).toFixed(2);
+    document.getElementById("modalStock").textContent =
+      `${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)`;
+    document.getElementById("modalCode").textContent = product.Product_Code;
+    document.getElementById("modalDescription").textContent = product.Description || 'No description available.';
+    document.getElementById("productModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
 }
 
-// Add modal close functionality
+//Modal close logic
 const modal = document.getElementById("productModal");
-const closeBtn = document.querySelector(".close-modal");
-
-closeBtn.onclick = function() {
+document.querySelector(".close-modal").onclick = () => {
+  modal.style.display = "none";
+  document.body.style.overflow = "auto";
+};
+window.onclick = (event) => {
+  if (event.target === modal) {
     modal.style.display = "none";
     document.body.style.overflow = "auto";
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    if (event.target === modal) {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
-    }
-}
-
-// Close modal with Escape key
+  }
+};
 document.addEventListener('keydown', function(event) {
-    if (event.key === "Escape" && modal.style.display === "block") {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
-    }
+  if (event.key === "Escape" && modal.style.display === "block") {
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
 });
 
+//Cart logic
 function addToCart(productId) {
   fetch("add_to_cart.php", {
     method: "POST",
@@ -773,18 +743,24 @@ function addToCart(productId) {
   .catch(() => alert("Error adding to cart."));
 }
 
-// Add these helper functions
-function getStockStatusClass(status) {
-    if (status.includes('Out of stock')) return 'out-stock';
-    if (status.includes('12')) return 'low-stock';
-    return 'in-stock';
+//Helpers
+function getStockStatusClass(level) {
+  switch (level) {
+    case 1: return "stock-in";
+    case 2: return "stock-low";
+    case 3: return "stock-out";
+    default: return "stock-unknown";
+  }
 }
 
-function getStockLabel(status) {
-    if (status.includes('Out of stock')) return '○ Out of Stock';
-    if (status.includes('12')) return '◐ Low Stock';
-    return '● In Stock';
+function getStockLabel(level) {
+  switch (level) {
+    case 1: return '● In Stock';
+    case 2: return '◐ Low Stock';
+    case 3: return '○ Out of Stock';
+    default: return 'Unknown';
+  }
 }
-  </script>
+</script>
 </body>
 </html>

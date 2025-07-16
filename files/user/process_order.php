@@ -1,132 +1,118 @@
 <?php
-
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-header('Content-Type: application/json');
+header("Content-Type: application/json");
 
-// Debug logging
-function logError($message) {
-    error_log(date('Y-m-d H:i:s') . " - " . $message . "\n", 3, "../error.log");
-}
+// Debug logs
+file_put_contents("form_debug.txt", print_r($_POST, true));
+file_put_contents("files_debug.txt", print_r($_FILES, true));
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login first']);
+// Database connection
+$conn = new mysqli("localhost", "root", "", "scentoradb");
+if ($conn->connect_error) {
+    echo json_encode(["success" => false, "message" => "Connection failed"]);
     exit;
 }
 
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
-
-try {
-    $conn = new mysqli($host, $username, $password, $database);
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
-
-    $conn->begin_transaction();
-
-    $user_id = $_SESSION['user_id'];
-    $fullname = $_POST['fullname'] ?? '';
-    $address = $_POST['address'] ?? '';
-    $payment_method = $_POST['payment'] ?? '';
-    $courier = $_POST['courier'] ?? '';
-
-    // Validate inputs
-    if (empty($fullname) || empty($address) || empty($payment_method)) {
-        throw new Exception("All fields are required");
-    }
-
-    // Handle file upload
-    if (!isset($_FILES['proof']) || $_FILES['proof']['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception("Payment proof is required");
-    }
-
-    $upload_dir = '../uploads/proofs/';
-    if (!file_exists($upload_dir)) {
-        mkdir($upload_dir, 0777, true);
-    }
-
-    $file = $_FILES['proof'];
-    $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $file_name = 'proof_' . time() . '_' . uniqid() . '.' . $file_ext;
-    $file_path = $upload_dir . $file_name;
-
-    if (!move_uploaded_file($file['tmp_name'], $file_path)) {
-        throw new Exception("Failed to upload proof of payment");
-    }
-
-    // Calculate total from cart
-    $cart_sql = "SELECT SUM(c.Quantity * p.Product_Price) as total 
-                 FROM cart c 
-                 JOIN product p ON c.Product_ID = p.Product_ID 
-                 WHERE c.User_ID = ?";
-    
-    $stmt = $conn->prepare($cart_sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $total = $result->fetch_assoc()['total'] ?? 0;
-
-    if ($total <= 0) {
-        throw new Exception("Cart is empty");
-    }
-
-    // Insert order
-    $order_sql = "INSERT INTO `order` (User_ID, Total_Amount, Shipping_Address, Payment_Method, Payment_Proof, Status) 
-                  VALUES (?, ?, ?, ?, ?, 'Pending')";
-    
-    $stmt = $conn->prepare($order_sql);
-    $stmt->bind_param("idsss", $user_id, $total, $address, $payment_method, $file_path);
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Failed to create order: " . $stmt->error);
-    }
-    
-    $order_id = $conn->insert_id;
-
-    // Move cart items to order details
-    $details_sql = "INSERT INTO orderdetails (Order_ID, Product_ID, Product_Price, Product_Qty) 
-                    SELECT ?, c.Product_ID, p.Product_Price, c.Quantity 
-                    FROM cart c 
-                    JOIN product p ON c.Product_ID = p.Product_ID 
-                    WHERE c.User_ID = ?";
-    
-    $stmt = $conn->prepare($details_sql);
-    $stmt->bind_param("ii", $order_id, $user_id);
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Failed to create order details");
-    }
-
-    // Clear cart
-    $clear_sql = "DELETE FROM cart WHERE User_ID = ?";
-    $stmt = $conn->prepare($clear_sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-
-    $conn->commit();
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Order placed successfully',
-        'order_id' => $order_id
-    ]);
-
-} catch (Exception $e) {
-    if (isset($conn)) {
-        $conn->rollback();
-    }
-    logError($e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    echo json_encode(["success" => false, "message" => "User not logged in"]);
+    exit;
 }
 
-if (isset($conn)) {
-    $conn->close();
+// Collect form data
+$address = trim($_POST['address'] ?? '');
+$paymentMethod = $_POST['payment'] ?? '';
+$courier = $_POST['courier'] ?? '';
+$totalAmount = floatval($_POST['total_amount'] ?? 0);
+
+// Validate required fields
+if (!$address || !$paymentMethod || !$courier || $totalAmount <= 0) {
+    echo json_encode(["success" => false, "message" => "Missing or invalid form data"]);
+    exit;
 }
+
+// Upload proof file
+$proofFilename = '';
+if (isset($_FILES['proof']) && $_FILES['proof']['error'] === UPLOAD_ERR_OK) {
+    $ext = pathinfo($_FILES['proof']['name'], PATHINFO_EXTENSION);
+    $proofFilename = 'proof_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+    $targetPath = 'uploads/proofs/' . $proofFilename;
+
+    file_put_contents("path_debug.txt", $targetPath);
+    file_put_contents("upload_debug.txt", print_r($_FILES['proof'], true));
+
+    if (!is_writable(dirname($targetPath))) {
+        error_log("Folder is not writable");
+        echo json_encode(["success" => false, "message" => "Proofs folder not writable"]);
+        exit;
+    }
+
+    if (!move_uploaded_file($_FILES['proof']['tmp_name'], $targetPath)) {
+        echo json_encode(["success" => false, "message" => "Failed to upload proof of payment"]);
+        exit;
+    }
+}
+
+// Fetch cart items
+$cartSql = "SELECT c.Product_ID, c.Quantity, p.Product_Price, p.Available_Stocks
+            FROM cart c JOIN product p ON c.Product_ID = p.Product_ID
+            WHERE c.User_ID = ?";
+$cartStmt = $conn->prepare($cartSql);
+$cartStmt->bind_param("i", $user_id);
+$cartStmt->execute();
+$result = $cartStmt->get_result();
+
+$cartItems = [];
+while ($row = $result->fetch_assoc()) {
+    if ($row['Available_Stocks'] < $row['Quantity']) {
+        echo json_encode(["success" => false, "message" => "Insufficient stock for product ID {$row['Product_ID']}"]);
+        exit;
+    }
+    $cartItems[] = $row;
+}
+$cartStmt->close();
+
+if (empty($cartItems)) {
+    echo json_encode(["success" => false, "message" => "Cart is empty"]);
+    exit;
+}
+
+// Create order
+$orderSql = "INSERT INTO `order`
+(User_ID, Shipping_Address, Payment_Method, Courier, Total_Amount, Payment_Proof, Status)
+VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+$orderStmt = $conn->prepare($orderSql);
+$orderStmt->bind_param("isssds", $user_id, $address, $paymentMethod, $courier, $totalAmount, $proofFilename);
+$orderStmt->execute();
+$orderId = $orderStmt->insert_id;
+$orderStmt->close();
+
+// Insert order details and deduct stock
+foreach ($cartItems as $item) {
+    $product_id = $item['Product_ID'];
+    $quantity = (int)$item['Quantity'];
+    $price = floatval($item['Product_Price']);
+    $subtotal = $price * $quantity;
+
+    $detailStmt = $conn->prepare("INSERT INTO orderdetails
+    (Order_ID, Product_ID, Product_Price, Product_Qty, Subtotal)
+    VALUES (?, ?, ?, ?, ?)");
+    $detailStmt->bind_param("iidid", $orderId, $product_id, $price, $quantity, $subtotal);
+    $detailStmt->execute();
+    $detailStmt->close();
+
+    $deductStmt = $conn->prepare("UPDATE product
+        SET Available_Stocks = Available_Stocks - ?
+        WHERE Product_ID = ?");
+    $deductStmt->bind_param("ii", $quantity, $product_id);
+    $deductStmt->execute();
+    $deductStmt->close();
+}
+
+// Clear cart
+$conn->query("DELETE FROM cart WHERE User_ID = $user_id");
+
+// Return success
+echo json_encode(["success" => true, "order_id" => $orderId]);
+$conn->close();
 ?>

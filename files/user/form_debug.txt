@@ -1,0 +1,8 @@
+Array
+(
+    [fullname] => dfghjk
+    [address] => dfghjk
+    [payment] => gcash
+    [courier] => lalamove
+    [total_amount] => 5
+)
