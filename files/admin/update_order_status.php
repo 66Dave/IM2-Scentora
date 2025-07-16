@@ -1,78 +1,44 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "scentoradb");
-if ($conn->connect_error) die("Connection failed");
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-$order_id = intval($_POST['order_id'] ?? 0);
-$status = $_POST['status'] ?? '';
+require_once '../includes/db_connect.php';
 
-if ($order_id < 1 || !in_array($status, ['Accepted', 'Declined'])) {
-    echo "Invalid request";
-    exit;
-}
-
-$conn->begin_transaction();
-
-try {
-    $sql = "UPDATE `order` SET Status = ? WHERE Order_ID = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("si", $status, $order_id);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+    $status = isset($_POST['status']) ? $_POST['status'] : '';
     
-    if (!$stmt->execute()) {
-        throw new Exception("Failed to update order status");
+    // Validate inputs
+    if ($order_id <= 0 || empty($status)) {
+        echo "Invalid order ID or status";
+        exit;
     }
-    
-    if ($status === 'Accepted') {
-        $items_sql = "SELECT Product_ID, Product_Qty FROM orderdetails WHERE Order_ID = ?";
-        $items_stmt = $conn->prepare($items_sql);
-        $items_stmt->bind_param("i", $order_id);
-        $items_stmt->execute();
-        $items_result = $items_stmt->get_result();
+
+    // Validate status values
+    $valid_statuses = ['Pending', 'Accepted', 'Declined', 'Cancelled', 'Completed'];
+    if (!in_array($status, $valid_statuses)) {
+        echo "Invalid status value";
+        exit;
+    }
+
+    try {
+        $stmt = $conn->prepare("UPDATE `order` SET Status = ? WHERE Order_ID = ?");
+        $stmt->bind_param("si", $status, $order_id);
         
-        while ($item = $items_result->fetch_assoc()) {
-            $product_id = $item['Product_ID'];
-            $ordered_qty = $item['Product_Qty'];
-            
-            $stock_sql = "SELECT Stock_Status FROM product WHERE Product_ID = ?";
-            $stock_stmt = $conn->prepare($stock_sql);
-            $stock_stmt->bind_param("i", $product_id);
-            $stock_stmt->execute();
-            $stock_result = $stock_stmt->get_result();
-            
-            if ($stock_row = $stock_result->fetch_assoc()) {
-                $current_stock_status = $stock_row['Stock_Status'];
-                
-                preg_match('/\((\d+)/', $current_stock_status, $matches);
-                $current_stock = isset($matches[1]) ? (int)$matches[1] : 0;
-                
-                $new_stock = max(0, $current_stock - $ordered_qty);
-                
-                $new_stock_status = $new_stock > 0 ? "In stock ($new_stock pcs)" : "Out of stock";
-                
-                $update_sql = "UPDATE product SET Stock_Status = ? WHERE Product_ID = ?";
-                $update_stmt = $conn->prepare($update_sql);
-                $update_stmt->bind_param("si", $new_stock_status, $product_id);
-                
-                if (!$update_stmt->execute()) {
-                    throw new Exception("Failed to update stock for product ID: $product_id");
-                }
-                
-                $update_stmt->close();
-            }
-            
-            $stock_stmt->close();
+        if ($stmt->execute()) {
+            echo "updated";
+        } else {
+            echo "Failed to update order status: " . $stmt->error;
         }
         
-        $items_stmt->close();
+        $stmt->close();
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
     }
-    
-    $conn->commit();
-    echo "updated";
-    
-} catch (Exception $e) {
-    $conn->rollback();
-    echo "error: " . $e->getMessage();
+} else {
+    echo "Invalid request";
 }
 
-$stmt->close();
 $conn->close();
 ?>

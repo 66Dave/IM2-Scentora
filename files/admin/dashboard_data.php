@@ -32,6 +32,10 @@ $stockAlerts = $stockAlertsQuery->fetch_assoc()['alerts'] ?? 0;
 $totalOrdersQuery = $conn->query("SELECT COUNT(*) AS orders FROM `order`");
 $totalOrders = $totalOrdersQuery->fetch_assoc()['orders'] ?? 0;
 
+// Pending orders count (from `order` table)
+$pendingOrdersQuery = $conn->query("SELECT COUNT(*) AS pending FROM `order` WHERE Status = 'Pending'");
+$pendingOrders = $pendingOrdersQuery->fetch_assoc()['pending'] ?? 0;
+
 // Stock summary (in stock vs out of stock)
 $stockSummaryQuery = $conn->query("SELECT
     SUM(CASE WHEN Stock_Status LIKE '%(0%' THEN 1 ELSE 0 END) AS outOfStock,
@@ -46,7 +50,7 @@ $outOfStock = $stockSummary['outOfStock'] ?? 0;
 $data = [
     "totalProducts" => $totalProducts,
     "stockAlerts" => $stockAlerts,
-    "newOrders" => $totalOrders,
+    "pendingOrders" => $pendingOrders,  // Changed from newOrders to pendingOrders
     "inStock" => $inStock,
     "outOfStock" => $outOfStock,
     "totalOrders" => $totalOrders

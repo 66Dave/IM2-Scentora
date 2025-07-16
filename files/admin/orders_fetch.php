@@ -15,7 +15,13 @@ $sql = "SELECT o.Order_ID, o.User_ID, u.Name AS Buyer_Name, o.Total_Amount, o.Or
                o.Shipping_Address, o.Payment_Method, o.Payment_Proof, o.Status
         FROM `order` o
         JOIN user u ON o.User_ID = u.User_ID
-        ORDER BY o.Order_ID DESC";
+        ORDER BY 
+        CASE 
+            WHEN o.Status = 'Pending' THEN 1
+            WHEN o.Status = 'Accepted' THEN 2
+            ELSE 3 
+        END, 
+        o.Order_Date DESC";
 
 $result = $conn->query($sql);
 if (!$result) {

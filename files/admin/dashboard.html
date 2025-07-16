@@ -283,6 +283,106 @@
       box-shadow: var(--shadow);
       margin-bottom: 1.5rem;
     }
+    .order-filters {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .filter-btn:hover {
+      background: #8663b9;
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: #6b5097;
+    }
+
+    .orders-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: var(--primary);
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: rgba(114, 69, 173, 0.1);
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .order-actions button {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .order-actions button:hover {
+      background: #8663b9;
+      transform: translateY(-2px);
+    }
+
+    .overview-widget.clickable {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .overview-widget.clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow), 0 4px 12px rgba(161,130,201,0.2);
+    }
+
+    #orderSearch {
+      transition: box-shadow 0.3s ease;
+    }
+
+    #orderSearch:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .order-filters {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -321,7 +421,9 @@
         <div class="overview-grid">
           <div class="overview-widget">Perfume Products<br><span id="count-products">--</span></div>
           <div class="overview-widget">Stock Alerts<br><span id="count-alerts">--</span></div>
-          <div class="overview-widget">New Orders<br><span id="count-orders">--</span></div>
+          <div class="overview-widget clickable" onclick="goToPendingOrders()">
+    New Orders<br><span id="count-orders">--</span>
+  </div>
         </div>
       </div>
 
@@ -337,10 +439,61 @@
       
       <div id="orders" class="dashboard-page">
         <h2 style="color:var(--primary);">Orders</h2>
-        <p>No orders to display.</p>
+        <div class="order-filters">
+  <div style="width: 100%; max-width: 300px; margin-bottom: 1rem;">
+    <input type="search" id="orderSearch" placeholder="Search Order ID..." 
+    style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--primary); 
+    background: var(--background); color: var(--text);">
+  </div>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%;">
+    <button class="filter-btn active" data-status="all">All Orders</button>
+    <button class="filter-btn" data-status="Pending">Pending</button>
+    <button class="filter-btn" data-status="Declined">Declined</button>
+    <button class="filter-btn" data-status="Accepted">Accepted</button>
+    <button class="filter-btn" data-status="Completed">Completed</button>
+    <button class="filter-btn" data-status="Cancelled">Cancelled</button>
+  </div>
+</div>
+        <div class="orders-container">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersList"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </div>
+  <div id="overrideModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+background:rgba(0,0,0,0.5); z-index:1001;">
+  <div style="position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+  background:var(--card); padding:2rem; border-radius:12px; width:300px;">
+    <h3 style="color:var(--primary); margin-top:0;">Override Order Status</h3>
+    <!-- Update the overrideStatus select options -->
+<select id="overrideStatus" style="width:100%; padding:0.5rem; margin:1rem 0; 
+background:var(--background); color:var(--text); border:1px solid var(--primary);">
+  <option value="Pending">Pending</option>
+  <option value="Accepted">Accepted</option>
+  <option value="Declined">Declined</option>
+  <option value="Cancelled">Cancelled</option>
+  <option value="Completed">Completed</option>
+</select>
+    <div style="display:flex; gap:1rem; justify-content:flex-end;">
+      <button onclick="closeOverrideModal()" style="padding:0.5rem 1rem; border:none; 
+      border-radius:4px; background:var(--accent); color:var(--text);">Cancel</button>
+      <button onclick="submitOverride()" style="padding:0.5rem 1rem; border:none; 
+      border-radius:4px; background:var(--primary); color:var(--white);">Update</button>
+    </div>
+  </div>
+</div>
   <script>
     //Sidebar navigation
 function showPage(page, event) {
@@ -377,8 +530,8 @@ fetch("dashboard_data.php")
     // Overview section
     document.getElementById("count-products").textContent = data.totalProducts;
     document.getElementById("count-alerts").textContent = data.stockAlerts;
-    document.getElementById("count-orders").textContent = data.newOrders;
-
+    document.getElementById("count-orders").textContent = data.pendingOrders;
+    
     // Stats section
     document.getElementById("stat-total").textContent = data.totalProducts;
     document.getElementById("stat-in-stock").textContent = data.inStock;
@@ -388,31 +541,64 @@ fetch("dashboard_data.php")
   .catch(err => {
     console.error("Dashboard fetch failed:", err);
   });
-  function changeOrderStatus(orderId, newStatus) {
+  let currentOrderId = null;
+
+function showOverrideModal(orderId) {
+  currentOrderId = orderId;
+  document.getElementById('overrideModal').style.display = 'block';
+}
+
+function closeOverrideModal() {
+  document.getElementById('overrideModal').style.display = 'none';
+  currentOrderId = null;
+}
+
+function submitOverride() {
+  if (!currentOrderId) return;
+  
+  const newStatus = document.getElementById('overrideStatus').value;
+  changeOrderStatus(currentOrderId, newStatus);
+  closeOverrideModal();
+}
+
+// Close modal when clicking outside
+document.getElementById('overrideModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeOverrideModal();
+  }
+});
+
+function changeOrderStatus(orderId, newStatus) {
+  // Add console.log for debugging
+  console.log('Updating order:', orderId, 'to status:', newStatus);
+  
   fetch("update_order_status.php", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "order_id=" + encodeURIComponent(orderId) + "&status=" + encodeURIComponent(newStatus)
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `order_id=${orderId}&status=${newStatus}`
   })
   .then(res => res.text())
   .then(result => {
-    if (result === "updated") {
-      alert("Order has been " + newStatus);
-      loadOrders();
+    console.log('Server response:', result); // Debug log
+    if (result.trim() === "updated") {
+      alert("Order status changed to: " + newStatus);
+      loadOrders(); // Refresh the orders list
     } else {
-      alert("Status update failed: " + result);
+      alert("Failed to update status: " + result);
     }
   })
   .catch(err => {
     console.error("Error:", err);
-    alert("An error occurred while updating order status.");
+    alert("An error occurred while updating the status");
   });
 }
 function renderOrders(data) {
-  const container = document.getElementById("orders");
+  const container = document.getElementById("ordersList");
 
   if (!data.length) {
-    container.innerHTML = "<p>No Order to display.</p>";
+    container.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Order to display.</td></tr>";
     return;
   }
 
@@ -422,55 +608,87 @@ function renderOrders(data) {
       <li>${item.name} × ${item.quantity} — ₱${item.subtotal}</li>
     `).join("");
 
-    const card = document.createElement("div");
-    card.className = "order-card";
-    card.innerHTML = `
-      <h3>Order #${order.order_id}</h3>
-      <p><strong>Buyer:</strong> ${order.buyer_name}</p>
-      <p><strong>Status:</strong> ${order.status}</p>
-      <p><strong>Total:</strong> ₱${order.total}</p>
-      <p><strong>Items:</strong></p>
-      <ul>${itemsHTML}</ul>
-      <p><strong>Shipping Address:</strong> ${order.address}</p>
-      <p><strong>Payment:</strong> ${order.payment_method}</p>
-      <div class="order-actions">
-        <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
-        <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
-      </div>
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${order.order_id}</td>
+      <td>${order.buyer_name}</td>
+      <td>${new Date(order.order_date).toLocaleString()}</td>
+      <td>₱${order.total}</td>
+      <td>${order.status}</td>
+      <td>
+        <div class="order-actions">
+          <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+          <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+          <button onclick="showOverrideModal(${order.order_id})" 
+          style="background:#6b5097;">Override</button>
+        </div>
+      </td>
     `;
-    container.appendChild(card);
+    container.appendChild(row);
   });
 }
 
-function loadOrders() {
+function loadOrders(statusFilter = 'all') {
+  const searchTerm = document.getElementById('orderSearch').value;
+  
   fetch("orders_fetch.php")
     .then(res => res.json())
-    .then(renderOrders)
+    .then(data => {
+      const filteredData = filterOrders(data, statusFilter, searchTerm);
+      renderOrders(filteredData);
+    })
     .catch(() => {
-      document.getElementById("orders").innerHTML = "<p>Error loading orders.</p>";
+      document.getElementById("ordersList").innerHTML = 
+        "<tr><td colspan='6' style='text-align:center;'>Error loading orders.</td></tr>";
     });
 }
 
-function changeOrderStatus(orderId, newStatus) {
-  fetch("update_order_status.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "order_id=" + orderId + "&status=" + newStatus
-  })
-  .then(res => res.text())
-  .then(result => {
-    if (result === "updated") {
-      alert("Order " + newStatus);
-      loadOrders();
-    } else {
-      alert("Update failed");
-    }
+function filterOrders(orders, statusFilter = 'all', searchTerm = '') {
+  return orders.filter(order => {
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesSearch = searchTerm === '' || 
+                         order.order_id.toString().includes(searchTerm.trim());
+    return matchesStatus && matchesSearch;
   });
 }
 
+// Add search event listener
+document.getElementById('orderSearch').addEventListener('input', function() {
+  const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
+  loadOrders(activeFilter);
+});
+
+// Filter buttons functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const status = this.getAttribute('data-status');
+    loadOrders(status);
+  });
+});
+
 // Load orders on page ready
-document.addEventListener("DOMContentLoaded", loadOrders);
-</script>
+document.addEventListener("DOMContentLoaded", () => {
+  loadOrders();
+});
+
+function goToPendingOrders() {
+  // Show the orders page
+  showPage('orders', { preventDefault: () => {} });
+  
+  // Set filter to Pending
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if(btn.getAttribute('data-status') === 'Pending') {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Load pending orders
+  loadOrders('Pending');
+}
+  </script>
   </script>
 </body>
 </html>
