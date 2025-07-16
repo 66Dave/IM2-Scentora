@@ -233,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
             echo "<td>" . htmlspecialchars($status) . "</td>";
             echo "<td>";
             if (strtolower($status) === "accepted") {
-                // Always show the button for accepted status
+                // Always show the button for accepted status a
                 echo "<form method='post' action='' style='display:inline;'>
                         <input type='hidden' name='order_id' value='".htmlspecialchars($oid)."'>
                         <button type='submit' name='mark_received' style='margin-left:8px;padding:4px 10px;border-radius:6px;background:#a182c9;color:#fff;border:none;cursor:pointer;'>
