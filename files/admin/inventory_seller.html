@@ -458,39 +458,84 @@ document.getElementById("closeAddItem").onclick = () => {
   document.getElementById("addItemModal").classList.remove("show");
 };
 
-// Update the addItemForm onsubmit function
+// Update the addItemForm submission handler
+
 document.getElementById("addItemForm").onsubmit = function(e) {
-  e.preventDefault();
-  const today = new Date().toISOString().slice(0, 10);
-  const formData = new FormData();
-  formData.append("name", document.getElementById("addName").value);
-  formData.append("code", document.getElementById("addCode").value);
-  formData.append("price", document.getElementById("addPrice").value);
-  formData.append("stock", document.getElementById("addStock").value);
-  formData.append("category", document.getElementById("addCategory").value);
-  formData.append("brand", document.getElementById("addBrand").value); // Add this line
-  formData.append("added", today);
-  formData.append("updated", today);
-  formData.append("description", document.getElementById("addDescription").value);
+    e.preventDefault();
+    
+    // Validate required fields
+    const name = document.getElementById("addName").value.trim();
+    const code = document.getElementById("addCode").value.trim();
+    const price = document.getElementById("addPrice").value;
+    const stock = document.getElementById("addStock").value;
+    const category = document.getElementById("addCategory").value;
+    const brand = document.getElementById("addBrand").value.trim();
+    const description = document.getElementById("addDescription").value.trim();
+    
+    // Basic validation
+    if (!name || !code || !price || !stock || !category || !brand) {
+        alert("Please fill in all required fields");
+        return false;
+    }
 
-  const imageFile = fileInput.files[0];
-  if (imageFile) formData.append("image", imageFile);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("code", code);
+    formData.append("price", price);
+    formData.append("stock", stock);
+    formData.append("category", category);
+    formData.append("brand", brand);
+    formData.append("description", description);
+    
+    // Add current date
+    const today = new Date().toISOString().slice(0, 10);
+    formData.append("added", today);
+    formData.append("updated", today);
 
-  fetch("inventory_seller.php", {
-    method: "POST",
-    body: formData
-  })
-    .then(res => res.text())
+    // Handle image upload
+    const imageFile = document.getElementById("productImageFile").files[0];
+    if (imageFile) {
+        // Validate file type
+        if (!imageFile.type.match('image.*')) {
+            alert('Please upload an image file');
+            return false;
+        }
+        formData.append("image", imageFile);
+    }
+
+    // Show loading state
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Adding...';
+
+    fetch("inventory_seller.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.text();
+    })
     .then(result => {
-      if (result.includes("success")) {
-        alert("Item saved!");
-        this.reset();
-        previewImage.style.display = "none";
-        document.getElementById("addItemModal").classList.remove("show");
-        loadInventoryItems();
-      } else {
-        alert("Insert failed: " + result);
-      }
+        if (result.includes("success")) {
+            alert("Item added successfully!");
+            this.reset();
+            previewImage.style.display = "none";
+            document.getElementById("addItemModal").classList.remove("show");
+            loadInventoryItems();
+        } else {
+            throw new Error(result);
+        }
+    })
+    .catch(error => {
+        alert("Error adding item: " + error.message);
+    })
+    .finally(() => {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = 'Add';
     });
 };
 document.getElementById("editBtn").onclick = function() {

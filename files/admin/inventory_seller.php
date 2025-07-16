@@ -33,16 +33,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert into database
         $sql = "INSERT INTO product (
             User_ID, Product_Name, Product_Price, Product_Code, 
-            Category, Image_URL, Date_Added, Date_Updated, 
-            Brand, Description, Is_Active, Available_Stocks
-        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)";
+            Category, Image_URL, Brand, Description, 
+            Is_Active, Available_Stocks
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
+        
+        // Fixed: Corrected number of parameters and type definition string
         $stmt->bind_param(
-            "isdsssssiii",
-            $user_id, $product_name, $price, $code,
-            $category, $image_url, $brand, $description,
-            $is_active, $stock
+            "isdsssssii", 
+            $user_id,        // i (integer)
+            $product_name,   // s (string)
+            $price,         // d (double)
+            $code,          // s (string)
+            $category,      // s (string)
+            $image_url,     // s (string)
+            $brand,         // s (string)
+            $description,   // s (string)
+            $is_active,     // i (integer)
+            $stock          // i (integer)
         );
 
         if ($stmt->execute()) {

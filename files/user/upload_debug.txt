@@ -3,7 +3,7 @@ Array
     [name] => developer.jpg
     [full_path] => developer.jpg
     [type] => image/jpeg
-    [tmp_name] => C:\xampp\tmp\php38AC.tmp
+    [tmp_name] => C:\xampp\tmp\phpC89C.tmp
     [error] => 0
     [size] => 1446
 )

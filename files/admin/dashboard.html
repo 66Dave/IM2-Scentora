@@ -999,6 +999,53 @@ function loadSalesData() {
 
 // Call loadSalesData when the page loads
 document.addEventListener('DOMContentLoaded', loadSalesData);
+
+function showProofModal(proofFileName) {
+    const modal = document.getElementById('proofModal');
+    const img = document.getElementById('proofImage');
+    const errorDiv = document.getElementById('imageError');
+    
+    // Construct the full image path with the correct directory
+    const imagePath = `../user/uploads/proofs/${proofFileName}`;
+    
+    // Show the modal
+    modal.style.display = 'block';
+    
+    // Reset image and error states
+    img.style.display = 'none';
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = 'Failed to load image. Please check the file path.';
+    
+    // Add console log to debug the path
+    console.log('Attempting to load image:', imagePath);
+    
+    // Try to load the image
+    img.onload = function() {
+        img.style.display = 'block';
+        errorDiv.style.display = 'none';
+        console.log('Image loaded successfully');
+    };
+    
+    img.onerror = function() {
+        img.style.display = 'none';
+        errorDiv.style.display = 'block';
+        console.error('Failed to load image:', imagePath);
+    };
+    
+    img.src = imagePath;
+}
+
+function closeProofModal() {
+    const modal = document.getElementById('proofModal');
+    modal.style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('proofModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeProofModal();
+    }
+});
   </script>
   </script>
 </body>
