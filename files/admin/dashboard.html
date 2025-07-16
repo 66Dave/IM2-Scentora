@@ -405,16 +405,65 @@
 #proofModal img:hover {
   transform: scale(1.02);
 }
+.sales-graph-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 20px 30px;
+  margin-top: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.graph-header {
+  display: flex;
+  margin-bottom: 20px;
+  padding-left: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.graph-header .left {
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-header .title {
+  color: var(--text);
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.graph-header .number {
+  color: var(--primary);
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.total-sales {
+  background: linear-gradient(145deg, var(--primary), var(--accent));
+}
+
+.total-sales h4,
+.total-sales p {
+  color: var(--white) !important;
+}
   </style>
+  <!-- Add this before your existing scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
     <div class="logo">Scentora</div>
     <div class="header_contents">
       <div class="nav-links">
-        <a href="dashboard.html">Dashboard</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
         <a href="inventory_seller.html">Inventory</a>
-        <a href="shop.html">Shop</a>
+        <a href="UserList.html">User List</a>
         <a href="#logout" id="logout-link">Logout</a>
       </div>
       <div class="toggle-switch">
@@ -456,7 +505,24 @@
           <div class="stat-card"><h4>In Stock</h4><p id="stat-in-stock">0</p></div>
           <div class="stat-card"><h4>Out of Stock</h4><p id="stat-out-stock">0</p></div>
           <div class="stat-card"><h4>Total Orders</h4><p id="stat-orders">0</p></div>
+          <div class="stat-card total-sales">
+      <h4>Total Sales</h4>
+      <p id="stat-sales">₱0.00</p>
+    </div>
         </div>
+
+        <!-- Sales Graph Card -->
+        <div class="sales-graph-card">
+    <div class="graph-header">
+        <div class="left">
+            <span class="title">Monthly Sales</span>
+            <span class="number">₱0.00</span>
+        </div>
+    </div>
+    <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+    </div>
+</div>
       </div>
       
       <div id="orders" class="dashboard-page">
@@ -734,62 +800,87 @@ function goToPendingOrders() {
 }
 
 // Add this in your script section
-function showProofModal(proofUrl) {
-  const proofModal = document.getElementById('proofModal');
-  const proofImage = document.getElementById('proofImage');
-  const imageError = document.getElementById('imageError');
-  
-  // Reset error message and image
-  imageError.style.display = 'none';
-  proofImage.style.display = 'none';
+function loadSalesData() {
+    fetch('sales_data.php')
+        .then(response => response.json())
+        .then(data => {
+            // Update total sales display
+            document.getElementById('stat-sales').textContent = 
+                `₱${parseFloat(data.totalSales).toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
 
-  // Show loading state
-  proofModal.style.display = 'block';
-  
-  // Construct proper path based on the proof URL
-  let imagePath;
-  if (proofUrl.includes('/uploads/proofs/')) {
-    imagePath = proofUrl; // Full path already included
-  } else {
-    // Adjust path to point to user folder
-    imagePath = `../user/uploads/proofs/${proofUrl.split('/').pop()}`;
-  }
+            // Get the canvas element
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // Create gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(111,88,233,0.35)');
+            gradient.addColorStop(1, 'rgba(111,88,233,0.05)');
 
-  // Add console log for debugging
-  console.log('Attempting to load image from:', imagePath);
+            // Destroy existing chart if it exists
+            if (window.salesChart instanceof Chart) {
+                window.salesChart.destroy();
+            }
 
-  // Create a new image to test loading
-  const testImage = new Image();
-  testImage.onload = function() {
-    proofImage.src = imagePath;
-    proofImage.style.display = 'block';
-  };
+            // Create new chart
+            window.salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: data.values,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: '#6f58e9',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#6f58e9',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: value => '₱' + value.toLocaleString('en-PH')
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => '₱' + context.parsed.y.toLocaleString('en-PH')
+                            }
+                        }
+                    }
+                }
+            });
 
-  testImage.onerror = function() {
-    console.error('Failed to load image from path:', imagePath);
-    imageError.style.display = 'block';
-    proofImage.style.display = 'none';
-  };
-
-  testImage.src = imagePath;
+            // Update monthly sales total
+            document.querySelector('.graph-header .number').textContent = 
+                `₱${parseFloat(data.monthlySales).toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+        })
+        .catch(error => {
+            console.error('Error loading sales data:', error);
+        });
 }
 
-function closeProofModal() {
-  const proofModal = document.getElementById('proofModal');
-  const proofImage = document.getElementById('proofImage');
-  const imageError = document.getElementById('imageError');
-  
-  proofModal.style.display = 'none';
-  proofImage.src = '';
-  imageError.style.display = 'none';
-}
-
-// Close modal when clicking outside
-document.getElementById('proofModal').addEventListener('click', function(e) {
-  if (e.target === this) {
-    closeProofModal();
-  }
-});
+// Call loadSalesData when the page loads
+document.addEventListener('DOMContentLoaded', loadSalesData);
   </script>
   </script>
 </body>

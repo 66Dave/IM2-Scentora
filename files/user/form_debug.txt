@@ -1,8 +1,8 @@
 Array
 (
     [fullname] => dave
-    [address] => Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines
-    [payment] => card
+    [address] => 21
+    [payment] => gcash
     [courier] => lalamove
-    [total_amount] => 100
+    [total_amount] => 113
 )
