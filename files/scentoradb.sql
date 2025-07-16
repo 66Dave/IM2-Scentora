@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 16, 2025 at 02:57 AM
+-- Generation Time: Jul 16, 2025 at 07:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -44,7 +44,8 @@ INSERT INTO `cart` (`Cart_ID`, `User_ID`, `Product_ID`, `Quantity`, `Date_Added`
 (13, 1, 4, 1, '2025-07-15 07:04:41'),
 (14, 1, 2, 6, '2025-07-16 00:42:53'),
 (15, 1, 6, 1, '2025-07-16 00:43:25'),
-(16, 1, 5, 1, '2025-07-16 00:44:26');
+(16, 1, 5, 1, '2025-07-16 00:44:26'),
+(29, 5, 5, 1, '2025-07-16 03:45:51');
 
 -- --------------------------------------------------------
 
@@ -112,13 +113,20 @@ CREATE TABLE `order` (
 --
 
 INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipping_Address`, `Payment_Method`, `Payment_Proof`, `Status`, `Courier`, `Tracking_Number`, `Arrival_Date`) VALUES
-(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Pending', NULL, NULL, NULL),
-(2, 1, '2025-07-15 10:19:42', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545982_6875babe7d632.jpg', 'Pending', NULL, NULL, NULL),
-(3, 5, '2025-07-15 10:33:23', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752546803_6875bdf3867a0.jpg', 'Pending', NULL, NULL, NULL),
-(4, 5, '2025-07-15 10:38:55', 2.00, '123', 'card', '../uploads/proofs/proof_1752547135_6875bf3f11532.jpg', 'Pending', NULL, NULL, NULL),
-(5, 5, '2025-07-15 10:46:35', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752547595_6875c10b3f2b7.jpg', 'Pending', NULL, NULL, NULL),
-(6, 6, '2025-07-15 11:46:14', 169.00, 'usc TC', 'gcash', '../uploads/proofs/proof_1752551174_6875cf0692360.png', 'Pending', NULL, NULL, NULL),
-(7, 2, '2025-07-16 08:53:04', 4.00, '5637', 'gcash', 'proof_1752627184_8672.jpg', 'Declined', 'grab', NULL, NULL);
+(1, 5, '2025-07-15 10:14:51', 59.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545690_6875b99af17ff.jpg', 'Accepted', NULL, NULL, NULL),
+(2, 1, '2025-07-15 10:19:42', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752545982_6875babe7d632.jpg', 'Cancelled', NULL, NULL, NULL),
+(3, 5, '2025-07-15 10:33:23', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752546803_6875bdf3867a0.jpg', 'Declined', NULL, NULL, NULL),
+(4, 5, '2025-07-15 10:38:55', 2.00, '123', 'card', '../uploads/proofs/proof_1752547135_6875bf3f11532.jpg', 'Declined', NULL, NULL, NULL),
+(5, 5, '2025-07-15 10:46:35', 1.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '../uploads/proofs/proof_1752547595_6875c10b3f2b7.jpg', 'Declined', NULL, NULL, NULL),
+(6, 6, '2025-07-15 11:46:14', 169.00, 'usc TC', 'gcash', '../uploads/proofs/proof_1752551174_6875cf0692360.png', 'Accepted', NULL, NULL, NULL),
+(7, 2, '2025-07-16 08:53:04', 4.00, '5637', 'gcash', 'proof_1752627184_8672.jpg', 'Declined', 'grab', NULL, NULL),
+(10, 5, '2025-07-16 10:02:49', 100.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', 'proof_1752631369_9067.jpg', 'Accepted', 'grab', NULL, NULL),
+(11, 5, '2025-07-16 10:03:26', 12.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'card', 'proof_1752631406_9228.jpg', 'Accepted', 'lalamove', NULL, NULL),
+(12, 5, '2025-07-16 10:38:56', 13.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'card', 'proof_1752633536_3296.jpg', 'Declined', 'lalamove', NULL, NULL),
+(13, 5, '2025-07-16 10:46:08', 100.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', 'proof_1752633968_9495.jpg', 'Accepted', 'lalamove', NULL, NULL),
+(14, 5, '2025-07-16 10:58:52', 13.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', 'proof_1752634732_1290.jpg', 'Declined', 'lalamove', NULL, NULL),
+(15, 5, '2025-07-16 11:01:36', 100.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', 'proof_1752634896_2622.jpg', 'Declined', 'grab', NULL, NULL),
+(16, 5, '2025-07-16 11:25:18', 100.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'card', 'proof_1752636318_5123.jpg', 'Declined', 'lalamove', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -148,7 +156,14 @@ INSERT INTO `orderdetails` (`Order_ID`, `Product_ID`, `Product_Price`, `Product_
 (5, 2, 1.00, 1, NULL),
 (6, 5, 69.00, 1, NULL),
 (6, 6, 100.00, 1, NULL),
-(7, 2, 1.00, 4, 4.00);
+(7, 2, 1.00, 4, 4.00),
+(10, 6, 100.00, 1, 100.00),
+(11, 4, 12.00, 1, 12.00),
+(12, 5, 13.00, 1, 13.00),
+(13, 6, 100.00, 1, 100.00),
+(14, 5, 13.00, 1, 13.00),
+(15, 6, 100.00, 1, 100.00),
+(16, 6, 100.00, 1, 100.00);
 
 -- --------------------------------------------------------
 
@@ -178,11 +193,11 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`, `Stock_Level`, `Product_Code`, `Category`, `Image_URL`, `Date_Added`, `Date_Updated`, `Is_Active`, `Brand`, `Description`, `Available_Stocks`) VALUES
-(2, 1, 'Test1', 1.00, 1, '123', 'Floral', 'uploads/wo_mu.png', '2025-07-08', '2025-07-16', 1, 'Scentora', 'vf', 450),
-(3, 1, 'lead dev for sale', 21.00, 2, '344', 'Floral', 'uploads/developer.jpg', '2025-07-08', '2025-07-16', 1, 'randomhuman2', '3ed', 1),
+(2, 1, 'Test1', 1.00, 1, '123', 'Floral', 'uploads/wo_mu.png', '2025-07-08', '2025-07-16', 1, 'Scentora', 'vf', 454),
+(3, 1, 'lead dev for sale', 21.00, 2, '344', 'Floral', 'uploads/developer.jpg', '2025-07-08', '2025-07-16', 1, 'randomhuman2', '3ed', 0),
 (4, 1, 'random guy', 12.00, 1, '12', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-16', 1, 'Scentora', 'Mega', 54),
-(5, 1, 'jabol monster', 69.00, 1, '69', 'Floral', 'uploads/developer.jpg', '2025-07-14', '2025-07-16', 1, 'khit', 'Niga', 435),
-(6, 1, 'random ass perfume', 100.00, 1, 'random1', 'Fresh', 'uploads/flo_es.png', '2025-07-14', '2025-07-16', 1, 'Scentora', 'Checkkk', 65);
+(5, 1, '31', 13.00, 1, '31', 'Fruity', 'uploads/developer.jpg', '2025-07-14', '2025-07-16', 0, '13', '31', 1322),
+(6, 1, 'random ass perfume', 100.00, 1, 'random1', 'Fresh', 'uploads/flo_es.png', '2025-07-14', '2025-07-16', 1, 'Scentora', 'Checkkk', 63);
 
 -- --------------------------------------------------------
 
@@ -199,21 +214,22 @@ CREATE TABLE `user` (
   `Password` varchar(255) NOT NULL,
   `reset_token` varchar(64) DEFAULT NULL,
   `reset_expiry` datetime DEFAULT NULL,
-  `Profile_Image` varchar(255) DEFAULT NULL
+  `Profile_Image` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`, `reset_token`, `reset_expiry`, `Profile_Image`) VALUES
-(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL, NULL),
-(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123', NULL, NULL, NULL),
-(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123', NULL, NULL, NULL),
-(4, 'dave lang', 'dave@test.com', '', 'Consumer', '$2y$10$xKZ57il.hkE15hUT/Xx95uQ7H5cpNwe1zTWE3kO22rmCYBuyiinlu', NULL, NULL, NULL),
-(5, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$PQnRSc6.mvGfzS8lm3ra3ejk4MXjVtaxj/1212345678', 'b0a7dcd93d000baa20844288b58d46209d9fdaa76fa1a9817d65552389f55964', '2025-07-15 16:45:51', NULL),
-(6, 'Kylle A. Buhia', 'kylle@gmail.com', '-USC - TC', 'Consumer', '$2y$10$cDGbO54mXkyT1KQCPpkw1uBRrLSPUty8Ut5iYuFUiXAdpZ5KUQjvS', NULL, NULL, '../uploads/profile/Halo (1).png'),
-(7, 'Kylle Andrei', 'kyllebuhia@gmail.com', '', 'Consumer', '123456789', NULL, NULL, '../uploads/profile/card_qr.jpg');
+INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Password`, `reset_token`, `reset_expiry`, `Profile_Image`, `is_active`) VALUES
+(1, 'AdminUser', 'admin@example.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL, NULL, 1),
+(2, 'ConsumerUser', 'customer@example.com', 'Cebu City', 'Consumer', 'customer123', NULL, NULL, NULL, 1),
+(3, 'EmployeeUser', 'employee@gmail.com', 'Lapu-Lapu City', 'Employee', 'employee123', NULL, NULL, NULL, 1),
+(4, 'dave lang', 'dave@test.com', '', 'Consumer', '$2y$10$xKZ57il.hkE15hUT/Xx95uQ7H5cpNwe1zTWE3kO22rmCYBuyiinlu', NULL, NULL, NULL, 1),
+(5, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$v.LBbOqs9NAqq2rcKbCLaeV6kgn8Nbv1gAu16p.uw5Te1QoKcV0.C', '39036773f48f686894af258250c611b854efc1184f28c4e548d7f8dc348b0c9d', '2025-07-16 06:40:15', NULL, 1),
+(6, 'Kylle A. Buhia', 'kylle@gmail.com', '-USC - TC', 'Consumer', '$2y$10$cDGbO54mXkyT1KQCPpkw1uBRrLSPUty8Ut5iYuFUiXAdpZ5KUQjvS', NULL, NULL, '../uploads/profile/Halo (1).png', 1),
+(7, 'Kylle Andrei', 'kyllebuhia@gmail.com', '', 'Consumer', '123456789', NULL, NULL, '../uploads/profile/card_qr.jpg', 1);
 
 --
 -- Indexes for dumped tables
@@ -274,13 +290,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `order`
 --
 ALTER TABLE `order`
-  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `product`
