@@ -1,52 +1,68 @@
 <?php
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
+session_start();
+require_once '../includes/db_connect.php';
 
-$conn = new mysqli($host, $username, $password, $database);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = intval($_POST['id']);
+    $product_name = $_POST['name'];
+    $code = $_POST['code'];
+    $price = floatval($_POST['price']);
+    $stock = intval($_POST['stock']);
+    $category = $_POST['category'];
+    $brand = $_POST['brand'];
+    $description = $_POST['description'];
+    $current_image = $_POST['currentImage'];
 
-$id = intval($_POST['id']);
-$name = $_POST['name'];
-$code = $_POST['code'];
-$category = $_POST['category'];
-$brand = $_POST['brand']; // Add this line
-$stock = intval($_POST['stock']);
-$image = '';
-if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $uploadDir = 'uploads/';
-    $filename = basename($_FILES['image']['name']);
-    $targetPath = $uploadDir . $filename;
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-        $image = $targetPath;
+    // Handle new image upload
+    $image_url = $current_image;
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'uploads/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $filename = uniqid() . '_' . basename($_FILES['image']['name']);
+        $target_path = $upload_dir . $filename;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
+            $image_url = $target_path;
+            // Delete old image if it exists
+            if ($current_image && file_exists($current_image)) {
+                unlink($current_image);
+            }
+        }
+    }
+
+    try {
+        $sql = "UPDATE product SET 
+            Product_Name = ?, 
+            Product_Price = ?, 
+            Product_Code = ?, 
+            Category = ?, 
+            Image_URL = ?, 
+            Date_Updated = NOW(), 
+            Brand = ?, 
+            Description = ?, 
+            Available_Stocks = ? 
+            WHERE Product_ID = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "sdsssssii",
+            $product_name, $price, $code, $category, 
+            $image_url, $brand, $description, $stock, $id
+        );
+
+        if ($stmt->execute()) {
+            echo "success";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-if (empty($image)) {
-    $image = $_POST['currentImage'] ?? '';
-}
-$price = floatval($_POST['price'] ?? 0);
-$updated = $_POST['updated'];
-$stock_status = $stock > 0 ? "In stock ($stock pcs)" : "Out of stock";
-$is_active = $stock > 0 ? 1 : 0;
-$description = $_POST['description'] ?? '';
-
-$sql = "UPDATE product SET
-    Product_Name=?, Product_Code=?, Category=?, Brand=?, Stock_Status=?, Product_Price=?, Date_Updated=?, Image_URL=?, Description=?
-    WHERE Product_ID=?";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssdsssi", $name, $code, $category, $brand, $stock_status, $price, $updated, $image, $description, $id);
-
-if ($stmt->execute()) {
-    echo "success";
-} else {
-    echo "error: " . $stmt->error;
-}
-
-$stmt->close();
 $conn->close();
 ?>

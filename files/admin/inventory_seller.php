@@ -1,13 +1,6 @@
 <?php
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
-
-$conn = new mysqli($host, $username, $password, $database);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+session_start();
+require_once '../includes/db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_name = $_POST['name'] ?? '';
@@ -17,53 +10,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = $_POST['category'] ?? '';
     $brand = $_POST['brand'] ?? 'Scentora';
     $description = $_POST['description'] ?? '';
+    $user_id = 1; // Default admin user
     $is_active = 1;
 
     // Handle image upload
-    $image = '';
+    $image_url = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = 'uploads/';
-        if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        $upload_dir = 'uploads/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
         }
         
         $filename = uniqid() . '_' . basename($_FILES['image']['name']);
-        $targetPath = $uploadDir . $filename;
+        $target_path = $upload_dir . $filename;
 
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if (in_array($ext, $allowed)) {
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                $image = $targetPath;
-            }
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
+            $image_url = $target_path;
         }
     }
 
-    // Insert into database
-    $sql = "INSERT INTO product (
-        User_ID, Product_Name, Product_Price, Product_Code, 
-        Category, Image_URL, Date_Added, Date_Updated, 
-        Brand, Description, Is_Active, Available_Stocks
-    ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)";
+    try {
+        // Insert into database
+        $sql = "INSERT INTO product (
+            User_ID, Product_Name, Product_Price, Product_Code, 
+            Category, Image_URL, Date_Added, Date_Updated, 
+            Brand, Description, Is_Active, Available_Stocks
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)";
 
-    $stmt = $conn->prepare($sql);
-    $user_id = 1; // Default admin user
-    
-    $stmt->bind_param(
-        "isdsssssiii",
-        $user_id, $product_name, $price, $code,
-        $category, $image, $brand, $description,
-        $is_active, $stock
-    );
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "isdsssssiii",
+            $user_id, $product_name, $price, $code,
+            $category, $image_url, $brand, $description,
+            $is_active, $stock
+        );
 
-    if ($stmt->execute()) {
-        echo "success";
-    } else {
-        http_response_code(500);
-        echo "error: " . $stmt->error;
+        if ($stmt->execute()) {
+            echo "success";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
     }
-
-    $stmt->close();
 }
 
 $conn->close();
