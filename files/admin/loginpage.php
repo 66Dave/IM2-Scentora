@@ -85,6 +85,46 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       --lavender-accent: #b497bd;
     }
 
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--white);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(8px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .nav-links a:hover {
+      color: #b497bd;
+    }
+
     .hero {
       position: relative;
       width: 100vw;
@@ -93,6 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      padding-top: 4rem; /* Added padding to avoid content being hidden under the header */
     }
 
     .hero video {
@@ -367,6 +408,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   </style>
 </head>
 <body>
+
+  <header>
+    <div class="logo">Scentora</div>
+    <nav class="nav-links">
+      <a href="/IM2-Scentora/index.html">Home</a>
+      <a href="/IM2-Scentora/files/user/shop_user.html">Shop</a>
+      <a href="/IM2-Scentora/files/admin/dashboard.html">Admin</a>
+      <a href="/IM2-Scentora/files/user/register.php">Sign Up</a>
+    </nav>
+  </header>
 
   <section class="hero">
     <video autoplay muted loop playsinline>
