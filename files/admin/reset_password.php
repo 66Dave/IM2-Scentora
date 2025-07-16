@@ -30,65 +30,66 @@ try {
         }
 
         // Check if email exists
-        $stmt = $conn->prepare("SELECT User_ID FROM user WHERE Email = ?");
+        $stmt = $conn->prepare("SELECT User_ID FROM `user` WHERE Email = ?"); // Added backticks for user table
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            $response['success'] = false;
-            $response['message'] = "Email not found in our records";
-            echo json_encode($response);
-            exit;
+            throw new Exception("Email not found in our records");
         }
 
         // Generate and store reset token
         $token = bin2hex(random_bytes(32));
-        $expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        
-        $stmt = $conn->prepare("UPDATE user SET reset_token = ?, reset_expiry = ? WHERE Email = ?");
+        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour')); // Changed to 1 hour to match email text
+
+        $stmt = $conn->prepare("UPDATE `user` SET reset_token = ?, reset_expiry = ? WHERE Email = ?");
         $stmt->bind_param("sss", $token, $expiry, $email);
-        
+
         if (!$stmt->execute()) {
-            throw new Exception("Failed to update reset token");
+            throw new Exception("Failed to update reset token: " . $stmt->error);
         }
 
-        // Send email
+        // Modify email settings
         $mail = new PHPMailer(true);
 
-        // Server settings
-        $mail->SMTPDebug = 2; // Enable debug output
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'sscentora@gmail.com';
-        $mail->Password = 'mvcq uvsu otkq iegu';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        try {
+            // Server settings
+            $mail->SMTPDebug = 0; // Changed from 2 to 0 to hide debug output
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'sscentora@gmail.com';
+            $mail->Password = 'mvcq uvsu otkq iegu'; // Make sure this is your correct app password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
 
-        // Recipients
-        $mail->setFrom('sscentora@gmail.com', 'Scentora');
-        $mail->addAddress($email);
+            // Recipients
+            $mail->setFrom('sscentora@gmail.com', 'Scentora');
+            $mail->addAddress($email);
 
-        // Content
-        $reset_link = "http://localhost/IM2-Scentora/files/admin/change_password.php?token=" . $token;
-        
-        $mail->isHTML(true);
-        $mail->Subject = 'Password Reset Request - Scentora';
-        $mail->Body = "
-            <h2>Password Reset Request</h2>
-            <p>Click the link below to reset your password:</p>
-            <p><a href='{$reset_link}'>{$reset_link}</a></p>
-            <p>This link will expire in 1 hour.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-        ";
+            // Content
+            $reset_link = "http://localhost/IM2-Scentora/files/admin/change_password.php?token=" . $token;
 
-        if (!$mail->send()) {
-            throw new Exception("Email could not be sent. Mailer Error: " . $mail->ErrorInfo);
+            $mail->isHTML(true);
+            $mail->Subject = 'Password Reset Request - Scentora';
+            $mail->Body = "
+                <h2>Password Reset Request</h2>
+                <p>Click the link below to reset your password:</p>
+                <p><a href='{$reset_link}'>{$reset_link}</a></p>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            ";
+
+            if (!$mail->send()) {
+                throw new Exception("Email could not be sent. Mailer Error: " . $mail->ErrorInfo);
+            }
+
+            $response['success'] = true;
+            $response['message'] = "Password reset link has been sent to your email";
+        } catch (Exception $e) {
+            throw new Exception("Email sending failed: " . $e->getMessage());
         }
-
-        $response['success'] = true;
-        $response['message'] = "Password reset link has been sent to your email";
     }
 } catch (Exception $e) {
     $response['success'] = false;
