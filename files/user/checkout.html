@@ -180,6 +180,18 @@
       margin-bottom: 2rem;
       letter-spacing: 0.5px;
     }
+    .total-note {
+    font-size: 0.85rem;
+    color: var(--text);
+    text-align: right;
+    margin-top: 0.3rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    opacity: 0.8;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border-right: 3px solid var(--primary);
+}
     .form-section {
       margin-bottom: 2rem;
     }
@@ -304,6 +316,26 @@ body.darkmode .summary-item-price {
   color: var(--white);
 }
 
+.courier-note {
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-top: -0.8rem;
+    margin-bottom: 1.2rem;
+    padding-left: 0.2rem;
+    font-style: italic;
+    opacity: 0.8;
+   
+    padding: 0.8rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+}
+
+/* Dark mode specific styles */
+body.darkmode .courier-note {
+    background: rgba(184, 159, 255, 0.1);
+    color: var(--white);
+    border-left: 3px solid var(--primary);
+}
   </style>
 </head>
 <body>
@@ -338,6 +370,9 @@ body.darkmode .summary-item-price {
       <!-- Order summary items will be rendered here from the database -->
     </ul>
     <div class="checkout-total" id="checkoutTotal">Total: ₱0.00</div>
+    <div class="total-note">
+    * Total does not include courier fee. The courier will contact you regarding the delivery fee via email.
+</div>
     <form class="form-section" id="checkoutForm">
       <label for="fullname">Full Name</label>
       <input type="text" id="fullname" name="fullname" required />
@@ -354,11 +389,14 @@ body.darkmode .summary-item-price {
 
       <label for="courier">Courier</label>
       <select id="courier" name="courier" required>
-        <option value="">Select courier</option>
-        <option value="lalamove">Lalamove</option>
-        <option value="grab">Grab</option>
-        <option value="joyride">Joyride</option>
+          <option value="">Select courier</option>
+          <option value="lalamove">Lalamove</option>
+          <option value="grab">Grab</option>
+          <option value="joyride">Joyride</option>
       </select>
+      <div class="courier-note">
+          * Delivery fee will be shouldered by the customer. You will receive an email from the courier once your order is shipped.
+      </div>
 
       <label for="proof">Proof of Payment</label>
       <!-- Add this container for the QR image -->
