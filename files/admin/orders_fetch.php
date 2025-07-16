@@ -1,73 +1,59 @@
 <?php
-header('Content-Type: application/json');
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require_once '../includes/db_connect.php';
 
-$conn = new mysqli("localhost", "root", "", "scentoradb");
-if ($conn->connect_error) {
-    echo json_encode(["error" => "Connection failed"]);
-    exit;
-}
-
-$orders = [];
-
-$sql = "SELECT o.Order_ID, o.User_ID, u.Name AS Buyer_Name, o.Total_Amount, o.Order_Date,
-               o.Shipping_Address, o.Payment_Method, o.Payment_Proof, o.Status
+try {
+    // Updated query to match your database structure
+    $query = "SELECT 
+        o.Order_ID as order_id,
+        u.Name as buyer_name,
+        o.Order_Date as order_date,
+        o.Total_Amount as total,
+        o.Status as status,
+        o.Payment_Proof as payment_proof,
+        o.Shipping_Address as address,
+        o.Payment_Method as payment_method,
+        o.Courier as courier
         FROM `order` o
-        JOIN user u ON o.User_ID = u.User_ID
-        ORDER BY 
-        CASE 
-            WHEN o.Status = 'Pending' THEN 1
-            WHEN o.Status = 'Accepted' THEN 2
-            ELSE 3 
-        END, 
-        o.Order_Date DESC";
+        LEFT JOIN user u ON o.User_ID = u.User_ID
+        ORDER BY o.Order_Date DESC";
 
-$result = $conn->query($sql);
-if (!$result) {
-    echo json_encode(["error" => "Query failed: " . $conn->error]);
-    exit;
-}
-
-while ($row = $result->fetch_assoc()) {
-    $order_id = $row['Order_ID'];
-
-    // Fetch items for this order
-    $details_sql = "SELECT od.Product_ID, p.Product_Name, od.Product_Qty, od.Product_Price
-                    FROM orderdetails od
-                    JOIN product p ON od.Product_ID = p.Product_ID
-                    WHERE od.Order_ID = ?";
-    $stmt = $conn->prepare($details_sql);
-    $stmt->bind_param("i", $order_id);
-    $stmt->execute();
-    $detail_result = $stmt->get_result();
-
-    $items = [];
-    while ($item = $detail_result->fetch_assoc()) {
-        $items[] = [
-            "product_id" => $item['Product_ID'],
-            "name" => $item['Product_Name'],
-            "quantity" => (int)$item['Product_Qty'],
-            "price" => number_format((float)$item['Product_Price'], 2),
-            "subtotal" => number_format((float)$item['Product_Price'] * $item['Product_Qty'], 2)
-        ];
+    $result = $conn->query($query);
+    
+    if (!$result) {
+        throw new Exception("Query failed: " . $conn->error);
     }
 
-    $orders[] = [
-        "order_id" => $order_id,
-        "buyer_id" => $row['User_ID'],
-        "buyer_name" => $row['Buyer_Name'],
-        "total" => number_format((float)$row['Total_Amount'], 2),
-        "date" => $row['Order_Date'],
-        "address" => $row['Shipping_Address'],
-        "payment_method" => $row['Payment_Method'],
-        "proof" => $row['Payment_Proof'],
-        "status" => $row['Status'],
-        "items" => $items
-    ];
-    $stmt->close();
+    $orders = [];
+    while ($row = $result->fetch_assoc()) {
+        // Format the data
+        $row['total'] = number_format((float)$row['total'], 2, '.', '');
+        $row['order_date'] = date('Y-m-d H:i:s', strtotime($row['order_date']));
+        
+        // Fix payment proof path
+        if ($row['payment_proof']) {
+            // Remove any path traversal
+            $row['payment_proof'] = basename($row['payment_proof']);
+            // Construct proper path for front-end
+            $row['payment_proof'] = '../uploads/proofs/' . $row['payment_proof'];
+        }
+
+        $orders[] = $row;
+    }
+
+    // Debug output
+    error_log("Orders fetched: " . json_encode($orders));
+
+    header('Content-Type: application/json');
+    echo json_encode($orders);
+
+} catch (Exception $e) {
+    error_log("Orders fetch error: " . $e->getMessage());
+    header('HTTP/1.1 500 Internal Server Error');
+    echo json_encode([
+        'error' => true,
+        'message' => $e->getMessage()
+    ]);
 }
 
-echo json_encode($orders);
 $conn->close();
 ?>
