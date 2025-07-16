@@ -32,23 +32,39 @@ if (!$address || !$paymentMethod || !$courier || $totalAmount <= 0) {
 }
 
 // Upload proof file
+$uploadDir = __DIR__ . '/proofs/';
+if (!file_exists($uploadDir)) {
+    if (!mkdir($uploadDir, 0777, true)) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to create proofs directory'
+        ]);
+        exit;
+    }
+}
+
 $proofFilename = '';
-if (isset($_FILES['proof']) && $_FILES['proof']['error'] === UPLOAD_ERR_OK) {
-    $ext = pathinfo($_FILES['proof']['name'], PATHINFO_EXTENSION);
-    $proofFilename = 'proof_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-    $targetPath = 'uploads/proofs/' . $proofFilename;
+if (isset($_FILES['proof'])) {
+    $file = $_FILES['proof'];
+    $fileName = time() . '_' . basename($file['name']);
+    $targetPath = $uploadDir . $fileName;
 
-    file_put_contents("path_debug.txt", $targetPath);
-    file_put_contents("upload_debug.txt", print_r($_FILES['proof'], true));
-
-    if (!is_writable(dirname($targetPath))) {
-        error_log("Folder is not writable");
-        echo json_encode(["success" => false, "message" => "Proofs folder not writable"]);
+    if (!is_writable($uploadDir)) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Proofs directory is not writable. Please check permissions.'
+        ]);
         exit;
     }
 
-    if (!move_uploaded_file($_FILES['proof']['tmp_name'], $targetPath)) {
-        echo json_encode(["success" => false, "message" => "Failed to upload proof of payment"]);
+    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to upload proof of payment'
+        ]);
         exit;
     }
 }
