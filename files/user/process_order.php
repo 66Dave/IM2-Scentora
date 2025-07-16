@@ -101,6 +101,7 @@ foreach ($cartItems as $item) {
     $detailStmt->execute();
     $detailStmt->close();
 
+    // Deduct stock
     $deductStmt = $conn->prepare("UPDATE product
         SET Available_Stocks = Available_Stocks - ?
         WHERE Product_ID = ?");

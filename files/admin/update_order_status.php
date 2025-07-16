@@ -23,6 +23,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        // Check current status
+        $stmt = $conn->prepare("SELECT Status FROM `order` WHERE Order_ID = ?");
+        $stmt->bind_param("i", $order_id);
+        $stmt->execute();
+        $stmt->bind_result($current_status);
+        $stmt->fetch();
+        $stmt->close();
+
+        // If changing to Declined and wasn't already Declined, restore stock
+        if (strtolower($status) === 'declined' && strtolower($current_status) !== 'declined') {
+            // Get all products and quantities in this order
+            $details = $conn->query("SELECT Product_ID, Product_Qty FROM orderdetails WHERE Order_ID = $order_id");
+            while ($row = $details->fetch_assoc()) {
+                $conn->query("UPDATE product SET Available_Stocks = Available_Stocks + {$row['Product_Qty']} WHERE Product_ID = {$row['Product_ID']}");
+            }
+        }
+
+        // If changing from Declined to something else, deduct stock again
+        if (strtolower($current_status) === 'declined' && strtolower($status) !== 'declined') {
+            $details = $conn->query("SELECT Product_ID, Product_Qty FROM orderdetails WHERE Order_ID = $order_id");
+            while ($row = $details->fetch_assoc()) {
+                $conn->query("UPDATE product SET Available_Stocks = Available_Stocks - {$row['Product_Qty']} WHERE Product_ID = {$row['Product_ID']}");
+            }
+        }
+
+        // Update order status
         $stmt = $conn->prepare("UPDATE `order` SET Status = ? WHERE Order_ID = ?");
         $stmt->bind_param("si", $status, $order_id);
         
