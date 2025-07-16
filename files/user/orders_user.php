@@ -161,12 +161,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
       --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
     }
     body.darkmode th {
+      border: 2px solid rgba(114, 69, 173, 0.7);
       background: #2a2236;
       color: #a182c9;
     }
     body.darkmode tr {
       background: #232336;
       color: #f7f5fa;
+    }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-switch label {
+      font-size: 0.96rem;
+      color: var(--white);
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #bda6e7;
+      outline: none;
+      border-radius: 15px;
+      position: relative;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked {
+      background: #392e44;
+    }
+
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      top: 1px;
+      left: 2px;
+      background: #fff;
+      transition: 0.3s;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked::before {
+      transform: translateX(19px);
+      background: #a182c9;
     }
   </style>
 </head>

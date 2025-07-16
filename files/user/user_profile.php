@@ -94,17 +94,15 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       transition: background 0.5s ease, color 0.5s ease;
     }
     body.darkmode {
-      --primary: #a182c9;
-      --accent: #392e44;
-      --background: #2a2236;
-      --card: #392e44;
-      --sidebar: #2a2236;
+      --primary: #b89fff;
+      --accent: #28294b;
+      --background: #191922;
+      --card: #232336;
+      --sidebar: #232336;
       --text: #f7f5fa;
-      --nav-bg: rgba(57, 46, 68, 0.85);
-      --white: #2a2236;
-      --shadow: 0 2px 6px rgba(57,46,68,0.22);
-      background: var(--background);
-      color: var(--text);
+      --nav-bg: rgba(32, 31, 50, 0.92);
+      --white: #e9e9ff;
+      --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
     }
     header {
       position: fixed;
@@ -187,10 +185,12 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       align-items: center;
       gap: 0.5rem;
     }
+
     .toggle-switch label {
       font-size: 0.96rem;
       color: var(--white);
     }
+
     .toggle-switch input[type="checkbox"] {
       width: 40px;
       height: 20px;
@@ -202,9 +202,11 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       transition: background 0.3s;
       cursor: pointer;
     }
+
     .toggle-switch input[type="checkbox"]:checked {
       background: #392e44;
     }
+
     .toggle-switch input[type="checkbox"]::before {
       content: "";
       position: absolute;
@@ -216,6 +218,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
       background: #fff;
       transition: 0.3s;
     }
+
     .toggle-switch input[type="checkbox"]:checked::before {
       transform: translateX(19px);
       background: #a182c9;
@@ -411,7 +414,6 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
             <textarea id="address" name="address" rows="2" readonly><?php echo htmlspecialchars($address); ?></textarea>
             <div style="display:flex;gap:0.5rem;">
               <button type="button" class="edit-btn" id="editBtn" onclick="enableEditProfile()">Edit Profile</button>
-              <button type="button" class="edit-btn" id="viewOrdersBtn" onclick="showOrdersModal()">View My Orders</button>
               <button type="submit" class="edit-btn" id="saveBtn" style="display:none;">Save</button>
               <button type="button" class="edit-btn" id="cancelBtn" style="display:none;" onclick="cancelEditProfile()">Cancel</button>
             </div>
@@ -463,7 +465,6 @@ function enableEditProfile() {
   document.getElementById('saveBtn').style.display = 'inline-block';
   document.getElementById('cancelBtn').style.display = 'inline-block';
   document.getElementById('editBtn').style.display = 'none';
-  document.getElementById('viewOrdersBtn').style.display = 'none'; // Hide orders button
   editingProfile = true;
   document.getElementById('profilePic').classList.add('editable');
 }
@@ -476,7 +477,6 @@ function cancelEditProfile() {
   document.getElementById('saveBtn').style.display = 'none';
   document.getElementById('cancelBtn').style.display = 'none';
   document.getElementById('editBtn').style.display = 'inline-block';
-  document.getElementById('viewOrdersBtn').style.display = 'inline-block'; // Show orders button
   editingProfile = false;
   document.getElementById('profilePic').classList.remove('editable');
 }
