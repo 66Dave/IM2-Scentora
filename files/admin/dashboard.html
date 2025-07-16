@@ -82,45 +82,59 @@
     .toggle-switch {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.8rem;
+      padding: 0.5rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
     }
 
     .toggle-switch label {
-      font-size: 0.96rem;
+      font-size: 0.9rem;
       color: var(--white);
+      font-weight: 500;
+      user-select: none;
     }
 
     .toggle-switch input[type="checkbox"] {
-      width: 40px;
-      height: 20px;
       appearance: none;
-      background: #bda6e7;
-      outline: none;
-      border-radius: 15px;
+      width: 48px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
       position: relative;
-      transition: background 0.3s;
       cursor: pointer;
-    }
-
-    .toggle-switch input[type="checkbox"]:checked {
-      background: #392e44;
+      transition: all 0.3s ease;
     }
 
     .toggle-switch input[type="checkbox"]::before {
       content: "";
       position: absolute;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      top: 1px;
+      top: 2px;
       left: 2px;
-      background: #fff;
-      transition: 0.3s;
+      background: var(--white);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch input[type="checkbox"]:checked {
+      background: var(--primary);
     }
 
     .toggle-switch input[type="checkbox"]:checked::before {
-      transform: translateX(19px);
-      background: #a182c9;
+      transform: translateX(24px);
+    }
+
+    .toggle-switch input[type="checkbox"]:hover::before {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch input[type="checkbox"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
     }
 
     .dashboard-container {
@@ -348,6 +362,9 @@
       display: flex;
       gap: 0.5rem;
       justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      min-width: 200px; /* Ensure minimum width for buttons */
     }
 
     .order-actions button {
@@ -358,12 +375,18 @@
       padding: 0.6rem 1.2rem;
       cursor: pointer;
       transition: all 0.3s ease;
+      min-width: 90px; /* Consistent button width */
+      text-align: center;
     }
 
-    .order-actions button:hover {
-      background: var(--accent);
-      color: var(--primary);
-      transform: translateY(-2px);
+    /* Center align the Actions column header */
+    #ordersTable th:last-child {
+      text-align: center;
+    }
+
+    /* Center align all action cells */
+    #ordersTable td:last-child {
+      text-align: center;
     }
 
     .overview-widget.clickable {
@@ -451,6 +474,26 @@
 .total-sales h4,
 .total-sales p {
   color: var(--white) !important;
+}
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 25px !important;
+}
+
+.sortable:hover {
+    background: #8b6db3;
+}
+
+.sortable::after {
+    content: attr(data-icon);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
 }
   </style>
   <!-- Add this before your existing scripts -->
@@ -576,9 +619,9 @@ background:var(--background); color:var(--text); border:1px solid var(--primary)
 </select>
     <div style="display:flex; gap:1rem; justify-content:flex-end;">
       <button onclick="closeOverrideModal()" style="padding:0.5rem 1rem; border:none; 
-      border-radius:4px; background:var(--accent); color:var(--text);">Cancel</button>
+      border-radius:4px; background:var(--accent); color:var,--text;">Cancel</button>
       <button onclick="submitOverride()" style="padding:0.5rem 1rem; border:none; 
-      border-radius:4px; background:var(--primary); color:var(--white);">Update</button>
+      border-radius:4px; background:var(--primary); color:var,--white;">Update</button>
     </div>
   </div>
 </div>
@@ -596,7 +639,7 @@ background:rgba(0,0,0,0.5); z-index:1001;">
     </div>
     <div style="display:flex; justify-content:flex-end;">
       <button onclick="closeProofModal()" style="padding:0.5rem 1rem; border:none; 
-      border-radius:4px; background:var(--accent); color:var(--text);">Close</button>
+      border-radius:4px; background:var(--accent); color:var,--text;">Close</button>
     </div>
   </div>
 </div>
@@ -700,42 +743,42 @@ function changeOrderStatus(orderId, newStatus) {
     alert("An error occurred while updating the status");
   });
 }
-// Replace the existing renderOrders function
+// Update the renderOrders function
 function renderOrders(data) {
-  const container = document.getElementById("ordersList");
+    const container = document.getElementById("ordersList");
 
-  if (!data.length) {
-    container.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Orders to display.</td></tr>";
-    return;
-  }
+    if (!data.length) {
+        container.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Orders to display.</td></tr>";
+        return;
+    }
 
-  container.innerHTML = "";
-  data.forEach(order => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${order.order_id}</td>
-      <td>${order.buyer_name}</td>
-      <td>${new Date(order.order_date).toLocaleString()}</td>
-      <td>₱${order.total}</td>
-      <td>${order.status}</td>
-      <td>
-        <div class="order-actions">
-          ${order.status === 'Pending' ? `
-            <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
-            <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
-          ` : ''}
-          ${order.payment_proof ? 
-            `<button onclick="showProofModal('${order.payment_proof.split('/').pop()}')" 
-            style="background:#4a90e2;">View Proof</button>` : 
-            '<span style="color:var(--text);font-size:0.9rem;">No proof uploaded</span>'
-          }
-          <button onclick="showOverrideModal(${order.order_id})" 
-          style="background:#6b5097;">Override</button>
-        </div>
-      </td>
-    `;
-    container.appendChild(row);
-  });
+    container.innerHTML = "";
+    data.forEach(order => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${order.order_id}</td>
+            <td>${order.buyer_email}</td>
+            <td>${new Date(order.order_date).toLocaleString()}</td>
+            <td>₱${order.total}</td>
+            <td>${order.status}</td>
+            <td>
+                <div class="order-actions">
+                    ${order.status === 'Pending' ? `
+                        <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+                        <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+                    ` : ''}
+                    ${order.payment_proof ? 
+                        `<button onclick="showProofModal('${order.payment_proof.split('/').pop()}')" 
+                        style="background:#4a90e2;">View Proof</button>` : 
+                        '<span style="color:var(--text);font-size:0.9rem;">No proof</span>'
+                    }
+                    <button onclick="showOverrideModal(${order.order_id})" 
+                    style="background:#6b5097;">Override</button>
+                </div>
+            </td>
+        `;
+        container.appendChild(row);
+    });
 }
 
 function loadOrders(statusFilter = 'all') {
@@ -753,13 +796,87 @@ function loadOrders(statusFilter = 'all') {
     });
 }
 
+let currentSort = {
+    column: 'order_id',
+    direction: 'desc'
+};
+
+// Update the table headers in your HTML
+function updateTableHeaders() {
+    const headerRow = document.querySelector('#ordersTable thead tr');
+    headerRow.innerHTML = `
+        <th class="sortable" data-column="order_id">
+            Order ID ${getSortIcon('order_id')}
+        </th>
+        <th class="sortable" data-column="buyer_email">
+            Customer ${getSortIcon('buyer_email')}
+        </th>
+        <th class="sortable" data-column="order_date">
+            Date ${getSortIcon('order_date')}
+        </th>
+        <th class="sortable" data-column="total">
+            Total ${getSortIcon('total')}
+        </th>
+        <th>Status</th>
+        <th>Actions</th>
+    `;
+
+    // Add click listeners to sortable headers
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => handleSort(header.dataset.column));
+    });
+}
+
+// Helper function to get sort icon
+function getSortIcon(column) {
+    if (currentSort.column !== column) return '⇕';
+    return currentSort.direction === 'asc' ? '⇑' : '⇓';
+}
+
+// Handle sort click
+function handleSort(column) {
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+    }
+    updateTableHeaders();
+    const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
+    loadOrders(activeFilter);
+}
+
+// Update the filterOrders function to include sorting
 function filterOrders(orders, statusFilter = 'all', searchTerm = '') {
-  return orders.filter(order => {
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = searchTerm === '' || 
-                         order.order_id.toString().includes(searchTerm.trim());
-    return matchesStatus && matchesSearch;
-  });
+    let filtered = orders.filter(order => {
+        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        const matchesSearch = searchTerm === '' || 
+                            order.order_id.toString().includes(searchTerm.trim());
+        return matchesStatus && matchesSearch;
+    });
+
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+        let aVal = a[currentSort.column];
+        let bVal = b[currentSort.column];
+
+        // Handle numeric values
+        if (currentSort.column === 'order_id' || currentSort.column === 'total') {
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+        }
+        // Handle dates
+        if (currentSort.column === 'order_date') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        }
+
+        if (currentSort.direction === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
 }
 
 // Add search event listener
@@ -781,6 +898,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 // Load orders on page ready
 document.addEventListener("DOMContentLoaded", () => {
   loadOrders();
+  updateTableHeaders(); // Initialize table headers
 });
 
 function goToPendingOrders() {
