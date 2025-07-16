@@ -6,8 +6,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
-// Handle "Order Received" button
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_received'], $_POST['order_id'])) {
+// Handle "Order Received" and "Cancel Order" buttons
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
     $host = "localhost";
     $user_db = "root";
     $pass_db = "";
@@ -15,10 +15,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_received'], $_PO
     $oid = intval($_POST['order_id']);
     $conn = new mysqli($host, $user_db, $pass_db, $dbname);
     if (!$conn->connect_error) {
-        $update = $conn->prepare("UPDATE `order` SET Is_Received = 1 WHERE Order_ID = ? AND User_ID = ?");
-        $update->bind_param("ii", $oid, $user_id);
-        $update->execute();
-        $update->close();
+        // Get current status
+        $check = $conn->prepare("SELECT Status FROM `order` WHERE Order_ID = ? AND User_ID = ?");
+        $check->bind_param("ii", $oid, $user_id);
+        $check->execute();
+        $check->bind_result($current_status);
+        $check->fetch();
+        $check->close();
+
+        if (isset($_POST['mark_received']) && strtolower($current_status) === "accepted") {
+            $update = $conn->prepare("UPDATE `order` SET Status = 'Completed' WHERE Order_ID = ? AND User_ID = ?");
+            $update->bind_param("ii", $oid, $user_id);
+            $update->execute();
+            $update->close();
+        }
+        if (isset($_POST['cancel_order']) && strtolower($current_status) === "pending") {
+            $update = $conn->prepare("UPDATE `order` SET Status = 'Cancelled' WHERE Order_ID = ? AND User_ID = ?");
+            $update->bind_param("ii", $oid, $user_id);
+            $update->execute();
+            $update->close();
+        }
         $conn->close();
     }
     header("Location: orders_user.php");
@@ -202,11 +218,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_received'], $_PO
         if ($conn->connect_error) {
           echo "<tr><td colspan='5'>Database error.</td></tr>";
         } else {
-          $sql = "SELECT Order_ID, Order_Date, Total_Amount, Status, Is_Received FROM `order` WHERE User_ID = ? ORDER BY Order_Date DESC";
+          $sql = "SELECT Order_ID, Order_Date, Total_Amount, Status FROM `order` WHERE User_ID = ? ORDER BY Order_Date DESC";
           $stmt = $conn->prepare($sql);
           $stmt->bind_param("i", $user_id);
           $stmt->execute();
-          $stmt->bind_result($oid, $odate, $total, $status, $is_received);
+          $stmt->bind_result($oid, $odate, $total, $status);
           $found = false;
           while ($stmt->fetch()) {
             $found = true;
@@ -218,9 +234,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_received'], $_PO
             echo "<td>";
             if (strtolower($status) === "accepted") {
                 // Always show the button for accepted status
-                echo "<form method='post' action='' style='display:inline;'><input type='hidden' name='order_id' value='".htmlspecialchars($oid)."'><button type='submit' name='mark_received' style='margin-left:8px;padding:4px 10px;border-radius:6px;background:#a182c9;color:#fff;border:none;cursor:pointer;'>Order Received</button></form>";
+                echo "<form method='post' action='' style='display:inline;'>
+                        <input type='hidden' name='order_id' value='".htmlspecialchars($oid)."'>
+                        <button type='submit' name='mark_received' style='margin-left:8px;padding:4px 10px;border-radius:6px;background:#a182c9;color:#fff;border:none;cursor:pointer;'>
+                            Order Received
+                        </button>
+                      </form>";
             }
-            echo "</td>";
+if (strtolower($status) === "pending") {
+    echo "<form method='post' action='' style='display:inline;'>
+            <input type='hidden' name='order_id' value='".htmlspecialchars($oid)."'>
+            <button type='submit' name='cancel_order' style='margin-left:8px;padding:4px 10px;border-radius:6px;background:#e57373;color:#fff;border:none;cursor:pointer;'>
+                Cancel Order
+            </button>
+          </form>";
+}
+echo "</td>";
             echo "</tr>";
           }
           if (!$found) {
