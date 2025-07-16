@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 16, 2025 at 02:48 PM
+-- Generation Time: Jul 16, 2025 at 04:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,6 +34,13 @@ CREATE TABLE `cart` (
   `Quantity` int(11) NOT NULL DEFAULT 1,
   `Date_Added` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cart`
+--
+
+INSERT INTO `cart` (`Cart_ID`, `User_ID`, `Product_ID`, `Quantity`, `Date_Added`) VALUES
+(1, 31, 40, 1, '2025-07-16 13:31:13');
 
 -- --------------------------------------------------------
 
@@ -427,7 +434,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `order`
