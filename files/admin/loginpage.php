@@ -416,7 +416,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <nav class="nav-links">
       <a href="/IM2-Scentora/index.html">Home</a>
       <a href="/IM2-Scentora/files/user/shop_user.html">Shop</a>
-      <a href="/IM2-Scentora/files/admin/dashboard.html">Admin</a>
+      <a href="/IM2-Scentora/files/user/aboutus.html">About Us</a>
       <a href="/IM2-Scentora/files/user/register.php">Sign Up</a>
     </nav>
   </header>
