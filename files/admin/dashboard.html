@@ -405,32 +405,6 @@
 #proofModal img:hover {
   transform: scale(1.02);
 }
-
-.sort-btn {
-  background: var(--primary);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.sort-btn:hover {
-  background: var(--accent);
-  color: var(--primary);
-}
-
-.search-sort-container {
-  display: flex;
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 1rem;
-}
   </style>
 </head>
 <body>
@@ -548,11 +522,7 @@ background:rgba(0,0,0,0.5); z-index:1001;">
   background:var(--card); padding:2rem; border-radius:12px; max-width:500px; width:90%;">
     <h3 style="color:var(--primary); margin-top:0;">Proof of Payment</h3>
     <div style="margin: 1rem 0; text-align: center;">
-      <img id="proofImage" src="" alt="Payment Proof" 
-           style="max-width:100%; max-height:70vh; border-radius:8px; display:block; margin:0 auto;">
-      <div id="imageError" style="display:none; color:red; margin-top:1rem;">
-        Failed to load image. Please check the file path.
-      </div>
+      <img id="proofImage" src="" alt="Payment Proof" style="max-width:100%; max-height:70vh; border-radius:8px;">
     </div>
     <div style="display:flex; justify-content:flex-end;">
       <button onclick="closeProofModal()" style="padding:0.5rem 1rem; border:none; 
@@ -680,10 +650,8 @@ function renderOrders(data) {
       <td>${order.status}</td>
       <td>
         <div class="order-actions">
-          ${order.status === 'Pending' ? `
-            <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
-            <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
-          ` : ''}
+          <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+          <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
           ${order.payment_proof ? 
             `<button onclick="showProofModal('${order.payment_proof}')" 
             style="background:#4a90e2;">View Proof</button>` : 
@@ -709,6 +677,32 @@ function loadOrders(statusFilter = 'all') {
     })
     .catch(() => {
       document.getElementById("ordersList").innerHTML = 
+        "<tr><td colspan='6' style='text-align:center;'>Error loading orders.</td></tr>";
+    });
+}
+
+function filterOrders(orders, statusFilter = 'all', searchTerm = '') {
+  return orders.filter(order => {
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesSearch = searchTerm === '' || 
+                         order.order_id.toString().includes(searchTerm.trim());
+    return matchesStatus && matchesSearch;
+  });
+}
+
+// Add search event listener
+document.getElementById('orderSearch').addEventListener('input', function() {
+  const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
+  loadOrders(activeFilter);
+});
+
+// Filter buttons functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const status = this.getAttribute('data-status');
+    loadOrders(status);
   });
 });
 
@@ -733,46 +727,15 @@ function goToPendingOrders() {
   loadOrders('Pending');
 }
 
-// Replace the existing showProofModal function with this updated version
+// Add this in your script section
 function showProofModal(proofUrl) {
-  const proofModal = document.getElementById('proofModal');
   const proofImage = document.getElementById('proofImage');
-  const imageError = document.getElementById('imageError');
-  
-  // Reset error message and image
-  imageError.style.display = 'none';
-  proofImage.style.display = 'none';
-
-  // Show loading state
-  proofModal.style.display = 'block';
-  
-  // Construct proper path based on the proof URL
-  const imagePath = `../user/uploads/proofs/${proofUrl.split('/').pop()}`; 
-
-  // Create a new image to test loading
-  const testImage = new Image();
-  testImage.onload = function() {
-    proofImage.src = imagePath;
-    proofImage.style.display = 'block';
-  };
-
-  testImage.onerror = function() {
-    console.error('Failed to load image:', imagePath);
-    imageError.style.display = 'block';
-    proofImage.style.display = 'none';
-  };
-
-  testImage.src = imagePath;
+  proofImage.src = '../uploads/proofs/' + proofUrl;
+  document.getElementById('proofModal').style.display = 'block';
 }
 
 function closeProofModal() {
-  const proofModal = document.getElementById('proofModal');
-  const proofImage = document.getElementById('proofImage');
-  const imageError = document.getElementById('imageError');
-  
-  proofModal.style.display = 'none';
-  proofImage.src = '';
-  imageError.style.display = 'none';
+  document.getElementById('proofModal').style.display = 'none';
 }
 
 // Close modal when clicking outside
