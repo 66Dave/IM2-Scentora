@@ -1,90 +1,73 @@
 <?php
 session_start();
-header("Content-Type: text/plain");
+header('Content-Type: application/json');
+require_once '../includes/db_connect.php';
 
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
-
-$conn = new mysqli($host, $username, $password, $database);
-if ($conn->connect_error) {
-    http_response_code(500);
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$user_id = $_SESSION['user_id'] ?? 1; // fallback for demo/testing
-$product_id = intval($_POST['product_id'] ?? 0);
-$quantity = intval($_POST['quantity'] ?? 1);
-
-if ($product_id < 1 || $quantity < 1) {
-    http_response_code(400);
-    echo "Invalid product or quantity.";
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Please login first']);
     exit;
 }
 
-//Check current available stock
-$stockCheckSql = "SELECT Available_Stocks FROM product WHERE Product_ID = ?";
-$stockStmt = $conn->prepare($stockCheckSql);
-$stockStmt->bind_param("i", $product_id);
-$stockStmt->execute();
-$stockResult = $stockStmt->get_result();
-if ($stockRow = $stockResult->fetch_assoc()) {
-    $availableStock = (int)$stockRow['Available_Stocks'];
-    if ($availableStock < $quantity) {
-        http_response_code(400);
-        echo "Only {$availableStock} item(s) left in stock.";
-        exit;
-    }
-} else {
-    http_response_code(404);
-    echo "Product not found.";
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
-$stockStmt->close();
 
-//Check if product is already in cart
-$sql = "SELECT Quantity FROM cart WHERE User_ID = ? AND Product_ID = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ii", $user_id, $product_id);
-$stmt->execute();
-$stmt->store_result();
+$user_id = $_SESSION['user_id'];
+$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+$quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
 
-if ($stmt->num_rows > 0) {
-    //Fetch existing quantity
-    $stmt->bind_result($existingQty);
-    $stmt->fetch();
-    $totalQty = $existingQty + $quantity;
-
-    if ($totalQty > $availableStock) {
-        echo "Cannot add more than {$availableStock} total item(s). Already have {$existingQty} in cart.";
-        exit;
+try {
+    // Check if product exists and has enough stock
+    $check_product = $conn->prepare("SELECT Available_Stocks FROM product WHERE Product_ID = ? AND Is_Active = 1");
+    $check_product->bind_param("i", $product_id);
+    $check_product->execute();
+    $result = $check_product->get_result();
+    
+    if ($result->num_rows === 0) {
+        throw new Exception("Product not found");
+    }
+    
+    $product = $result->fetch_assoc();
+    if ($product['Available_Stocks'] < $quantity) {
+        throw new Exception("Not enough stock available");
     }
 
-    // Update cart quantity
-    $stmt->close();
-    $updateSql = "UPDATE cart SET Quantity = ? WHERE User_ID = ? AND Product_ID = ?";
-    $updateStmt = $conn->prepare($updateSql);
-    $updateStmt->bind_param("iii", $totalQty, $user_id, $product_id);
-    $updateStmt->execute();
-    echo "updated";
-    $updateStmt->close();
-} else {
-    $stmt->close();
+    // Check if item already in cart
+    $check_cart = $conn->prepare("SELECT Cart_ID, Quantity FROM cart WHERE User_ID = ? AND Product_ID = ?");
+    $check_cart->bind_param("ii", $user_id, $product_id);
+    $check_cart->execute();
+    $cart_result = $check_cart->get_result();
 
-    //Check if adding initial quantity exceeds stock
-    if ($quantity > $availableStock) {
-        echo "Only {$availableStock} item(s) available.";
-        exit;
+    if ($cart_result->num_rows > 0) {
+        // Update existing cart item
+        $cart_item = $cart_result->fetch_assoc();
+        $new_quantity = $cart_item['Quantity'] + $quantity;
+        
+        if ($new_quantity > $product['Available_Stocks']) {
+            throw new Exception("Cannot add more items than available stock");
+        }
+
+        $update = $conn->prepare("UPDATE cart SET Quantity = ? WHERE Cart_ID = ?");
+        $update->bind_param("ii", $new_quantity, $cart_item['Cart_ID']);
+        $update->execute();
+    } else {
+        // Add new cart item
+        $insert = $conn->prepare("INSERT INTO cart (User_ID, Product_ID, Quantity, Date_Added) VALUES (?, ?, ?, NOW())");
+        $insert->bind_param("iii", $user_id, $product_id, $quantity);
+        $insert->execute();
     }
 
-    // Insert new item into cart
-    $insertSql = "INSERT INTO cart (User_ID, Product_ID, Quantity) VALUES (?, ?, ?)";
-    $insertStmt = $conn->prepare($insertSql);
-    $insertStmt->bind_param("iii", $user_id, $product_id, $quantity);
-    $insertStmt->execute();
-    echo "added";
-    $insertStmt->close();
+    echo json_encode([
+        'success' => true,
+        'message' => 'Item added to cart successfully'
+    ]);
+
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
 
 $conn->close();

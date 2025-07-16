@@ -647,28 +647,28 @@ function renderFilteredProducts() {
       );
     })
     .forEach(product => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-      card.innerHTML = `
-        <div class="card">
-          <div class="img">
-            <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
-          </div>
-          <div class="text">
-            <p class="brand-name">${product.Brand || 'Scentora'}</p>
-            <p class="product-name">${product.Product_Name}</p>
-            <p class="price-tag">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
-            <p class="stock-status ${getStockStatusClass(product.Stock_Level)}">
-              ${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)
-            </p>
-            <div class="button-group">
-              <button class="view-btn" onclick="viewProduct('${product.Product_ID}')">View</button>
-              <button class="cart-btn" onclick="addToCart('${product.Product_ID}')">Add to Cart</button>
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <div class="card">
+                <div class="img">
+                    <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}">
+                </div>
+                <div class="text">
+                    <p class="brand-name">${product.Brand || 'Scentora'}</p>
+                    <p class="product-name">${product.Product_Name}</p>
+                    <p class="price-tag">₱${parseFloat(product.Product_Price).toFixed(2)}</p>
+                    <p class="stock-status ${getStockStatusClass(product.Stock_Level)}">
+                        ${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)
+                    </p>
+                    <div class="button-group">
+                        <button class="view-btn" onclick="viewProduct(${product.Product_ID})">View</button>
+                        <button class="cart-btn" onclick="addToCart(${product.Product_ID})">Add to Cart</button>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      `;
-      productGrid.appendChild(card);
+        `;
+        productGrid.appendChild(card);
     });
 }
 
@@ -688,22 +688,23 @@ fetch("shop_user.php")
 
 //Modal logic
 function viewProduct(productId) {
-  const product = allProducts.find(p => p.Product_ID === productId);
-  currentViewingProduct = product;
+    // Convert productId to number if it's a string
+    const product = allProducts.find(p => p.Product_ID === productId.toString());
+    currentViewingProduct = productId; // Store just the ID, not the whole product
 
-  if (product) {
-    document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
-    document.getElementById("modalName").textContent = product.Product_Name;
-    document.getElementById("modalBrand").textContent = product.Brand || 'No brand specified';
-    document.getElementById("modalCategory").textContent = product.Category;
-    document.getElementById("modalPrice").textContent = parseFloat(product.Product_Price).toFixed(2);
-    document.getElementById("modalStock").textContent =
-      `${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)`;
-    document.getElementById("modalCode").textContent = product.Product_Code;
-    document.getElementById("modalDescription").textContent = product.Description || 'No description available.';
-    document.getElementById("productModal").style.display = "block";
-    document.body.style.overflow = "hidden";
-  }
+    if (product) {
+        document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
+        document.getElementById("modalName").textContent = product.Product_Name;
+        document.getElementById("modalBrand").textContent = product.Brand || 'No brand specified';
+        document.getElementById("modalCategory").textContent = product.Category;
+        document.getElementById("modalPrice").textContent = parseFloat(product.Product_Price).toFixed(2);
+        document.getElementById("modalStock").textContent =
+            `${getStockLabel(product.Stock_Level)} (${product.Available_Stocks} pcs)`;
+        document.getElementById("modalCode").textContent = product.Product_Code;
+        document.getElementById("modalDescription").textContent = product.Description || 'No description available.';
+        document.getElementById("productModal").style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
 }
 
 //Modal close logic
@@ -727,20 +728,32 @@ document.addEventListener('keydown', function(event) {
 
 //Cart logic
 function addToCart(productId) {
-  fetch("add_to_cart.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "product_id=" + encodeURIComponent(productId) + "&quantity=1"
-  })
-  .then(res => res.text())
-  .then(result => {
-    if (result === "added" || result === "updated") {
-      alert("Added to cart!");
-    } else {
-      alert("Could not add to cart: " + result);
-    }
-  })
-  .catch(() => alert("Error adding to cart."));
+    const formData = new FormData();
+    formData.append("product_id", productId);
+    formData.append("quantity", 1);
+
+    fetch("add_to_cart.php", {
+        method: "POST",
+        body: formData,
+        headers: {
+            // Remove Content-Type header when using FormData
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Close modal if open
+            document.getElementById("productModal").style.display = "none";
+            document.body.style.overflow = "auto";
+        } else {
+            throw new Error(data.message || "Failed to add item to cart");
+        }
+    })
+    .catch(error => {
+        console.error("Add to cart error:", error);
+        alert(error.message || "Error adding to cart. Please try again.");
+    });
 }
 
 //Helpers
