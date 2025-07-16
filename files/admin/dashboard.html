@@ -153,6 +153,11 @@
       box-shadow: var(--shadow);
       height: fit-content;
       margin-top: 0.5rem;
+      position: sticky;
+      top: 90px; /* Adjust this value based on your header height + desired spacing */
+      align-self: flex-start;
+      max-height: calc(100vh - 100px); /* Ensure it doesn't overflow viewport */
+      overflow-y: auto;
     }
 
     .sidebar h3 {
@@ -1029,7 +1034,7 @@ function loadSalesData(month = 'all') {
     fetch(`sales_data.php?month=${month}`)
         .then(response => response.json())
         .then(data => {
-            // Update total sales display with total from all time
+            // Update total sales display
             const totalSales = parseFloat(data.totalSales) || 0;
             document.getElementById('stat-sales').textContent = 
                 `₱${totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
@@ -1049,24 +1054,22 @@ function loadSalesData(month = 'all') {
                 window.salesChart.destroy();
             }
 
-            const chartData = {
-                labels: data.labels || [],
-                datasets: [{
-                    label: 'Monthly Sales',
-                    data: data.values || [],
-                    fill: true,
-                    backgroundColor: gradient,
-                    borderColor: '#6f58e9',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#6f58e9',
-                    tension: 0.4
-                }]
-            };
-
             window.salesChart = new Chart(ctx, {
                 type: 'line',
-                data: chartData,
+                data: {
+                    labels: data.labels || [],
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: data.values || [],
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: '#6f58e9',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#6f58e9',
+                        tension: 0.4
+                    }]
+                },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -1173,7 +1176,7 @@ function loadMonthlyData(month, page) {
                                         <div>
                                             <div style="color:var(--text); font-weight:bold;">#${order.Order_ID}</div>
                                             <div style="color:var(--text); font-size:0.9rem;">
-                                                ${new Date(order.Order_Date).toLocaleDateString()}
+                                                ${order.Order_Date}
                                             </div>
                                         </div>
                                         <div>
@@ -1267,6 +1270,96 @@ document.addEventListener('DOMContentLoaded', function() {
         loadSalesData('all');
     });
 });
+
+function showMonthlyStatsModal(data) {
+    const modalHTML = `
+        <div id="monthlyStatsModal" style="display:block; position:fixed; top:0; left:0; width:100%; 
+        height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:1001;">
+            <div class="monthly-stats-content" style="background:var(--card); padding:2.5rem; 
+            border-radius:16px; position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+            width:90%; max-width:800px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <h3 style="color:var(--primary); margin:0; font-size:1.5rem">
+                        Monthly Sales Details
+                    </h3>
+                    <button onclick="closeMonthlyStatsModal()" style="background:none; border:none; 
+                    color:var(--text); font-size:1.5rem; cursor:pointer; padding:0.5rem;">×</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Total Sales</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ₱${parseFloat(data.totalSales).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                        </div>
+                    </div>
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Orders</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ${data.orderCount}
+                        </div>
+                    </div>
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Average Order</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ₱${parseFloat(data.averageOrderValue).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin:2rem 0;">
+                    <div style="background:var(--accent); border-radius:12px; padding:1rem;">
+                        ${data.orders ? data.orders.map(order => `
+                            <div style="padding:1rem; border-bottom:1px solid var(--primary); 
+                            display:grid; grid-template-columns:2fr 3fr 2fr 2fr; gap:1rem; align-items:center;">
+                                <div>
+                                    <div style="color:var(--text); font-weight:bold;">#${order.Order_ID}</div>
+                                    <div style="color:var(--text); font-size:0.9rem;">
+                                        ${order.Order_Date}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--primary); font-weight:bold;">
+                                        ${order.Product_Name}
+                                    </div>
+                                    <div style="color:var(--text); font-size:0.9rem;">
+                                        ${order.Buyer_Name}
+                                    </div>
+                                </div>
+                                <div style="text-align:center;">
+                                    <div style="color:var(--text);">Qty: ${order.Product_Qty}</div>
+                                </div>
+                                <div style="text-align:right; color:var(--primary); font-weight:bold;">
+                                    ₱${parseFloat(order.Total_Amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                                </div>
+                            </div>
+                        `).join('') : '<p style="text-align:center;padding:1rem;">No orders found</p>'}
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:1rem; align-items:center; margin-top:2rem;">
+                    ${data.pagination.currentPage > 1 ? `
+                        <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage - 1})" 
+                        class="page-btn">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                    ` : ''}
+                    <span style="color:var(--text);">
+                        Page ${data.pagination.currentPage} of ${data.pagination.totalPages}
+                    </span>
+                    ${data.pagination.currentPage < data.pagination.totalPages ? `
+                        <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage + 1})" 
+                        class="page-btn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
   </script>
   </script>
 </body>
