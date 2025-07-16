@@ -7,54 +7,56 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Database connection failed.";
         error_log("DB Connection Error: " . $conn->connect_error);
     } else {
-        $email = $conn->real_escape_string($_POST["username"]); // keep name="username" in form
+        $email = $conn->real_escape_string($_POST["username"]); 
         $password = $_POST["password"];
         
-        // Debug log
-        error_log("Login attempt with email: " . $email);
-        
-        // Modified query to use Email instead of Name
-        $sql = "SELECT * FROM user WHERE Email='" . $email . "' LIMIT 1";
-        error_log("SQL Query: " . $sql);
-        
-        $result = $conn->query($sql);
+        // Modified query to check is_active status
+        $sql = "SELECT * FROM user WHERE Email=? LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
         if ($result && $result->num_rows === 1) {
             $row = $result->fetch_assoc();
-            error_log("User Type: " . $row["User_Type"]);
-            error_log("Password from DB: " . $row["Password"]);
             
-            // Check if password is hashed (starts with $2y$) or plain text
-            if (str_starts_with($row["Password"], '$2y$')) {
-                $passwordValid = password_verify($password, $row["Password"]);
+            // First check if account is active
+            if (!$row["is_active"]) {
+                $error = "This account has been deactivated. Please contact scentora@gmail.com";
+                error_log("Login attempt by deactivated account: " . $email);
             } else {
-                $passwordValid = ($password === $row["Password"]);
-            }
-            
-            if ($passwordValid) {
-                $_SESSION["user_id"] = $row["User_ID"];
-                $_SESSION["user_type"] = $row["User_Type"];
-                
-                // Case-insensitive comparison for user type
-                $usertype = strtolower(trim($row["User_Type"]));
-                error_log("Processed User Type: " . $usertype);
-                
-                if ($usertype === "consumer") {
-                    header("Location: /IM2-Scentora/files/user/shop_user.html");
-                    exit;
-                } else if ($usertype === "admin") {
-                    header("Location: /IM2-Scentora/files/admin/dashboard.html");
-                    exit;
+                // Check password only if account is active
+                if (str_starts_with($row["Password"], '$2y$')) {
+                    $passwordValid = password_verify($password, $row["Password"]);
                 } else {
-                    $error = "Invalid user type";
+                    $passwordValid = ($password === $row["Password"]);
                 }
-            } else {
-                $error = "Invalid username or password.";
-                error_log("Password match failed");
+                
+                if ($passwordValid) {
+                    $_SESSION["user_id"] = $row["User_ID"];
+                    $_SESSION["user_type"] = $row["User_Type"];
+                    
+                    $usertype = strtolower(trim($row["User_Type"]));
+                    
+                    if ($usertype === "consumer") {
+                        header("Location: /IM2-Scentora/files/user/shop_user.html");
+                        exit;
+                    } else if ($usertype === "admin") {
+                        header("Location: /IM2-Scentora/files/admin/dashboard.html");
+                        exit;
+                    } else {
+                        $error = "Invalid user type";
+                    }
+                } else {
+                    $error = "Invalid username or password.";
+                    error_log("Password match failed for: " . $email);
+                }
             }
         } else {
-            $error = "User not found";
-            error_log("No user found with email: " . $email); // Changed from $username to $email
+            $error = "Invalid username or password.";
+            error_log("No user found with email: " . $email);
         }
+        $stmt->close();
         $conn->close();
     }
 }
