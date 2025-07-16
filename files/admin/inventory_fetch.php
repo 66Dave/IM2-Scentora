@@ -6,37 +6,46 @@ $database = "scentoradb";
 
 $conn = new mysqli($host, $username, $password, $database);
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(['error' => 'Connection failed: ' . $conn->connect_error]));
 }
 
-$sql = "SELECT Product_ID, Product_Name, Product_Code, Category, Product_Price, 
-        Stock_Status, Image_URL, Date_Added, Date_Updated, Is_Active, Brand, Description
-        FROM product ORDER BY Product_ID DESC";
+$query = "SELECT 
+    Product_ID as id,
+    Product_Name as name,
+    Product_Price as price,
+    Product_Code as code,
+    Category as category,
+    Image_URL as img,
+    Date_Added as added,
+    Date_Updated as updated,
+    Is_Active as active,
+    Brand as brand,
+    Description as description,
+    Available_Stocks as stock
+    FROM product 
+    ORDER BY Product_Name";
 
-$result = $conn->query($sql);
+$result = $conn->query($query);
+
+if (!$result) {
+    die(json_encode(['error' => 'Query failed: ' . $conn->error]));
+}
+
 $products = [];
-
 while ($row = $result->fetch_assoc()) {
-    // Try to extract stock number from status
-    preg_match('/\((\d+)/', $row['Stock_Status'], $matches);
-    $stock = isset($matches[1]) ? (int)$matches[1] : 0;
-    $products[] = [
-        "id" => $row['Product_ID'],
-        "name" => $row['Product_Name'],
-        "code" => $row['Product_Code'],
-        "price" => $row['Product_Price'],
-        "stock" => $stock,
-        "img" => $row['Image_URL'],
-        "category" => $row['Category'],
-        "brand" => $row['Brand'],
-        "added" => $row['Date_Added'],
-        "updated" => $row['Date_Updated'],
-        "active" => (bool)$row['Is_Active'], // Default to active
-        "description" => $row['Description'],
-    ];
+    // Convert numeric values
+    $row['price'] = floatval($row['price']);
+    $row['stock'] = intval($row['stock']);
+    $row['active'] = $row['active'] == 1;
+    
+    // Ensure dates are formatted
+    $row['added'] = date('Y-m-d', strtotime($row['added']));
+    $row['updated'] = date('Y-m-d', strtotime($row['updated']));
+    
+    $products[] = $row;
 }
 
-header("Content-Type: application/json");
+header('Content-Type: application/json');
 echo json_encode($products);
 
 $conn->close();
