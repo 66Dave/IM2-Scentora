@@ -664,7 +664,7 @@
         <h2 id="modalName"></h2>
         <p class="modal-brand">Brand: <span id="modalBrand"></span></p>
         <p class="modal-category">Category: <span id="modalCategory"></span></p>
-        <p class="modal-price">Price: ₱<span id="modalPrice"></span></p>
+        <p class="modal-price">Price: <span id="modalPrice"></span></p>
         <p class="modal-stock">Stock Status: <span id="modalStock"></span></p>
         <p class="modal-code">Product Code: <span id="modalCode"></span></p>
         <div class="modal-description">
@@ -872,7 +872,7 @@ function addToCart(productId, quantity = 1) {
     body: formData
   })
   .then(response => response.json())
-  .then(data => {
+  .then (data => {
     if (data.success) {
       alert(data.message);
       document.getElementById("productModal").style.display = "none";
