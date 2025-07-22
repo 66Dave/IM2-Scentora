@@ -657,6 +657,51 @@ body.darkmode .brand-filter::placeholder {
     color: rgba(255, 255, 255, 0.6);
 }
 
+.top-selling-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-selling-btn:hover {
+    background: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(161, 130, 201, 0.3);
+}
+
+.top-selling-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    box-shadow: 0 0 0 2px rgba(161, 130, 201, 0.4);
+}
+
+body.darkmode .top-selling-btn {
+    background: var(--accent);
+    border-color: var(--primary);
+}
+
+body.darkmode .top-selling-btn:hover,
+body.darkmode .top-selling-btn.active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 @media (max-width: 768px) {
     .modal-product-details {
         grid-template-columns: 1fr;
@@ -710,6 +755,14 @@ body.darkmode .brand-filter::placeholder {
   <section class="shop-products">
     <aside class="sidebar">
       <h3>Filters</h3>
+      <div style="margin-bottom: 1.5rem;">
+        <button id="topSellingBtn" class="top-selling-btn" onclick="toggleTopSelling()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          Top Selling Items
+        </button>
+      </div>
       <div>
         <label class="Category">Category:</label>
         <select class="category-select" style="margin-top: 10px;">
@@ -798,11 +851,14 @@ document.getElementById("logout-link").onclick = function(e) {
 //Product data store
 let allProducts = <?php echo json_encode($products); ?>;
 let currentViewingProduct = null;
+let isTopSellingMode = false;
+let topSellingProducts = [];
 
 const categorySelect = document.querySelector(".category-select");
 const searchInput = document.getElementById("searchInput");
 const productGrid = document.getElementById("productGrid");
 const brandFilter = document.getElementById("brandFilter");
+const topSellingBtn = document.getElementById("topSellingBtn");
 
 //Category filters
 const allCategoryList = [
@@ -817,8 +873,152 @@ function populateCategories() {
   });
 }
 
+//Top Selling functionality
+function toggleTopSelling() {
+    isTopSellingMode = !isTopSellingMode;
+    
+    if (isTopSellingMode) {
+        topSellingBtn.classList.add('active');
+        topSellingBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Selling (Active)
+        `;
+        fetchTopSellingProducts();
+    } else {
+        topSellingBtn.classList.remove('active');
+        topSellingBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Selling Items
+        `;
+        // Clear top selling products array and render normal products
+        topSellingProducts = [];
+        renderFilteredProducts();
+    }
+}
+
+function fetchTopSellingProducts() {
+    // Show loading state
+    productGrid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: var(--text); margin-top: 1rem;">Loading top selling items...</p>
+        </div>
+    `;
+
+    fetch('get_top_selling.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                topSellingProducts = data.products;
+                renderTopSellingProducts();
+            } else {
+                productGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <p style="color: var(--text);">Failed to load top selling items.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching top selling products:', error);
+            productGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                    <p style="color: var(--text);">Error loading top selling items.</p>
+                </div>
+            `;
+        });
+}
+
+function renderTopSellingProducts() {
+    const filterText = searchInput.value.toLowerCase();
+    const selectedCategory = categorySelect.value;
+    const brandText = brandFilter.value.toLowerCase();
+
+    productGrid.innerHTML = "";
+
+    if (!topSellingProducts || topSellingProducts.length === 0) {
+        productGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                <p style="color: var(--text);">No products available in top selling view.</p>
+            </div>`;
+        return;
+    }
+
+    const filteredProducts = topSellingProducts.filter(product => {
+        const name = (product.Product_Name || "").toLowerCase();
+        const brand = (product.Brand || "").toLowerCase();
+        const category = (product.Category || "").toLowerCase();
+        
+        const matchesSearch = name.includes(filterText);
+        const matchesCategory = selectedCategory === "All" || category === selectedCategory.toLowerCase();
+        const matchesBrand = brandText === "" || brand.includes(brandText);
+
+        return matchesSearch && matchesCategory && matchesBrand;
+    });
+
+    if (filteredProducts.length === 0) {
+        productGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                <p style="color: var(--text);">No top selling items match your filters.</p>
+            </div>`;
+        return;
+    }
+
+    filteredProducts.forEach((product, index) => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <div class="card">
+                <div class="img">
+                    <div style="position: absolute; top: 10px; left: 10px; background: var(--primary); color: white; 
+                                border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; 
+                                justify-content: center; font-weight: bold; font-size: 0.8rem; z-index: 1;">
+                        #${index + 1}
+                    </div>
+                    <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}" 
+                         onclick="viewProduct(${product.Product_ID})" style="cursor: pointer;">
+                </div>
+                <div class="text">
+                    <p class="brand-name">${product.Brand || 'Scentora'}</p>
+                    <h3 class="product-name">${product.Product_Name}</h3>
+                    <p class="price-tag">${parseFloat(product.Product_Price).toFixed(2)}</p>
+                    <span class="stock-status ${getStockStatusClass(product.Stock_Level)}">
+                        ${product.Available_Stocks} left
+                    </span>
+                    ${product.total_sold > 0 ? 
+                        `<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.5rem; font-weight: 500;">
+                            🔥 ${product.total_sold} sold (last 3 months)
+                        </div>` : 
+                        `<div style="font-size: 0.75rem; color: #888; margin-top: 0.5rem; font-weight: 400;">
+                            No sales yet
+                        </div>`
+                    }
+                    <div class="button-group">
+                        <button class="view-btn" onclick="viewProduct(${product.Product_ID})">
+                            Details
+                        </button>
+                        <button class="cart-btn" onclick="addToCart(${product.Product_ID})">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        productGrid.appendChild(card);
+    });
+}
+
 //Filter renderer
 function renderFilteredProducts() {
+  // If in top selling mode, don't render regular products
+  if (isTopSellingMode) {
+    return;
+  }
+  
   const filterText = searchInput.value.toLowerCase();
   const selectedCategory = categorySelect.value;
   const brandText = brandFilter.value.toLowerCase();
@@ -888,6 +1088,7 @@ function renderFilteredProducts() {
 categorySelect.addEventListener("change", renderFilteredProducts);
 searchInput.addEventListener("input", renderFilteredProducts);
 brandFilter.addEventListener("input", renderFilteredProducts);
+topSellingBtn.addEventListener("click", toggleTopSelling);
 
 //Fetch products
 fetch("shop_user.php")
@@ -924,7 +1125,12 @@ document.getElementById('qtyValue').addEventListener('input', function() {
 });
 
 function viewProduct(productId) {
-  const product = allProducts.find(p => p.Product_ID == productId);
+  // Check both regular products and top selling products
+  let product = allProducts.find(p => p.Product_ID == productId);
+  if (!product && isTopSellingMode) {
+    product = topSellingProducts.find(p => p.Product_ID == productId);
+  }
+  
   currentViewingProduct = productId;
   if (product) {
     document.getElementById("modalImage").src = product.Image_URL || 'placeholder.jpg';
