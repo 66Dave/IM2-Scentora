@@ -57,20 +57,52 @@ try {
     $totalItems = $result->fetch_assoc()['total'];
     $totalPages = ceil($totalItems / $limit);
 
-    // Monthly data for chart
+    // Monthly data for chart - Create full date range from January 2025 to current date
+    $startDate = '2025-01-01';
+    $endDate = date('Y-m-d'); // Current date
+    
+    // Generate all months from start to current
+    $allMonths = [];
+    $current = new DateTime($startDate);
+    $end = new DateTime($endDate);
+    $end->modify('first day of next month'); // Include current month
+    
+    while ($current < $end) {
+        $monthKey = $current->format('Y-m');
+        $monthLabel = $current->format('M Y');
+        $allMonths[$monthKey] = [
+            'label' => $monthLabel,
+            'total' => 0
+        ];
+        $current->modify('first day of next month');
+    }
+    
+    // Get actual sales data
     $chartQuery = "SELECT 
         DATE_FORMAT(Order_Date, '%Y-%m') as month,
         SUM(Total_Amount) as total
         FROM `order`
-        WHERE Status = 'Completed'
+        WHERE Status = 'Completed' 
+        AND Order_Date >= '$startDate'
+        AND Order_Date <= '$endDate'
         GROUP BY DATE_FORMAT(Order_Date, '%Y-%m')
         ORDER BY month";
 
     $result = $conn->query($chartQuery);
-    $chartData = [];
+    
+    // Fill in actual sales data
     while ($row = $result->fetch_assoc()) {
-        $chartData['labels'][] = date('M Y', strtotime($row['month']));
-        $chartData['values'][] = floatval($row['total']);
+        $monthKey = $row['month'];
+        if (isset($allMonths[$monthKey])) {
+            $allMonths[$monthKey]['total'] = floatval($row['total']);
+        }
+    }
+    
+    // Prepare chart data arrays
+    $chartData = ['labels' => [], 'values' => []];
+    foreach ($allMonths as $monthKey => $monthData) {
+        $chartData['labels'][] = $monthData['label'];
+        $chartData['values'][] = $monthData['total'];
     }
 
     $response = [
@@ -86,7 +118,13 @@ try {
         ],
         'labels' => $chartData['labels'] ?? [],
         'values' => $chartData['values'] ?? [],
-        'monthlySales' => $month ? $stats['totalSales'] : array_sum($chartData['values'] ?? [0])
+        'monthlySales' => $month ? $stats['totalSales'] : array_sum($chartData['values'] ?? [0]),
+        'debug' => [
+            'dateRange' => $startDate . ' to ' . $endDate,
+            'totalMonths' => count($allMonths),
+            'hasData' => !empty($chartData['labels']),
+            'queryMonth' => $month
+        ]
     ];
 
     echo json_encode($response);

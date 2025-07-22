@@ -1,8 +1,8 @@
 Array
 (
-    [fullname] => dave
-    [address] => Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines
-    [payment] => gcash
+    [fullname] => Khit Joshua
+    [address] => 12345 randoms ass place
+    [payment] => card
     [courier] => lalamove
     [total_amount] => 132
 )

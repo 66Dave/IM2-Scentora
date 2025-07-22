@@ -592,9 +592,37 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.zoom-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(161, 130, 201, 0.2);
+}
+
+.zoom-btn:hover {
+    background: #8663b9;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(161, 130, 201, 0.3);
+}
+
+.zoom-btn:active {
+    transform: scale(0.95);
+}
   </style>
   <!-- Add this before your existing scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
 <body>
   <header>
@@ -631,7 +659,7 @@
         </div>
         <div class="overview-grid">
           <div class="overview-widget">Perfume Products<br><span id="count-products">--</span></div>
-          <div class="overview-widget">Stock Alerts<br><span id="count-alerts">--</span></div>
+          <div class="overview-widget clickable" onclick="goToLowStock()">Stock Alerts<br><span id="count-alerts">--</span></div>
           <div class="overview-widget clickable" onclick="goToPendingOrders()">
     New Orders<br><span id="count-orders">--</span>
   </div>
@@ -677,6 +705,11 @@
                 </button>
             </div>
             <div class="number" id="monthly-total">₱0.00</div>
+        </div>
+        <div class="zoom-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+            <button onclick="zoomIn()" class="zoom-btn" title="Zoom In">+</button>
+            <button onclick="zoomOut()" class="zoom-btn" title="Zoom Out">-</button>
+            <button onclick="resetZoom()" class="zoom-btn" title="Reset Zoom">⌂</button>
         </div>
     </div>
     <div class="chart-container">
@@ -1266,6 +1299,11 @@ function goToPendingOrders() {
   loadOrders('Pending');
 }
 
+function goToLowStock() {
+  // Redirect to inventory page with low stock filter
+  window.location.href = 'inventory_seller.html?filter=lowstock';
+}
+
 // Update the loadSalesData function
 function loadSalesData(month = 'all') {
     fetch(`sales_data.php?month=${month}`)
@@ -1291,13 +1329,29 @@ function loadSalesData(month = 'all') {
                 window.salesChart.destroy();
             }
 
+            // Set date limits
+            const minDate = '2025-01-01';
+            const maxDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+
+            // Convert labels to proper date format if they aren't already
+            const chartLabels = data.labels || [];
+            const chartData = data.values || [];
+            
+            console.log('Chart data loaded:', {
+                labels: chartLabels,
+                dataPoints: chartData.length,
+                dateRange: chartLabels.length > 0 ? `${chartLabels[0]} to ${chartLabels[chartLabels.length - 1]}` : 'No data',
+                debug: data.debug,
+                nonZeroData: chartData.filter(val => val > 0).length
+            });
+
             window.salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.labels || [],
+                    labels: chartLabels,
                     datasets: [{
                         label: 'Monthly Sales',
-                        data: data.values || [],
+                        data: chartData,
                         fill: true,
                         backgroundColor: gradient,
                         borderColor: '#6f58e9',
@@ -1310,6 +1364,13 @@ function loadSalesData(month = 'all') {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    onHover: (event, activeElements) => {
+                        event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'grab';
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1323,6 +1384,11 @@ function loadSalesData(month = 'all') {
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0,
+                                maxTicksLimit: 8 // Limit visible ticks for better scrolling
                             }
                         }
                     },
@@ -1333,6 +1399,47 @@ function loadSalesData(month = 'all') {
                         tooltip: {
                             callbacks: {
                                 label: context => '₱' + context.parsed.y.toLocaleString('en-PH')
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {min: 'original', max: 'original'}  // Allow panning beyond original data range
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 10, // Minimum pan distance
+                                onPanStart: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grabbing';
+                                },
+                                onPanComplete: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grab';
+                                }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1,
+                                    modifierKey: null
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                drag: {
+                                    enabled: true,
+                                    borderColor: 'rgba(111, 88, 233, 0.3)',
+                                    borderWidth: 1,
+                                    backgroundColor: 'rgba(111, 88, 233, 0.1)',
+                                    modifierKey: 'shift'
+                                },
+                                onZoomStart: ({chart}) => {
+                                    chart.canvas.style.cursor = 'zoom-in';
+                                },
+                                onZoomComplete: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grab';
+                                }
                             }
                         }
                     }
@@ -1353,6 +1460,88 @@ document.getElementById('statsMonthFilter').addEventListener('change', function(
     currentState.statsMonth = this.value;
     localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
 });
+
+// Zoom control functions
+function zoomIn() {
+    if (window.salesChart) {
+        window.salesChart.zoom(1.2);
+        // Update sales total after zoom
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            const scrollPercentage = parseFloat(scrollBar.value) / 100;
+            setTimeout(() => updateVisibleSalesTotal(scrollPercentage), 100);
+        }
+    }
+}
+
+function zoomOut() {
+    if (window.salesChart) {
+        window.salesChart.zoom(0.8);
+        // Update sales total after zoom
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            const scrollPercentage = parseFloat(scrollBar.value) / 100;
+            setTimeout(() => updateVisibleSalesTotal(scrollPercentage), 100);
+        }
+    }
+}
+
+function resetZoom() {
+    if (window.salesChart) {
+        window.salesChart.resetZoom();
+        
+        // Reset scroll bar to 100% (latest dates)
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            scrollBar.value = 100;
+        }
+        
+        // Reset to original total sales
+        if (window.chartRawData) {
+            const totalSalesElement = document.getElementById('stat-sales');
+            const monthlyTotalElement = document.getElementById('monthly-total');
+            
+            if (totalSalesElement) {
+                totalSalesElement.textContent = `₱${window.chartRawData.originalTotalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+            }
+            
+            if (monthlyTotalElement) {
+                monthlyTotalElement.textContent = `₱${window.chartRawData.originalTotalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+            }
+            
+            // Reset labels to show full range
+            const labels = window.chartRawData.labels;
+            if (labels.length > 0) {
+                const startLabel = document.getElementById('scrollStartLabel');
+                const endLabel = document.getElementById('scrollEndLabel');
+                
+                if (startLabel && endLabel) {
+                    startLabel.textContent = labels[0];
+                    endLabel.textContent = labels[labels.length - 1];
+                }
+            }
+        }
+    }
+}
+
+// Zoom control functions
+function zoomIn() {
+    if (window.salesChart) {
+        window.salesChart.zoom(1.2);
+    }
+}
+
+function zoomOut() {
+    if (window.salesChart) {
+        window.salesChart.zoom(0.8);
+    }
+}
+
+function resetZoom() {
+    if (window.salesChart) {
+        window.salesChart.resetZoom();
+    }
+}
 
 function viewMonthlyStats() {
     const monthSelect = document.getElementById('statsMonthFilter');

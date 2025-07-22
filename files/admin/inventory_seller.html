@@ -49,6 +49,18 @@
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+
+/* Low Stock Filter Button Active State */
+#lowStockFilter.active {
+  background-color: #8663b9 !important;
+  color: #fff !important;
+}
+
+/* Ensure low stock button is visible */
+#lowStockFilter {
+  display: inline-block !important;
+  margin: 0 0.5rem;
+}
   </style>
 </head>
 <body>
@@ -77,6 +89,7 @@
       <input type="text" id="searchInput" placeholder="Item, value or code" />
       <button class="search-btn" id="searchBtn">Search</button>
       <button class="filter-btn" id="openFilter">Filter</button>
+      <button class="filter-btn" id="lowStockFilter">Low Stock</button>
       <span class="category-btn-wrapper">
         <button class="category-btn" id="categoryBtn">Category</button>
         <div class="category-dropdown" id="categoryDropdown"></div>
@@ -219,6 +232,7 @@ let searchTerm = "";
 let viewIndex = null;
 let currentPage = 1;
 const itemsPerPage = 5;
+let showLowStockOnly = false;
 
 function getStockClass(stock) {
   if (stock === 0) return "stock-out";
@@ -249,8 +263,16 @@ function renderTable() {
     if (filterDateAdded) match = match && item.added === filterDateAdded;
     if (filterDateUpdated) match = match && item.updated === filterDateUpdated;
     if (filterBrand) match = match && (item.brand && item.brand.toLowerCase().includes(filterBrand));
+    if (showLowStockOnly) match = match && item.stock <= 12 && item.stock > 0; // Low stock filter
     return match;
   });
+
+  // Debug logging
+  if (showLowStockOnly) {
+    console.log("Filtering for low stock. Total inventory:", inventory.length);
+    console.log("Low stock items found:", filtered.length);
+    console.log("Low stock items:", filtered.map(item => `${item.name}: ${item.stock}`));
+  }
 
   // Pagination logic
   const totalItems = filtered.length;
@@ -414,6 +436,27 @@ document.getElementById("resetFilter").onclick = () => {
   document.getElementById("dateUpdated").value = "";
   document.getElementById("brandFilter").value = "";
   filterModal.classList.remove("show");
+  renderTable();
+};
+
+// Low Stock Filter
+document.getElementById("lowStockFilter").onclick = () => {
+  showLowStockOnly = !showLowStockOnly;
+  const btn = document.getElementById("lowStockFilter");
+  console.log("Low stock filter clicked, showLowStockOnly:", showLowStockOnly); // Debug log
+  
+  if (showLowStockOnly) {
+    btn.style.backgroundColor = "#8663b9";
+    btn.style.color = "#fff";
+    btn.textContent = "Show All";
+    btn.classList.add("active"); // Add active class
+  } else {
+    btn.style.backgroundColor = "";
+    btn.style.color = "";
+    btn.textContent = "Low Stock";
+    btn.classList.remove("active"); // Remove active class
+  }
+  currentPage = 1; // Reset to first page when filtering
   renderTable();
 };
 
@@ -698,6 +741,8 @@ document.getElementById("nextPageBtn").onclick = function() {
     if (filterCategory !== "All") match = match && item.category === filterCategory;
     if (filterDateAdded) match = match && item.added === filterDateAdded;
     if (filterDateUpdated) match = match && item.updated === filterDateUpdated;
+    if (filterBrand) match = match && (item.brand && item.brand.toLowerCase().includes(filterBrand));
+    if (showLowStockOnly) match = match && item.stock <= 12 && item.stock > 0;
     return match;
   });
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -707,7 +752,21 @@ document.getElementById("nextPageBtn").onclick = function() {
   }
 };
 // Final Load Call
-document.addEventListener("DOMContentLoaded", loadInventoryItems);
+document.addEventListener("DOMContentLoaded", () => {
+  // Check for URL parameters to auto-filter low stock first
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('filter') === 'lowstock') {
+    showLowStockOnly = true;
+    const btn = document.getElementById("lowStockFilter");
+    btn.style.backgroundColor = "#8663b9";
+    btn.style.color = "#fff";
+    btn.textContent = "Show All";
+    btn.classList.add("active");
+    console.log("URL parameter detected: activating low stock filter"); // Debug log
+  }
+  
+  loadInventoryItems();
+});
 </script>
 </body>
 </html>
