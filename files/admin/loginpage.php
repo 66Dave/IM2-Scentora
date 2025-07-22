@@ -38,11 +38,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     
                     $usertype = strtolower(trim($row["User_Type"]));
                     
+                    // Replace the existing redirect for consumer users
                     if ($usertype === "consumer") {
-                        header("Location: /IM2-Scentora/files/user/shop_user.html");
+                        header("Location: /IM2-Scentora/files/user/shop_user.php");
                         exit;
                     } else if ($usertype === "admin") {
-                        header("Location: /IM2-Scentora/files/admin/dashboard.html");
+                        header("Location: /IM2-Scentora/files/admin/dashboard.php");
                         exit;
                     } else {
                         $error = "Invalid user type";
@@ -415,7 +416,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <div class="logo">Scentora</div>
     <nav class="nav-links">
       <a href="/IM2-Scentora/index.html">Home</a>
-      <a href="/IM2-Scentora/files/user/shop_user.html">Shop</a>
+      <a href="/IM2-Scentora/files/user/shop_user.php">Shop</a>
       <a href="/IM2-Scentora/files/user/aboutus.html">About Us</a>
       <a href="/IM2-Scentora/files/user/register.php">Sign Up</a>
     </nav>
