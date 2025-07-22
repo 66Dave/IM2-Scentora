@@ -684,7 +684,7 @@ body.darkmode .brand-filter::placeholder {
       <input type="text" id="searchInput" placeholder="Search for products" />
     </div>
     <nav class="nav-center">
-      <a href="shop_user.html">Shop</a>
+      <a href="shop_user.php">Shop</a>
       <a href="orders_user.php">Orders</a>
       <a href="userCart.html" title="Cart">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
