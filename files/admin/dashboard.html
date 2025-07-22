@@ -587,6 +587,11 @@
         transform: translate(-50%, -50%);
     }
 }
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
   </style>
   <!-- Add this before your existing scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -763,6 +768,11 @@ function showPage(page, event) {
   document.querySelectorAll('.dashboard-page').forEach(p => p.classList.remove('active'));
   document.getElementById(`${page}-link`).classList.add('active');
   document.getElementById(page).classList.add('active');
+  
+  // Update page state in localStorage for persistence
+  const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+  currentState.currentPage = page;
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
 }
 
 //Dark mode toggle
@@ -818,8 +828,71 @@ function submitOverride() {
   if (!currentOrderId) return;
   
   const newStatus = document.getElementById('overrideStatus').value;
-  changeOrderStatus(currentOrderId, newStatus);
-  closeOverrideModal();
+  
+  // Show loading state on submit button
+  const submitBtn = document.querySelector('#overrideModal button[onclick="submitOverride()"]');
+  const cancelBtn = document.querySelector('#overrideModal button[onclick="closeOverrideModal()"]');
+  
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+    submitBtn.style.opacity = '0.6';
+  }
+  if (cancelBtn) {
+    cancelBtn.disabled = true;
+    cancelBtn.style.opacity = '0.6';
+  }
+  
+  // Use a modified version of changeOrderStatus that doesn't close modal immediately
+  fetch("update_order_status.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `order_id=${currentOrderId}&status=${newStatus}`
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result.trim() === "updated") {
+      let message = `Order status changed to: ${newStatus}`;
+      if (newStatus === 'Declined') {
+        message += "\nReason: Invalid payment proof";
+      } else if (newStatus === 'Accepted') {
+        message += "\nCustomer will receive an email confirmation with receipt.";
+      }
+      alert(message);
+      closeOverrideModal();
+      // Save current state before refresh
+      savePageState();
+      location.reload(); // Refresh the entire page
+    } else {
+      alert("Failed to update status: " + result);
+      // Reset buttons on error
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Update';
+        submitBtn.style.opacity = '1';
+      }
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.style.opacity = '1';
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("An error occurred while updating the status");
+    // Reset buttons on error
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update';
+      submitBtn.style.opacity = '1';
+    }
+    if (cancelBtn) {
+      cancelBtn.disabled = false;
+      cancelBtn.style.opacity = '1';
+    }
+  });
 }
 
 // Close modal when clicking outside
@@ -876,6 +949,18 @@ function changeOrderStatus(orderId, newStatus) {
   // Add console.log for debugging
   console.log('Updating order:', orderId, 'to status:', newStatus);
   
+  // Show loading state on the button that was clicked
+  const buttons = document.querySelectorAll(`button[onclick*="${orderId}"]`);
+  buttons.forEach(btn => {
+    if (btn.textContent.includes('Accept') || btn.textContent.includes('Decline') || btn.textContent.includes('Override')) {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      if (btn.textContent === 'Accept') btn.textContent = 'Accepting...';
+      else if (btn.textContent === 'Decline') btn.textContent = 'Declining...';
+      else if (btn.textContent === 'Update') btn.textContent = 'Updating...';
+    }
+  });
+  
   fetch("update_order_status.php", {
     method: "POST",
     headers: {
@@ -887,15 +972,39 @@ function changeOrderStatus(orderId, newStatus) {
   .then(result => {
     console.log('Server response:', result); // Debug log
     if (result.trim() === "updated") {
-      alert("Order status changed to: " + newStatus);
-      loadOrders(); // Refresh the orders list
+      let message = `Order status changed to: ${newStatus}`;
+      if (newStatus === 'Declined') {
+        message += "\nReason: Invalid payment proof";
+      } else if (newStatus === 'Accepted') {
+        message += "\nCustomer will receive an email confirmation with receipt.";
+      }
+      alert(message);
+      // Save current state before refresh
+      savePageState();
+      location.reload(); // Refresh the entire page
     } else {
       alert("Failed to update status: " + result);
+      // Reset buttons on error
+      buttons.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        if (btn.textContent === 'Accepting...') btn.textContent = 'Accept';
+        else if (btn.textContent === 'Declining...') btn.textContent = 'Decline';
+        else if (btn.textContent === 'Updating...') btn.textContent = 'Update';
+      });
     }
   })
   .catch(err => {
     console.error("Error:", err);
     alert("An error occurred while updating the status");
+    // Reset buttons on error
+    buttons.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      if (btn.textContent === 'Accepting...') btn.textContent = 'Accept';
+      else if (btn.textContent === 'Declining...') btn.textContent = 'Decline';
+      else if (btn.textContent === 'Updating...') btn.textContent = 'Update';
+    });
   });
 }
 // Update the renderOrders function
@@ -939,6 +1048,19 @@ function renderOrders(data) {
 function loadOrders(statusFilter = 'all') {
   const searchTerm = document.getElementById('orderSearch').value;
   
+  // Show loading state
+  const container = document.getElementById("ordersList");
+  container.innerHTML = `
+    <tr>
+      <td colspan='6' style='text-align:center; padding: 2rem; color: var(--primary);'>
+        <div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>
+          <div style='width: 20px; height: 20px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;'></div>
+          Loading orders...
+        </div>
+      </td>
+    </tr>
+  `;
+  
   fetch("orders_fetch.php")
     .then(res => res.json())
     .then(data => {
@@ -947,7 +1069,7 @@ function loadOrders(statusFilter = 'all') {
     })
     .catch(() => {
       document.getElementById("ordersList").innerHTML = 
-        "<tr><td colspan='6' style='text-align:center;'>Error loading orders.</td></tr>";
+        "<tr><td colspan='6' style='text-align:center; color: #e57373; padding: 2rem;'>❌ Error loading orders. Please try again.</td></tr>";
     });
 }
 
@@ -1038,6 +1160,11 @@ function filterOrders(orders, statusFilter = 'all', searchTerm = '') {
 document.getElementById('orderSearch').addEventListener('input', function() {
   const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
   loadOrders(activeFilter);
+  
+  // Save current search term
+  const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+  currentState.searchTerm = this.value;
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
 });
 
 // Filter buttons functionality
@@ -1047,6 +1174,11 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     this.classList.add('active');
     const status = this.getAttribute('data-status');
     loadOrders(status);
+    
+    // Save current filter state
+    const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+    currentState.activeFilter = status;
+    localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
   });
 });
 
@@ -1054,7 +1186,69 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 document.addEventListener("DOMContentLoaded", () => {
   loadOrders();
   updateTableHeaders(); // Initialize table headers
+  restorePageState(); // Restore previous page state after refresh
 });
+
+// Save current page state before refresh
+function savePageState() {
+  const state = {
+    currentPage: document.querySelector('.dashboard-page.active')?.id || 'overview',
+    activeFilter: document.querySelector('.filter-btn.active')?.getAttribute('data-status') || 'all',
+    searchTerm: document.getElementById('orderSearch')?.value || '',
+    statsMonth: document.getElementById('statsMonthFilter')?.value || 'all'
+  };
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(state));
+}
+
+// Restore page state after refresh
+function restorePageState() {
+  const savedState = localStorage.getItem('scentoraDashboardState');
+  if (savedState) {
+    try {
+      const state = JSON.parse(savedState);
+      
+      // Restore active page
+      if (state.currentPage && state.currentPage !== 'overview') {
+        showPage(state.currentPage, { preventDefault: () => {} });
+      }
+      
+      // Restore order filters and search if on orders page
+      if (state.currentPage === 'orders') {
+        // Restore search term
+        if (state.searchTerm && document.getElementById('orderSearch')) {
+          document.getElementById('orderSearch').value = state.searchTerm;
+        }
+        
+        // Restore active filter
+        if (state.activeFilter) {
+          document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-status') === state.activeFilter) {
+              btn.classList.add('active');
+            }
+          });
+          // Reload orders with the restored filter
+          setTimeout(() => loadOrders(state.activeFilter), 100);
+        }
+      }
+      
+      // Restore stats month filter if on stats page
+      if (state.currentPage === 'stats' && state.statsMonth) {
+        const monthSelect = document.getElementById('statsMonthFilter');
+        if (monthSelect) {
+          monthSelect.value = state.statsMonth;
+          loadSalesData(state.statsMonth);
+        }
+      }
+      
+      // Clear the saved state after restoring
+      localStorage.removeItem('scentoraDashboardState');
+    } catch (e) {
+      console.error('Error restoring page state:', e);
+      localStorage.removeItem('scentoraDashboardState');
+    }
+  }
+}
 
 function goToPendingOrders() {
   // Show the orders page
@@ -1153,6 +1347,11 @@ function loadSalesData(month = 'all') {
 // Update stats when month changes
 document.getElementById('statsMonthFilter').addEventListener('change', function() {
     loadSalesData(this.value);
+    
+    // Save current stats month filter
+    const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+    currentState.statsMonth = this.value;
+    localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
 });
 
 function viewMonthlyStats() {
