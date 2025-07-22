@@ -1,0 +1,543 @@
+<?php
+require_once '../includes/session_config.php';
+
+// Require admin access
+requireAdmin();
+
+// Check session timeout
+checkSessionTimeout();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scentora | User Management</title>
+  <link rel="stylesheet" href="/IM2-Scentora/files/admin/inventory.css" />
+  <style>
+    /* Additional User List specific styles */
+    .user-status {
+      padding: 0.4em 1em;
+      border-radius: 6px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background: var(--success, #4CAF50);
+      color: white;
+    }
+
+    .status-disabled {
+      background: var(--warning, #ff9800);
+      color: white;
+    }
+
+    .user-type-badge {
+      background: var(--accent);
+      color: var(--primary);
+      padding: 0.4em 1em;
+      border-radius: 6px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .user-action-btn {
+      padding: 0.4em 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+      margin: 0 0.2em;
+    }
+
+    .toggle-status-btn {
+      background: var(--primary);
+      color: white;
+    }
+
+    .user-action-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .disabled-user {
+      opacity: 0.7;
+      background: var(--accent);
+    }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      padding: 1rem;
+    }
+
+    .pagination-controls button {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pagination-controls button:hover {
+      background: #8e6bbf;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .pagination-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #pageInfo {
+      color: var(--text);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Dark mode specific styles */
+    body.darkmode .pagination-controls button {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    body.darkmode .pagination-controls button:hover {
+      background: #9671c7;
+    }
+
+    body.darkmode #pageInfo {
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .sort-icon {
+      font-size: 0.8em;
+      color: var(--accent);
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+
+    .sortable:hover .sort-icon {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .sortable.asc .sort-icon {
+      content: "↑";
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .sortable.desc .sort-icon {
+      content: "↓";
+      opacity: 1;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Scentora</div>
+    <div class="header_contents">
+      <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory_seller.html">Inventory</a>
+        <a href="UserList.html" class="active">User List</a>
+        <a href="loginpage.php" id="logout-link">Logout</a>
+      </div>
+      <div class="toggle-switch">
+        <label for="darkmode">Dark mode</label>
+        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+      </div>
+    </div>
+  </header>
+
+  <div class="inventory-main-container">
+    <div class="inventory-title-row">
+      <h2>Users</h2>
+      <span class="total-items" id="totalUsers"> registered users</span>
+    </div>
+
+    <div class="inventory-controls">
+      <input type="text" id="searchInput" placeholder="Search by name or email..." />
+      <button class="search-btn" id="searchBtn">Search</button>
+      <button class="filter-btn" id="openFilter">Filter</button>
+      <span class="category-btn-wrapper">
+        <button class="category-btn" id="userTypeBtn">User Type</button>
+        <div class="category-dropdown" id="userTypeDropdown"></div>
+      </span>
+    </div>
+
+    <div class="inventory-table-container">
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="id">ID <span class="sort-icon">↕</span></th>
+            <th class="sortable" data-sort="name">Name <span class="sort-icon">↕</span></th>
+            <th>Email</th>
+            <th>User Type</th>
+            <th>Status</th>
+            <th style="text-align:center">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersList">
+          <!-- Users will be populated here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" id="paginationControls">
+      <button id="prevPageBtn" style="display:none;">&larr; Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextPageBtn" style="display:none;">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="modal" id="filterModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeFilter">&times;</button>
+      <h3>Filter Users</h3>
+      <form id="filterForm">
+        <div>
+          <label for="statusFilter">Status:</label>
+          <select id="statusFilter" name="status">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
+        <div class="modal-btns">
+          <button type="submit">Apply</button>
+          <button type="button" id="resetFilter">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let users = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filterUserType = "All";
+    let filterStatus = "all";
+    let searchTerm = "";
+    let currentSort = { field: null, direction: 'asc' };
+
+    // Load users from database
+    function loadUsers() {
+      console.log('Loading users...');
+      
+      fetch('fetch_users.php')
+          .then(res => {
+              console.log('Response status:', res.status);
+              return res.text().then(text => {
+                  try {
+                      // Log the raw response for debugging
+                      console.log('Raw response:', text);
+                      return JSON.parse(text);
+                  } catch (e) {
+                      console.error('Failed to parse JSON:', text);
+                      throw new Error('Invalid server response');
+                  }
+              });
+          })
+          .then(data => {
+              if (data.error) {
+                  throw new Error(data.error);
+              }
+              
+              if (!Array.isArray(data)) {
+                  console.error('Unexpected data format:', data);
+                  throw new Error('Invalid data format');
+              }
+              
+              users = data;
+              renderUsers();
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              const usersList = document.getElementById('usersList');
+              usersList.innerHTML = `
+                  <tr>
+                      <td colspan="6" style="text-align:center;color:var(--error);">
+                          ${error.message}
+                      </td>
+                  </tr>`;
+          });
+    }
+
+    // Sort users
+    function sortUsers(field) {
+        if (currentSort.field === field) {
+            // Toggle direction if clicking the same field
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            // New field, default to ascending
+            currentSort.field = field;
+            currentSort.direction = 'asc';
+        }
+
+        // Update sort icons
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.classList.remove('asc', 'desc');
+            if (th.dataset.sort === field) {
+                th.classList.add(currentSort.direction);
+            }
+        });
+
+        // Sort the users array
+        users.sort((a, b) => {
+            let compareA, compareB;
+            
+            if (field === 'id') {
+                compareA = parseInt(a.User_ID);
+                compareB = parseInt(b.User_ID);
+            } else if (field === 'name') {
+                compareA = a.Name.toLowerCase();
+                compareB = b.Name.toLowerCase();
+            }
+
+            if (compareA < compareB) return currentSort.direction === 'asc' ? -1 : 1;
+            if (compareA > compareB) return currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        currentPage = 1; // Reset to first page
+        renderUsers();
+    }
+
+    // Render users table
+    function renderUsers() {
+      const tbody = document.getElementById("usersList");
+      
+      let filtered = users.filter(user => {
+        let matchSearch = true;
+        let matchType = true;
+        let matchStatus = true;
+
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          matchSearch = user.Name.toLowerCase().includes(term) || 
+                       user.Email.toLowerCase().includes(term);
+        }
+
+        if (filterUserType !== "All") {
+          matchType = user.User_Type === filterUserType;
+        }
+
+        if (filterStatus !== "all") {
+          matchStatus = filterStatus === "active" ? user.is_active : !user.is_active;
+        }
+
+        return matchSearch && matchType && matchStatus;
+      });
+
+      // Pagination
+      const totalUsers = filtered.length;
+      const totalPages = Math.ceil(totalUsers / itemsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages || 1;
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = startIdx + itemsPerPage;
+      const pageUsers = filtered.slice(startIdx, endIdx);
+
+      tbody.innerHTML = pageUsers.length ? pageUsers.map(user => `
+        <tr class="${!user.is_active ? 'disabled-user' : ''}">
+          <td>${user.User_ID}</td>
+          <td>${user.Name}</td>
+          <td>${user.Email}</td>
+          <td><span class="user-type-badge">${user.User_Type}</span></td>
+          <td>
+            <span class="user-status ${user.is_active ? 'status-active' : 'status-disabled'}">
+              ${user.is_active ? 'Active' : 'Disabled'}
+            </span>
+          </td>
+          <td style="text-align:center">
+            ${user.User_Type !== 'Admin' ? `
+              <button onclick="toggleUserStatus(${user.User_ID}, ${user.is_active})" 
+                      class="user-action-btn toggle-status-btn">
+                ${user.is_active ? 'Disable' : 'Enable'}
+              </button>
+            ` : '<em>Admin</em>'}
+          </td>
+        </tr>
+      `).join('') : '<tr><td colspan="6" style="text-align:center;">No users found</td></tr>';
+
+      // Update total users count
+      document.getElementById("totalUsers").textContent = 
+        `${totalUsers} registered user${totalUsers !== 1 ? 's' : ''}`;
+
+      // Update pagination controls
+      updatePaginationControls(currentPage, totalPages);
+    }
+
+    // Update pagination controls
+    function updatePaginationControls(currentPage, totalPages) {
+      const prevBtn = document.getElementById("prevPageBtn");
+      const nextBtn = document.getElementById("nextPageBtn");
+      const pageInfo = document.getElementById("pageInfo");
+
+      pageInfo.textContent = `Page ${totalPages ? currentPage : 0} of ${totalPages || 1}`;
+      prevBtn.style.display = currentPage > 1 ? "" : "none";
+      nextBtn.style.display = currentPage < totalPages ? "" : "none";
+    }
+
+    // Toggle user status
+    function toggleUserStatus(userId, currentStatus) {
+      if (confirm(`Are you sure you want to ${currentStatus ? 'disable' : 'enable'} this user?`)) {
+        fetch('toggle_user_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `user_id=${userId}&status=${currentStatus ? 0 : 1}`
+        })
+        .then(res => res.text())
+        .then(result => {
+            if (result === 'success') {
+                loadUsers();
+            } else {
+                alert('Failed to update user status');
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling user status:', error);
+            alert('An error occurred while updating user status');
+        });
+      }
+    }
+
+    // Event Listeners
+    document.getElementById("searchInput").addEventListener("input", e => {
+      searchTerm = e.target.value;
+      currentPage = 1;
+      renderUsers();
+    });
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      searchTerm = document.getElementById("searchInput").value;
+      currentPage = 1;
+      renderUsers();
+    });
+
+    document.getElementById("prevPageBtn").onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderUsers();
+      }
+    };
+
+    document.getElementById("nextPageBtn").onclick = () => {
+      currentPage++;
+      renderUsers();
+    };
+
+    // User Type Dropdown
+    const userTypes = ["All", "Admin", "Employee", "Consumer"];
+    const userTypeBtn = document.getElementById("userTypeBtn");
+    const userTypeDropdown = document.getElementById("userTypeDropdown");
+
+    userTypeBtn.onclick = (e) => {
+      e.stopPropagation();
+      userTypeDropdown.innerHTML = userTypes.map(type => `
+        <button class="${filterUserType === type ? 'selected' : ''}" 
+                onclick="selectUserType('${type}')">
+          ${type}
+        </button>
+      `).join('');
+      userTypeDropdown.classList.toggle("show");
+    };
+
+    function selectUserType(type) {
+      filterUserType = type;
+      currentPage = 1;
+      renderUsers();
+      userTypeDropdown.classList.remove("show");
+    }
+
+    // Filter Modal
+    document.getElementById("openFilter").onclick = () => {
+      document.getElementById("statusFilter").value = filterStatus;
+      document.getElementById("filterModal").classList.add("show");
+    };
+
+    document.getElementById("closeFilter").onclick = () => {
+      document.getElementById("filterModal").classList.remove("show");
+    };
+
+    document.getElementById("filterForm").onsubmit = (e) => {
+      e.preventDefault();
+      filterStatus = document.getElementById("statusFilter").value;
+      currentPage = 1;
+      renderUsers();
+      document.getElementById("filterModal").classList.remove("show");
+    };
+
+    document.getElementById("resetFilter").onclick = () => {
+      filterStatus = "all";
+      document.getElementById("statusFilter").value = "all";
+      currentPage = 1;
+      renderUsers();
+      document.getElementById("filterModal").classList.remove("show");
+    };
+
+    // Dark Mode
+    const darkToggle = document.getElementById('darkmode');
+    if (localStorage.getItem('scentoraDark') === '1') {
+      document.body.classList.add('darkmode');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+    });
+
+    // Logout
+    document.getElementById("logout-link").onclick = (e) => {
+      e.preventDefault();
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
+      }
+    };
+
+    // Close dropdowns when clicking outside
+    document.addEventListener("click", () => {
+      userTypeDropdown.classList.remove("show");
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add click handlers for sortable columns
+      document.querySelectorAll('.sortable').forEach(th => {
+          th.addEventListener('click', () => {
+              sortUsers(th.dataset.sort);
+          });
+      });
+    });
+
+    // Initial load
+    document.addEventListener("DOMContentLoaded", loadUsers);
+  </script>
+</body>
+</html>

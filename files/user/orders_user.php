@@ -1,13 +1,15 @@
 <?php
+require_once '../includes/session_config.php';
+
 // Add at the top of send_order_receipt.php
 ini_set('log_errors', 1);
 ini_set('error_log', 'C:/xampp/php/logs/php_error.log');
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /IM2-Scentora/files/admin/loginpage.php");
-    exit();
-}
-$user_id = $_SESSION['user_id'];
+
+// Require consumer login
+requireConsumer();
+checkSessionTimeout();
+
+$user_id = getCurrentUserId();
 
 // Handle "Order Received" and "Cancel Order" buttons
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {

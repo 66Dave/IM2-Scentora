@@ -1,9 +1,11 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /IM2-Scentora/files/admin/loginpage.php");
-    exit();
-}
+require_once '../includes/session_config.php';
+
+// Require consumer login
+requireConsumer();
+
+// Check session timeout (2 hours)
+checkSessionTimeout(120);
 
 // Add cache control headers
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -1223,7 +1225,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize products
     populateCategories();
     renderFilteredProducts();
+    
+    // Start session monitoring
+    startSessionMonitoring();
 });
+
+// Session monitoring functionality
+function startSessionMonitoring() {
+    // Check session status every 5 minutes
+    setInterval(checkSessionStatus, 5 * 60 * 1000);
+    
+    // Also check when user becomes active after being away
+    let isActive = true;
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && !isActive) {
+            checkSessionStatus();
+            isActive = true;
+        } else if (document.hidden) {
+            isActive = false;
+        }
+    });
+}
+
+function checkSessionStatus() {
+    fetch('/IM2-Scentora/files/includes/session_status.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.logged_in) {
+                alert('Your session has expired. You will be redirected to login.');
+                window.location.replace('/IM2-Scentora/files/admin/loginpage.php');
+                return;
+            }
+            
+            if (data.expires_soon && data.time_left > 0) {
+                const minutes = Math.floor(data.time_left / 60);
+                if (confirm(`Your session will expire in ${minutes} minutes. Do you want to stay logged in?`)) {
+                    // Refresh session by making a simple request
+                    fetch('/IM2-Scentora/files/includes/session_status.php');
+                }
+            }
+        })
+        .catch(error => {
+            console.warn('Session check failed:', error);
+        });
+}
   </script>
 </body>
 </html>

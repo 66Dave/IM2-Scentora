@@ -1,9 +1,11 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /IM2-Scentora/files/admin/loginpage.php");
-    exit();
-}
+require_once '../includes/session_config.php';
+
+// Require consumer login
+requireConsumer();
+
+// Check session timeout
+checkSessionTimeout();
 
 $host = "localhost";
 $user_db = "root";

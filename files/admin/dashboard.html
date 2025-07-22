@@ -823,7 +823,16 @@ darkToggle.addEventListener('change', () => {
 document.getElementById("logout-link").onclick = function(e) {
   e.preventDefault();
   if (confirm("Are you sure you want to logout?")) {
-    window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
+    fetch('/IM2-Scentora/files/admin/logout.php')
+                .then(() => {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace("/IM2-Scentora/files/admin/loginpage.php");
+                })
+                .catch(() => {
+                    // Fallback if fetch fails
+                    window.location.replace("/IM2-Scentora/files/admin/logout.php");
+                });
   }
 };
 

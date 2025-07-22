@@ -1,4 +1,12 @@
 <?php
+require_once '../includes/session_config.php';
+
+// Require admin access
+requireAdmin();
+
+// Check session timeout
+checkSessionTimeout();
+
 // Error visibility (optional for debugging)
 ini_set('display_errors', 1);
 error_reporting(E_ALL);

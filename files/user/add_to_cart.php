@@ -1,12 +1,10 @@
 <?php
-session_start();
-header('Content-Type: application/json');
+require_once '../includes/api_middleware.php';
 require_once '../includes/db_connect.php';
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login first']);
-    exit;
-}
+// Set headers and require consumer access
+setJsonHeaders();
+apiRequireConsumer();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);

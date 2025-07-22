@@ -1,5 +1,17 @@
 <?php
-session_start();
+require_once '../includes/session_config.php';
+
+// If already logged in, redirect to appropriate dashboard
+if (isLoggedIn()) {
+    if (isAdmin()) {
+        header("Location: /IM2-Scentora/files/admin/dashboard.php");
+        exit();
+    } elseif (isConsumer()) {
+        header("Location: /IM2-Scentora/files/user/shop_user.php");
+        exit();
+    }
+}
+
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $conn = new mysqli("localhost", "root", "", "scentoradb");
@@ -43,8 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         header("Location: /IM2-Scentora/files/user/shop_user.php");
                         exit;
                     } else if ($usertype === "admin") {
-                        header("Location: /IM2-Scentora/files/admin/dashboard.html
-                        ");
+                        header("Location: /IM2-Scentora/files/admin/dashboard.php");
                         exit;
                     } else {
                         $error = "Invalid user type";

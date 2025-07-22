@@ -1,4 +1,10 @@
 <?php
+require_once '../includes/api_middleware.php';
+
+// Set headers and require admin access
+setJsonHeaders();
+apiRequireAdmin();
+
 $host = "localhost";
 $username = "root";
 $password = "";

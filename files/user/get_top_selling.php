@@ -1,4 +1,10 @@
 <?php
+require_once '../includes/api_middleware.php';
+
+// Set JSON headers and require consumer access
+setJsonHeaders();
+apiRequireConsumer();
+
 // Database connection (same as shop_user.php)
 $host = "localhost";
 $username = "root";

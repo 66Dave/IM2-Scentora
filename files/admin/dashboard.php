@@ -1,0 +1,1862 @@
+<?php
+require_once '../includes/session_config.php';
+
+// Require admin access
+requireAdmin();
+
+// Check session timeout
+checkSessionTimeout();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scentora | Dashboard</title>
+  <style>
+    :root {
+      --primary: #a182c9;
+      --accent: #e5d6f7;
+      --background: #f7f5fa;
+      --card: #fff7ff;
+      --sidebar: #efe2fa;
+      --text: #392e44;
+      --nav-bg: rgba(114, 69, 173, 0.7);
+      --nav-blur: blur(10px);
+      --white: #fff;
+      --shadow: 0 2px 6px rgba(161,130,201,0.12);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding-top: 74px;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: var(--nav-blur);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .header_contents {
+    display: flex;
+    gap: 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:not([href="#logout"]).active {
+      background: var(--white);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.5rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .toggle-switch label {
+      font-size: 0.9rem;
+      color: var(--white);
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      appearance: none;
+      width: 48px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      background: var(--white);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch input[type="checkbox"]:checked {
+      background: var(--primary);
+    }
+
+    .toggle-switch input[type="checkbox"]:checked::before {
+      transform: translateX(24px);
+    }
+
+    .toggle-switch input[type="checkbox"]:hover::before {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch input[type="checkbox"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .dashboard-container {
+      display: flex;
+      max-width: 1200px;
+      margin: auto;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar);
+      border-radius: 12px;
+      padding: 1.4rem 1rem 1rem 1.4rem;
+      box-shadow: var(--shadow);
+      height: fit-content;
+      margin-top: 0.5rem;
+      position: sticky;
+      top: 90px; /* Adjust this value based on your header height + desired spacing */
+      align-self: flex-start;
+      max-height: calc(100vh - 100px); /* Ensure it doesn't overflow viewport */
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      color: var(--primary);
+      margin-bottom: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      display: block;
+      margin-bottom: 0.8rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 0.4rem 0.7rem;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .sidebar a.active,
+    .sidebar a:hover {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .dashboard-main {
+      flex: 1;
+    }
+
+    .dashboard-page {
+      display: none;
+      animation: fadein 0.5s;
+    }
+
+    .dashboard-page.active {
+      display: block;
+    }
+
+    .welcome-card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .quick-link {
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 8px;
+      padding: 1.2rem 2.5rem;
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    .quick-link:hover {
+      background: #8663b9;
+      color: #f2e9ff;
+      transform: translateY(-3px) scale(1.04);
+    }
+
+    .overview-grid {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .overview-widget {
+      background: var(--accent);
+      color: var(--primary);
+      flex: 1 1 200px;
+      min-width: 180px;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .stat-card {
+      background: var(--card);
+      flex: 1 1 250px;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      min-width: 210px;
+      text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .stat-card h4 {
+      font-size: 1.08rem;
+      color: #6b5097;
+    }
+
+    .stat-card p {
+      font-size: 2.2rem;
+      color: var(--primary);
+      font-weight: bold;
+      margin-top: 0.7rem;
+    }
+
+    body.darkmode {
+      --primary: #b89fff;
+      --accent: #2f2f4c;
+      --background: #191922;
+      --card: #232336;
+      --sidebar: #232336;
+      --text: #e9e9ff;
+      --nav-bg: rgba(32, 31, 50, 0.92);
+      --white: #e9e9ff;
+      --shadow: 0 2px 16px rgba(17, 17, 22, 0.2);
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .order-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+    .order-filters {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      background: var(--accent);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .orders-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+    }
+
+    th, td {
+      padding: 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid var(--accent);
+      color: var(--text);
+    }
+
+    th {
+      background: var(--primary);
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: var(--accent);
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      min-width: 200px; /* Ensure minimum width for buttons */
+    }
+
+    .order-actions button {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 90px; /* Consistent button width */
+      text-align: center;
+    }
+
+    /* Center align the Actions column header */
+    #ordersTable th:last-child {
+      text-align: center;
+    }
+
+    /* Center align all action cells */
+    #ordersTable td:last-child {
+      text-align: center;
+    }
+
+    .overview-widget.clickable {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .overview-widget.clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow), 0 4px 12px rgba(161,130,201,0.2);
+    }
+
+    #orderSearch {
+      transition: box-shadow 0.3s ease;
+    }
+
+    #orderSearch:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .order-filters {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .order-actions button[style*="background:#4a90e2"]:hover {
+  background: #357abd !important;
+  color: var(--white);
+}
+
+#proofModal img {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+}
+
+#proofModal img:hover {
+  transform: scale(1.02);
+}
+.sales-graph-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 20px 30px;
+  margin-top: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.graph-header {
+  display: flex;
+  margin-bottom: 20px;
+  padding-left: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.graph-header .left {
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-header .title {
+  color: var(--text);
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.graph-header .number {
+  color: var(--primary);
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.total-sales {
+  background: linear-gradient(145deg, var(--primary), var(--accent));
+}
+
+.total-sales h4,
+.total-sales p {
+  color: var(--white) !important;
+}
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 25px !important;
+}
+
+.sortable:hover {
+    background: #8b6db3;
+}
+
+.sortable::after {
+    content: attr(data-icon);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
+}
+.stats-filter {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    background: var(--card);
+    color: var(--text);
+    min-width: 150px;
+}
+
+.stats-view-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stats-view-btn:hover {
+    transform: translateY(-2px);
+    background: #8663b9;
+    box-shadow: var(--shadow);
+}
+
+#monthlyStatsModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+}
+
+.monthly-stats-content {
+    background: var(--card);
+    padding: 2rem;
+    border-radius: 12px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.page-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.page-btn:hover {
+    background: #8663b9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.zoom-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(161, 130, 201, 0.2);
+}
+
+.zoom-btn:hover {
+    background: #8663b9;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(161, 130, 201, 0.3);
+}
+
+.zoom-btn:active {
+    transform: scale(0.95);
+}
+  </style>
+  <!-- Add this before your existing scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">Scentora</div>
+    <div class="header_contents">
+      <div class="nav-links">
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="inventory_seller.html">Inventory</a>
+        <a href="UserList.html">User List</a>
+        <a href="#logout" id="logout-link">Logout</a>
+      </div>
+      <div class="toggle-switch">
+        <label for="darkmode">Dark mode</label>
+        <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h3>Dashboard</h3>
+      <a href="#" id="overview-link" class="active" onclick="showPage('overview', event)">Overview</a>
+      <a href="#" id="stats-link" onclick="showPage('stats', event)">Statistics</a>
+      <a href="#" id="orders-link" onclick="showPage('orders', event)">Orders</a>
+    </aside>
+
+    <section class="dashboard-main">
+      <div id="overview" class="dashboard-page active">
+        <div class="welcome-card">
+          Welcome to your <strong>Scentora Dashboard</strong>!
+        </div>
+        <div class="quick-links">
+          <a class="quick-link" href="inventory_seller.html">View Inventory</a>
+        </div>
+        <div class="overview-grid">
+          <div class="overview-widget">Perfume Products<br><span id="count-products">--</span></div>
+          <div class="overview-widget clickable" onclick="goToLowStock()">Stock Alerts<br><span id="count-alerts">--</span></div>
+          <div class="overview-widget clickable" onclick="goToPendingOrders()">
+    New Orders<br><span id="count-orders">--</span>
+  </div>
+        </div>
+      </div>
+
+      <div id="stats" class="dashboard-page">
+        <h2 style="color:var(--primary);">Statistics Overview</h2>
+        <div class="overview-grid">
+          <div class="stat-card"><h4>Total Perfumes</h4><p id="stat-total">0</p></div>
+          <div class="stat-card"><h4>In Stock</h4><p id="stat-in-stock">0</p></div>
+          <div class="stat-card"><h4>Out of Stock</h4><p id="stat-out-stock">0</p></div>
+          <div class="stat-card"><h4>Total Orders</h4><p id="stat-orders">0</p></div>
+          <div class="stat-card total-sales">
+      <h4>Total Sales</h4>
+      <p id="stat-sales">₱0.00</p>
+    </div>
+        </div>
+
+        <!-- Sales Graph Card -->
+        <div class="sales-graph-card">
+    <div class="graph-header">
+        <div class="left">
+            <div class="title">Monthly Sales</div>
+            <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                <select id="statsMonthFilter" class="stats-filter">
+                    <option value="all">All Time</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <button onclick="viewMonthlyStats()" class="stats-view-btn">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="number" id="monthly-total">₱0.00</div>
+        </div>
+        <div class="zoom-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+            <button onclick="zoomIn()" class="zoom-btn" title="Zoom In">+</button>
+            <button onclick="zoomOut()" class="zoom-btn" title="Zoom Out">-</button>
+            <button onclick="resetZoom()" class="zoom-btn" title="Reset Zoom">⌂</button>
+        </div>
+    </div>
+    <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+    </div>
+</div>
+      </div>
+      
+      <div id="orders" class="dashboard-page">
+        <h2 style="color:var(--primary);">Orders</h2>
+        <div class="order-filters">
+  <div style="width: 100%; max-width: 300px; margin-bottom: 1rem;">
+    <input type="search" id="orderSearch" placeholder="Search Order ID..." 
+    style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--primary); 
+    background: var(--background); color: var(--text);">
+  </div>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%;">
+    <button class="filter-btn active" data-status="all">All Orders</button>
+    <button class="filter-btn" data-status="Pending">Pending</button>
+    <button class="filter-btn" data-status="Declined">Declined</button>
+    <button class="filter-btn" data-status="Accepted">Accepted</button>
+    <button class="filter-btn" data-status="Completed">Completed</button>
+    <button class="filter-btn" data-status="Cancelled">Cancelled</button>
+  </div>
+</div>
+        <div class="orders-container">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersList"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="overrideModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+background:rgba(0,0,0,0.5); z-index:1001;">
+  <div style="position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+  background:var(--card); padding:2rem; border-radius:12px; width:300px;">
+    <h3 style="color:var(--primary); margin-top:0;">Override Order Status</h3>
+    <!-- Update the overrideStatus select options -->
+<select id="overrideStatus" style="width:100%; padding:0.5rem; margin:1rem 0; 
+background:var(--background); color:var(--text); border:1px solid var(--primary);">
+  <option value="Pending">Pending</option>
+  <option value="Accepted">Accepted</option>
+  <option value="Declined">Declined</option>
+  <option value="Cancelled">Cancelled</option>
+  <option value="Completed">Completed</option>
+</select>
+    <div style="display:flex; gap:1rem; justify-content:flex-end;">
+      <button onclick="closeOverrideModal()" style="padding:0.5rem 1rem; border:none; 
+      border-radius:4px; background:var(--accent); color:var,--text;">Cancel</button>
+      <button onclick="submitOverride()" style="padding:0.5rem 1rem; border:none; 
+      border-radius:4px; background:var(--primary); color:var,--white;">Update</button>
+    </div>
+  </div>
+</div>
+<div id="proofModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+background:rgba(0,0,0,0.5); z-index:1001;">
+  <div style="position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+  background:var(--card); padding:2rem; border-radius:12px; max-width:500px; width:90%;">
+    <h3 style="color:var(--primary); margin-top:0;">Proof of Payment</h3>
+    <div style="margin: 1rem 0; text-align: center;">
+      <img id="proofImage" src="" alt="Payment Proof" 
+           style="max-width:100%; max-height:70vh; border-radius:8px; display:none; margin:0 auto;">
+      <div id="imageError" style="display:none; color:red; margin-top:1rem;">
+        Failed to load image. Please check the file path.
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end;">
+      <button onclick="closeProofModal()" style="padding:0.5rem 1rem; border:none; 
+      border-radius:4px; background:var(--accent); color:var,--text;">Close</button>
+    </div>
+  </div>
+</div>
+  <script>
+    //Sidebar navigation
+function showPage(page, event) {
+  event.preventDefault();
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.dashboard-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`${page}-link`).classList.add('active');
+  document.getElementById(page).classList.add('active');
+  
+  // Update page state in localStorage for persistence
+  const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+  currentState.currentPage = page;
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
+}
+
+//Dark mode toggle
+const darkToggle = document.getElementById('darkmode');
+if (localStorage.getItem('scentoraDark') === '1') {
+  document.body.classList.add('darkmode');
+  darkToggle.checked = true;
+}
+darkToggle.addEventListener('change', () => {
+  document.body.classList.toggle('darkmode', darkToggle.checked);
+  localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+});
+
+//Logout confirmation
+document.getElementById("logout-link").onclick = function(e) {
+  e.preventDefault();
+  if (confirm("Are you sure you want to logout?")) {
+    fetch('/IM2-Scentora/files/admin/logout.php')
+                .then(() => {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace("/IM2-Scentora/files/admin/loginpage.php");
+                })
+                .catch(() => {
+                    // Fallback if fetch fails
+                    window.location.replace("/IM2-Scentora/files/admin/logout.php");
+                });
+  }
+};
+
+//Real-time dashboard data fetch
+fetch("dashboard_data.php")
+  .then(res => res.json())
+  .then(data => {
+    // Overview section
+    document.getElementById("count-products").textContent = data.totalProducts;
+    document.getElementById("count-alerts").textContent = data.stockAlerts;
+    document.getElementById("count-orders").textContent = data.pendingOrders;
+    
+    // Stats section
+    document.getElementById("stat-total").textContent = data.totalProducts;
+    document.getElementById("stat-in-stock").textContent = data.inStock;
+    document.getElementById("stat-out-stock").textContent = data.outOfStock;
+    document.getElementById("stat-orders").textContent = data.totalOrders;
+  })
+  .catch(err => {
+    console.error("Dashboard fetch failed:", err);
+  });
+  let currentOrderId = null;
+
+function showOverrideModal(orderId) {
+  currentOrderId = orderId;
+  document.getElementById('overrideModal').style.display = 'block';
+}
+
+function closeOverrideModal() {
+  document.getElementById('overrideModal').style.display = 'none';
+  currentOrderId = null;
+}
+
+function submitOverride() {
+  if (!currentOrderId) return;
+  
+  const newStatus = document.getElementById('overrideStatus').value;
+  
+  // Show loading state on submit button
+  const submitBtn = document.querySelector('#overrideModal button[onclick="submitOverride()"]');
+  const cancelBtn = document.querySelector('#overrideModal button[onclick="closeOverrideModal()"]');
+  
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+    submitBtn.style.opacity = '0.6';
+  }
+  if (cancelBtn) {
+    cancelBtn.disabled = true;
+    cancelBtn.style.opacity = '0.6';
+  }
+  
+  // Use a modified version of changeOrderStatus that doesn't close modal immediately
+  fetch("update_order_status.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `order_id=${currentOrderId}&status=${newStatus}`
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result.trim() === "updated") {
+      let message = `Order status changed to: ${newStatus}`;
+      if (newStatus === 'Declined') {
+        message += "\nReason: Invalid payment proof";
+      } else if (newStatus === 'Accepted') {
+        message += "\nCustomer will receive an email confirmation with receipt.";
+      }
+      alert(message);
+      closeOverrideModal();
+      // Save current state before refresh
+      savePageState();
+      location.reload(); // Refresh the entire page
+    } else {
+      alert("Failed to update status: " + result);
+      // Reset buttons on error
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Update';
+        submitBtn.style.opacity = '1';
+      }
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.style.opacity = '1';
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("An error occurred while updating the status");
+    // Reset buttons on error
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update';
+      submitBtn.style.opacity = '1';
+    }
+    if (cancelBtn) {
+      cancelBtn.disabled = false;
+      cancelBtn.style.opacity = '1';
+    }
+  });
+}
+
+// Close modal when clicking outside
+document.getElementById('overrideModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeOverrideModal();
+  }
+});
+
+function showProofModal(filename) {
+  const proofImage = document.getElementById('proofImage');
+  const imageError = document.getElementById('imageError');
+  const modal = document.getElementById('proofModal');
+  
+  // Reset display states
+  proofImage.style.display = 'none';
+  imageError.style.display = 'none';
+  
+  // Set image source - proofs are in the uploads/proofs/ directory
+  proofImage.src = `../uploads/proofs/${filename}`;
+  
+  // Handle image load success
+  proofImage.onload = function() {
+    proofImage.style.display = 'block';
+    imageError.style.display = 'none';
+  };
+  
+  // Handle image load error
+  proofImage.onerror = function() {
+    proofImage.style.display = 'none';
+    imageError.style.display = 'block';
+    imageError.textContent = `Failed to load image: ${filename}`;
+    console.error('Failed to load proof image:', `../uploads/proofs/${filename}`);
+  };
+  
+  // Show modal
+  modal.style.display = 'block';
+}
+
+function closeProofModal() {
+  document.getElementById('proofModal').style.display = 'none';
+  // Clear image source to prevent caching issues
+  document.getElementById('proofImage').src = '';
+}
+
+// Close proof modal when clicking outside
+document.getElementById('proofModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeProofModal();
+  }
+});
+
+function changeOrderStatus(orderId, newStatus) {
+  // Add console.log for debugging
+  console.log('Updating order:', orderId, 'to status:', newStatus);
+  
+  // Show loading state on the button that was clicked
+  const buttons = document.querySelectorAll(`button[onclick*="${orderId}"]`);
+  buttons.forEach(btn => {
+    if (btn.textContent.includes('Accept') || btn.textContent.includes('Decline') || btn.textContent.includes('Override')) {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      if (btn.textContent === 'Accept') btn.textContent = 'Accepting...';
+      else if (btn.textContent === 'Decline') btn.textContent = 'Declining...';
+      else if (btn.textContent === 'Update') btn.textContent = 'Updating...';
+    }
+  });
+  
+  fetch("update_order_status.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `order_id=${orderId}&status=${newStatus}`
+  })
+  .then(res => res.text())
+  .then(result => {
+    console.log('Server response:', result); // Debug log
+    if (result.trim() === "updated") {
+      let message = `Order status changed to: ${newStatus}`;
+      if (newStatus === 'Declined') {
+        message += "\nReason: Invalid payment proof";
+      } else if (newStatus === 'Accepted') {
+        message += "\nCustomer will receive an email confirmation with receipt.";
+      }
+      alert(message);
+      // Save current state before refresh
+      savePageState();
+      location.reload(); // Refresh the entire page
+    } else {
+      alert("Failed to update status: " + result);
+      // Reset buttons on error
+      buttons.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        if (btn.textContent === 'Accepting...') btn.textContent = 'Accept';
+        else if (btn.textContent === 'Declining...') btn.textContent = 'Decline';
+        else if (btn.textContent === 'Updating...') btn.textContent = 'Update';
+      });
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("An error occurred while updating the status");
+    // Reset buttons on error
+    buttons.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      if (btn.textContent === 'Accepting...') btn.textContent = 'Accept';
+      else if (btn.textContent === 'Declining...') btn.textContent = 'Decline';
+      else if (btn.textContent === 'Updating...') btn.textContent = 'Update';
+    });
+  });
+}
+// Update the renderOrders function
+function renderOrders(data) {
+    const container = document.getElementById("ordersList");
+
+    if (!data.length) {
+        container.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Orders to display.</td></tr>";
+        return;
+    }
+
+    container.innerHTML = "";
+    data.forEach(order => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${order.order_id}</td>
+            <td>${order.buyer_email}</td>
+            <td>${new Date(order.order_date).toLocaleString()}</td>
+            <td>₱${order.total}</td>
+            <td>${order.status}</td>
+            <td>
+                <div class="order-actions">
+                    ${order.status === 'Pending' ? `
+                        <button onclick="changeOrderStatus(${order.order_id}, 'Accepted')">Accept</button>
+                        <button onclick="changeOrderStatus(${order.order_id}, 'Declined')">Decline</button>
+                    ` : ''}
+                    ${order.payment_proof ? 
+                        `<button onclick="showProofModal('${order.payment_proof.split('/').pop()}')" 
+                        style="background:#4a90e2;">View Proof</button>` : 
+                        '<span style="color:var(--text);font-size:0.9rem;">No proof</span>'
+                    }
+                    <button onclick="showOverrideModal(${order.order_id})" 
+                    style="background:#6b5097;">Override</button>
+                </div>
+            </td>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function loadOrders(statusFilter = 'all') {
+  const searchTerm = document.getElementById('orderSearch').value;
+  
+  // Show loading state
+  const container = document.getElementById("ordersList");
+  container.innerHTML = `
+    <tr>
+      <td colspan='6' style='text-align:center; padding: 2rem; color: var(--primary);'>
+        <div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>
+          <div style='width: 20px; height: 20px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;'></div>
+          Loading orders...
+        </div>
+      </td>
+    </tr>
+  `;
+  
+  fetch("orders_fetch.php")
+    .then(res => res.json())
+    .then(data => {
+      const filteredData = filterOrders(data, statusFilter, searchTerm);
+      renderOrders(filteredData);
+    })
+    .catch(() => {
+      document.getElementById("ordersList").innerHTML = 
+        "<tr><td colspan='6' style='text-align:center; color: #e57373; padding: 2rem;'>❌ Error loading orders. Please try again.</td></tr>";
+    });
+}
+
+let currentSort = {
+    column: 'order_id',
+    direction: 'desc'
+};
+
+// Update the table headers in your HTML
+function updateTableHeaders() {
+    const headerRow = document.querySelector('#ordersTable thead tr');
+    headerRow.innerHTML = `
+        <th class="sortable" data-column="order_id">
+            Order ID ${getSortIcon('order_id')}
+        </th>
+        <th class="sortable" data-column="buyer_email">
+            Customer ${getSortIcon('buyer_email')}
+        </th>
+        <th class="sortable" data-column="order_date">
+            Date ${getSortIcon('order_date')}
+        </th>
+        <th class="sortable" data-column="total">
+            Total ${getSortIcon('total')}
+        </th>
+        <th>Status</th>
+        <th>Actions</th>
+    `;
+
+    // Add click listeners to sortable headers
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => handleSort(header.dataset.column));
+    });
+}
+
+// Helper function to get sort icon
+function getSortIcon(column) {
+    if (currentSort.column !== column) return '⇕';
+    return currentSort.direction === 'asc' ? '⇑' : '⇓';
+}
+
+// Handle sort click
+function handleSort(column) {
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+    }
+    updateTableHeaders();
+    const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
+    loadOrders(activeFilter);
+}
+
+// Update the filterOrders function to include sorting
+function filterOrders(orders, statusFilter = 'all', searchTerm = '') {
+    let filtered = orders.filter(order => {
+        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        const matchesSearch = searchTerm === '' || 
+                            order.order_id.toString().includes(searchTerm.trim());
+        return matchesStatus && matchesSearch;
+    });
+
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+        let aVal = a[currentSort.column];
+        let bVal = b[currentSort.column];
+
+        // Handle numeric values
+        if (currentSort.column === 'order_id' || currentSort.column === 'total') {
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+        }
+        // Handle dates
+        if (currentSort.column === 'order_date') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        }
+
+        if (currentSort.direction === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+}
+
+// Add search event listener
+document.getElementById('orderSearch').addEventListener('input', function() {
+  const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-status');
+  loadOrders(activeFilter);
+  
+  // Save current search term
+  const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+  currentState.searchTerm = this.value;
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
+});
+
+// Filter buttons functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const status = this.getAttribute('data-status');
+    loadOrders(status);
+    
+    // Save current filter state
+    const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+    currentState.activeFilter = status;
+    localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
+  });
+});
+
+// Load orders on page ready
+document.addEventListener("DOMContentLoaded", () => {
+  loadOrders();
+  updateTableHeaders(); // Initialize table headers
+  restorePageState(); // Restore previous page state after refresh
+  startAdminSessionMonitoring(); // Start session monitoring for admin
+});
+
+// Session monitoring functionality for admin
+function startAdminSessionMonitoring() {
+    // Check session status every 5 minutes
+    setInterval(checkAdminSessionStatus, 5 * 60 * 1000);
+    
+    // Also check when user becomes active after being away
+    let isActive = true;
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && !isActive) {
+            checkAdminSessionStatus();
+            isActive = true;
+        } else if (document.hidden) {
+            isActive = false;
+        }
+    });
+}
+
+function checkAdminSessionStatus() {
+    fetch('/IM2-Scentora/files/includes/session_status.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.logged_in) {
+                alert('Your admin session has expired. You will be redirected to login.');
+                window.location.replace('/IM2-Scentora/files/admin/loginpage.php');
+                return;
+            }
+            
+            if (data.user_type !== 'admin') {
+                alert('Admin access required. You will be redirected to login.');
+                window.location.replace('/IM2-Scentora/files/admin/loginpage.php');
+                return;
+            }
+            
+            if (data.expires_soon && data.time_left > 0) {
+                const minutes = Math.floor(data.time_left / 60);
+                if (confirm(`Your admin session will expire in ${minutes} minutes. Do you want to stay logged in?`)) {
+                    // Refresh session by making a simple request
+                    fetch('/IM2-Scentora/files/includes/session_status.php');
+                }
+            }
+        })
+        .catch(error => {
+            console.warn('Admin session check failed:', error);
+        });
+}
+
+// Save current page state before refresh
+function savePageState() {
+  const state = {
+    currentPage: document.querySelector('.dashboard-page.active')?.id || 'overview',
+    activeFilter: document.querySelector('.filter-btn.active')?.getAttribute('data-status') || 'all',
+    searchTerm: document.getElementById('orderSearch')?.value || '',
+    statsMonth: document.getElementById('statsMonthFilter')?.value || 'all'
+  };
+  localStorage.setItem('scentoraDashboardState', JSON.stringify(state));
+}
+
+// Restore page state after refresh
+function restorePageState() {
+  const savedState = localStorage.getItem('scentoraDashboardState');
+  if (savedState) {
+    try {
+      const state = JSON.parse(savedState);
+      
+      // Restore active page
+      if (state.currentPage && state.currentPage !== 'overview') {
+        showPage(state.currentPage, { preventDefault: () => {} });
+      }
+      
+      // Restore order filters and search if on orders page
+      if (state.currentPage === 'orders') {
+        // Restore search term
+        if (state.searchTerm && document.getElementById('orderSearch')) {
+          document.getElementById('orderSearch').value = state.searchTerm;
+        }
+        
+        // Restore active filter
+        if (state.activeFilter) {
+          document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-status') === state.activeFilter) {
+              btn.classList.add('active');
+            }
+          });
+          // Reload orders with the restored filter
+          setTimeout(() => loadOrders(state.activeFilter), 100);
+        }
+      }
+      
+      // Restore stats month filter if on stats page
+      if (state.currentPage === 'stats' && state.statsMonth) {
+        const monthSelect = document.getElementById('statsMonthFilter');
+        if (monthSelect) {
+          monthSelect.value = state.statsMonth;
+          loadSalesData(state.statsMonth);
+        }
+      }
+      
+      // Clear the saved state after restoring
+      localStorage.removeItem('scentoraDashboardState');
+    } catch (e) {
+      console.error('Error restoring page state:', e);
+      localStorage.removeItem('scentoraDashboardState');
+    }
+  }
+}
+
+function goToPendingOrders() {
+  // Show the orders page
+  showPage('orders', { preventDefault: () => {} });
+  
+  // Set filter to Pending
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if(btn.getAttribute('data-status') === 'Pending') {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Load pending orders
+  loadOrders('Pending');
+}
+
+function goToLowStock() {
+  // Redirect to inventory page with low stock filter
+  window.location.href = 'inventory_seller.html?filter=lowstock';
+}
+
+// Update the loadSalesData function
+function loadSalesData(month = 'all') {
+    fetch(`sales_data.php?month=${month}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update total sales display
+            const totalSales = parseFloat(data.totalSales) || 0;
+            document.getElementById('stat-sales').textContent = 
+                `₱${totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+
+            // Monthly/All-time total in graph header
+            const displaySales = parseFloat(data.monthlySales || data.totalSales) || 0;
+            document.getElementById('monthly-total').textContent = 
+                `₱${displaySales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+
+            // Chart update
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(111,88,233,0.35)');
+            gradient.addColorStop(1, 'rgba(111,88,233,0.05)');
+
+            if (window.salesChart instanceof Chart) {
+                window.salesChart.destroy();
+            }
+
+            // Set date limits
+            const minDate = '2025-01-01';
+            const maxDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+
+            // Convert labels to proper date format if they aren't already
+            const chartLabels = data.labels || [];
+            const chartData = data.values || [];
+            
+            console.log('Chart data loaded:', {
+                labels: chartLabels,
+                dataPoints: chartData.length,
+                dateRange: chartLabels.length > 0 ? `${chartLabels[0]} to ${chartLabels[chartLabels.length - 1]}` : 'No data',
+                debug: data.debug,
+                nonZeroData: chartData.filter(val => val > 0).length
+            });
+
+            window.salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: chartData,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: '#6f58e9',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#6f58e9',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    onHover: (event, activeElements) => {
+                        event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'grab';
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: value => '₱' + value.toLocaleString('en-PH')
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0,
+                                maxTicksLimit: 8 // Limit visible ticks for better scrolling
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => '₱' + context.parsed.y.toLocaleString('en-PH')
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {min: 'original', max: 'original'}  // Allow panning beyond original data range
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 10, // Minimum pan distance
+                                onPanStart: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grabbing';
+                                },
+                                onPanComplete: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grab';
+                                }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1,
+                                    modifierKey: null
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                drag: {
+                                    enabled: true,
+                                    borderColor: 'rgba(111, 88, 233, 0.3)',
+                                    borderWidth: 1,
+                                    backgroundColor: 'rgba(111, 88, 233, 0.1)',
+                                    modifierKey: 'shift'
+                                },
+                                onZoomStart: ({chart}) => {
+                                    chart.canvas.style.cursor = 'zoom-in';
+                                },
+                                onZoomComplete: ({chart}) => {
+                                    chart.canvas.style.cursor = 'grab';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading sales data:', error);
+        });
+}
+
+// Update stats when month changes
+document.getElementById('statsMonthFilter').addEventListener('change', function() {
+    loadSalesData(this.value);
+    
+    // Save current stats month filter
+    const currentState = JSON.parse(localStorage.getItem('scentoraDashboardState') || '{}');
+    currentState.statsMonth = this.value;
+    localStorage.setItem('scentoraDashboardState', JSON.stringify(currentState));
+});
+
+// Zoom control functions
+function zoomIn() {
+    if (window.salesChart) {
+        window.salesChart.zoom(1.2);
+        // Update sales total after zoom
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            const scrollPercentage = parseFloat(scrollBar.value) / 100;
+            setTimeout(() => updateVisibleSalesTotal(scrollPercentage), 100);
+        }
+    }
+}
+
+function zoomOut() {
+    if (window.salesChart) {
+        window.salesChart.zoom(0.8);
+        // Update sales total after zoom
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            const scrollPercentage = parseFloat(scrollBar.value) / 100;
+            setTimeout(() => updateVisibleSalesTotal(scrollPercentage), 100);
+        }
+    }
+}
+
+function resetZoom() {
+    if (window.salesChart) {
+        window.salesChart.resetZoom();
+        
+        // Reset scroll bar to 100% (latest dates)
+        const scrollBar = document.getElementById('chartScrollBar');
+        if (scrollBar) {
+            scrollBar.value = 100;
+        }
+        
+        // Reset to original total sales
+        if (window.chartRawData) {
+            const totalSalesElement = document.getElementById('stat-sales');
+            const monthlyTotalElement = document.getElementById('monthly-total');
+            
+            if (totalSalesElement) {
+                totalSalesElement.textContent = `₱${window.chartRawData.originalTotalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+            }
+            
+            if (monthlyTotalElement) {
+                monthlyTotalElement.textContent = `₱${window.chartRawData.originalTotalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+            }
+            
+            // Reset labels to show full range
+            const labels = window.chartRawData.labels;
+            if (labels.length > 0) {
+                const startLabel = document.getElementById('scrollStartLabel');
+                const endLabel = document.getElementById('scrollEndLabel');
+                
+                if (startLabel && endLabel) {
+                    startLabel.textContent = labels[0];
+                    endLabel.textContent = labels[labels.length - 1];
+                }
+            }
+        }
+    }
+}
+
+// Zoom control functions
+function zoomIn() {
+    if (window.salesChart) {
+        window.salesChart.zoom(1.2);
+    }
+}
+
+function zoomOut() {
+    if (window.salesChart) {
+        window.salesChart.zoom(0.8);
+    }
+}
+
+function resetZoom() {
+    if (window.salesChart) {
+        window.salesChart.resetZoom();
+    }
+}
+
+function viewMonthlyStats() {
+    const monthSelect = document.getElementById('statsMonthFilter');
+    const selectedMonth = monthSelect.value;
+    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+
+    loadMonthlyData(selectedMonth, 1);
+}
+
+function loadMonthlyData(month, page) {
+    // Get month name first
+    const monthSelect = document.getElementById('statsMonthFilter');
+    const monthName = month === 'all' ? 'All Time' : monthSelect.options[
+        Array.from(monthSelect.options).findIndex(opt => opt.value === month)
+    ].text;
+
+    fetch(`sales_data.php?month=${month}&page=${page}`)
+        .then(response => response.json())
+        .then(data => {
+            let modal = document.getElementById('monthlyStatsModal');
+            if (modal) modal.remove();
+
+            const modalHTML = `
+                <div id="monthlyStatsModal" style="display:block; position:fixed; top:0; left:0; width:100%; 
+                height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:1001;">
+                    <div class="monthly-stats-content" style="background:var(--card); padding:2.5rem; 
+                    border-radius:16px; position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+                    width:90%; max-width:800px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                            <h3 style="color:var(--primary); margin:0; font-size:1.5rem">
+                                ${monthName} Sales Details
+                            </h3>
+                            <button onclick="closeMonthlyStatsModal()" style="background:none; border:none; 
+                            color:var(--text); font-size:1.5rem; cursor:pointer; padding:0.5rem;">×</button>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+                            <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                                <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Total Sales</div>
+                                <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                                    ₱${parseFloat(data.totalSales).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                                </div>
+                            </div>
+                            <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                                <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Orders</div>
+                                <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                                    ${data.orderCount}
+                                </div>
+                            </div>
+                            <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                                <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Average Order</div>
+                                <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                                    ₱${parseFloat(data.averageOrderValue).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin:2rem 0;">
+                            <div style="background:var(--accent); border-radius:12px; padding:1rem;">
+                                ${data.orders ? data.orders.map(order => `
+                                    <div style="padding:1rem; border-bottom:1px solid var(--primary); 
+                                    display:grid; grid-template-columns:2fr 3fr 2fr 2fr; gap:1rem; align-items:center;">
+                                        <div>
+                                            <div style="color:var(--text); font-weight:bold;">#${order.Order_ID}</div>
+                                            <div style="color:var(--text); font-size:0.9rem;">
+                                                ${order.Order_Date}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style="color:var(--primary); font-weight:bold;">
+                                                ${order.Product_Name}
+                                            </div>
+                                            <div style="color:var(--text); font-size:0.9rem;">
+                                                ${order.Buyer_Name}
+                                            </div>
+                                        </div>
+                                        <div style="text-align:center;">
+                                            <div style="color:var(--text);">Qty: ${order.Product_Qty}</div>
+                                        </div>
+                                        <div style="text-align:right; color:var(--primary); font-weight:bold;">
+                                            ₱${parseFloat(order.Total_Amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                                        </div>
+                                    </div>
+                                `).join('') : '<p style="text-align:center;padding:1rem;">No orders found</p>'}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:center; gap:1rem; align-items:center; margin-top:2rem;">
+                            ${data.pagination.currentPage > 1 ? `
+                                <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage - 1})" 
+                                class="page-btn">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </button>
+                            ` : ''}
+                            <span style="color:var(--text);">
+                                Page ${data.pagination.currentPage} of ${data.pagination.totalPages}
+                            </span>
+                            ${data.pagination.currentPage < data.pagination.totalPages ? `
+                                <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage + 1})" 
+                                class="page-btn">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load monthly statistics');
+        });
+}
+
+function closeMonthlyStatsModal() {
+    const modal = document.getElementById('monthlyStatsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function loadMonthlyPage(page) {
+    const month = document.getElementById('statsMonthFilter').value;
+    const existingModal = document.getElementById('monthlyStatsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    fetch(`sales_data.php?month=${month}&page=${page}`)
+        .then(response => response.json())
+        .then(data => viewMonthlyStats())
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load page');
+        });
+}
+
+// Add FontAwesome for the eye icon if not already present
+document.head.insertAdjacentHTML('beforeend', 
+    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">');
+document.addEventListener('DOMContentLoaded', function() {
+    // Load initial all-time stats when page loads
+    loadSalesData('all');
+    
+    // Add click handler to view button
+    const viewBtn = document.querySelector('.stats-view-btn');
+    if (viewBtn) {
+        viewBtn.addEventListener('click', viewMonthlyStats);
+    }
+
+    // Add click handler for stats link
+    document.getElementById('stats-link').addEventListener('click', function() {
+        // Reset month filter to 'all' and load all-time stats
+        const monthSelect = document.getElementById('statsMonthFilter');
+        monthSelect.value = 'all';
+        loadSalesData('all');
+    });
+});
+
+function showMonthlyStatsModal(data) {
+    const modalHTML = `
+        <div id="monthlyStatsModal" style="display:block; position:fixed; top:0; left:0; width:100%; 
+        height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:1001;">
+            <div class="monthly-stats-content" style="background:var(--card); padding:2.5rem; 
+            border-radius:16px; position:relative; top:50%; left:50%; transform:translate(-50%,-50%); 
+            width:90%; max-width:800px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <h3 style="color:var(--primary); margin:0; font-size:1.5rem">
+                        Monthly Sales Details
+                    </h3>
+                    <button onclick="closeMonthlyStatsModal()" style="background:none; border:none; 
+                    color:var(--text); font-size:1.5rem; cursor:pointer; padding:0.5rem;">×</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Total Sales</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ₱${parseFloat(data.totalSales).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                        </div>
+                    </div>
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Orders</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ${data.orderCount}
+                        </div>
+                    </div>
+                    <div style="background:var(--accent); padding:1.5rem; border-radius:12px; text-align:center;">
+                        <div style="color:var(--text); font-size:0.9rem; margin-bottom:0.5rem;">Average Order</div>
+                        <div style="color:var(--primary); font-size:1.4rem; font-weight:bold;">
+                            ₱${parseFloat(data.averageOrderValue).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin:2rem 0;">
+                    <div style="background:var(--accent); border-radius:12px; padding:1rem;">
+                        ${data.orders ? data.orders.map(order => `
+                            <div style="padding:1rem; border-bottom:1px solid var(--primary); 
+                            display:grid; grid-template-columns:2fr 3fr 2fr 2fr; gap:1rem; align-items:center;">
+                                <div>
+                                    <div style="color:var(--text); font-weight:bold;">#${order.Order_ID}</div>
+                                    <div style="color:var(--text); font-size:0.9rem;">
+                                        ${order.Order_Date}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--primary); font-weight:bold;">
+                                        ${order.Product_Name}
+                                    </div>
+                                    <div style="color:var(--text); font-size:0.9rem;">
+                                        ${order.Buyer_Name}
+                                    </div>
+                                </div>
+                                <div style="text-align:center;">
+                                    <div style="color:var(--text);">Qty: ${order.Product_Qty}</div>
+                                </div>
+                                <div style="text-align:right; color:var(--primary); font-weight:bold;">
+                                    ₱${parseFloat(order.Total_Amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}
+                                </div>
+                            </div>
+                        `).join('') : '<p style="text-align:center;padding:1rem;">No orders found</p>'}
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:1rem; align-items:center; margin-top:2rem;">
+                    ${data.pagination.currentPage > 1 ? `
+                        <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage - 1})" 
+                        class="page-btn">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                    ` : ''}
+                    <span style="color:var(--text);">
+                        Page ${data.pagination.currentPage} of ${data.pagination.totalPages}
+                    </span>
+                    ${data.pagination.currentPage < data.pagination.totalPages ? `
+                        <button onclick="loadMonthlyData('${month}', ${data.pagination.currentPage + 1})" 
+                        class="page-btn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+  </script>
+  </script>
+</body>
+</html>
