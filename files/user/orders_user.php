@@ -1,4 +1,7 @@
 <?php
+// Add at the top of send_order_receipt.php
+ini_set('log_errors', 1);
+ini_set('error_log', 'C:/xampp/php/logs/php_error.log');
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header("Location: /IM2-Scentora/files/admin/loginpage.php");
@@ -212,6 +215,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
       transform: translateX(19px);
       background: #a182c9;
     }
+
+    .receipt-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #6f58e9;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 8px;
+    }
+
+    .receipt-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
@@ -276,6 +310,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
             echo "<td>₱" . number_format($total, 2) . "</td>";
             echo "<td>" . htmlspecialchars($status) . "</td>";
             echo "<td>";
+            
+            // Add Receipt button for Accepted/Completed orders
+            if (in_array(strtolower($status), ["accepted", "completed"])) {
+                echo "<button onclick='sendReceipt({$oid})' class='receipt-btn' 
+                      style='padding:4px 10px;border-radius:6px;background:#6f58e9;color:#fff;
+                      border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+                      margin-right:8px;'>
+                      <svg width='16' height='16' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path d='M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7m-16 0l5-5h6l5 5M3 7l5-5M21 7l-5-5'></path>
+                      </svg>
+                      Receipt
+                    </button>";
+            }
+
             if (strtolower($status) === "accepted") {
                 // Always show the button for accepted status a
                 echo "<form method='post' action='' style='display:inline;'>
@@ -325,6 +373,58 @@ echo "</td>";
         window.location.href = "/IM2-Scentora/files/admin/loginpage.php";
       }
     };
+
+    // Send receipt function
+function sendReceipt(orderId) {
+    const formData = new FormData();
+    formData.append('order_id', orderId);
+
+    // Show loading state
+    const btn = event.target.closest('.receipt-btn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg class="spinner" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4"></circle>
+        </svg>
+        Sending...
+    `;
+
+    fetch('send_order_receipt.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text().then(text => {
+            console.log('Raw response:', text); // Debug line
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse:', text);
+                throw new Error('Server response was not valid JSON');
+            }
+        });
+    })
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+        } else {
+            throw new Error(data.message || 'Failed to send receipt');
+        }
+    })
+    .catch(error => {
+        console.error('Error details:', error);
+        alert('Error sending receipt: ' + error.message);
+    })
+    .finally(() => {
+        // Reset button state
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
   </script>
 </body>
 </html>

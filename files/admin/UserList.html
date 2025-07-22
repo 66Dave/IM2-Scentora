@@ -57,6 +57,96 @@
       opacity: 0.7;
       background: var(--accent);
     }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      padding: 1rem;
+    }
+
+    .pagination-controls button {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pagination-controls button:hover {
+      background: #8e6bbf;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .pagination-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #pageInfo {
+      color: var(--text);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Dark mode specific styles */
+    body.darkmode .pagination-controls button {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    body.darkmode .pagination-controls button:hover {
+      background: #9671c7;
+    }
+
+    body.darkmode #pageInfo {
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .sort-icon {
+      font-size: 0.8em;
+      color: var(--accent);
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+
+    .sortable:hover .sort-icon {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .sortable.asc .sort-icon {
+      content: "↑";
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .sortable.desc .sort-icon {
+      content: "↓";
+      opacity: 1;
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -96,8 +186,8 @@
       <table class="inventory-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th class="sortable" data-sort="id">ID <span class="sort-icon">↕</span></th>
+            <th class="sortable" data-sort="name">Name <span class="sort-icon">↕</span></th>
             <th>Email</th>
             <th>User Type</th>
             <th>Status</th>
@@ -147,6 +237,7 @@
     let filterUserType = "All";
     let filterStatus = "all";
     let searchTerm = "";
+    let currentSort = { field: null, direction: 'asc' };
 
     // Load users from database
     function loadUsers() {
@@ -189,6 +280,46 @@
                       </td>
                   </tr>`;
           });
+    }
+
+    // Sort users
+    function sortUsers(field) {
+        if (currentSort.field === field) {
+            // Toggle direction if clicking the same field
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            // New field, default to ascending
+            currentSort.field = field;
+            currentSort.direction = 'asc';
+        }
+
+        // Update sort icons
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.classList.remove('asc', 'desc');
+            if (th.dataset.sort === field) {
+                th.classList.add(currentSort.direction);
+            }
+        });
+
+        // Sort the users array
+        users.sort((a, b) => {
+            let compareA, compareB;
+            
+            if (field === 'id') {
+                compareA = parseInt(a.User_ID);
+                compareB = parseInt(b.User_ID);
+            } else if (field === 'name') {
+                compareA = a.Name.toLowerCase();
+                compareB = b.Name.toLowerCase();
+            }
+
+            if (compareA < compareB) return currentSort.direction === 'asc' ? -1 : 1;
+            if (compareA > compareB) return currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        currentPage = 1; // Reset to first page
+        renderUsers();
     }
 
     // Render users table
@@ -270,17 +401,21 @@
     function toggleUserStatus(userId, currentStatus) {
       if (confirm(`Are you sure you want to ${currentStatus ? 'disable' : 'enable'} this user?`)) {
         fetch('toggle_user_status.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `user_id=${userId}&status=${currentStatus ? 0 : 1}`
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `user_id=${userId}&status=${currentStatus ? 0 : 1}`
         })
         .then(res => res.text())
         .then(result => {
-          if (result === 'success') {
-            loadUsers();
-          } else {
-            alert('Failed to update user status');
-          }
+            if (result === 'success') {
+                loadUsers();
+            } else {
+                alert('Failed to update user status');
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling user status:', error);
+            alert('An error occurred while updating user status');
         });
       }
     }
@@ -381,6 +516,15 @@
     // Close dropdowns when clicking outside
     document.addEventListener("click", () => {
       userTypeDropdown.classList.remove("show");
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add click handlers for sortable columns
+      document.querySelectorAll('.sortable').forEach(th => {
+          th.addEventListener('click', () => {
+              sortUsers(th.dataset.sort);
+          });
+      });
     });
 
     // Initial load
