@@ -43,7 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         header("Location: /IM2-Scentora/files/user/shop_user.php");
                         exit;
                     } else if ($usertype === "admin") {
-                        header("Location: /IM2-Scentora/files/admin/dashboard.php");
+                        header("Location: /IM2-Scentora/files/admin/dashboard.html
+                        ");
                         exit;
                     } else {
                         $error = "Invalid user type";
