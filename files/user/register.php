@@ -454,8 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <header>
         <div class="logo">Scentora</div>
         <nav class="nav-links">
-            <a href="/IM2-Scentora/index.html">Home</a>
-            <a href="/IM2-Scentora/shop.html">Shop</a>
+            <a href="/IM2-Scentora/files/admin/loginpage.php">Home</a>
             <a href="/IM2-Scentora/files/user/aboutus.html">About us</a>
         </nav>
     </header>
