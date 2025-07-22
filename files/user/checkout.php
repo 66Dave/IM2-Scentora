@@ -1,0 +1,679 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /IM2-Scentora/files/admin/loginpage.php");
+    exit();
+}
+
+$host = "localhost";
+$user_db = "root";
+$pass_db = "";
+$dbname = "scentoradb";
+
+$conn = new mysqli($host, $user_db, $pass_db, $dbname);
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user info for auto-population
+$sql = "SELECT Name, Email, Address FROM user WHERE User_ID = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($fullname, $email, $address);
+$stmt->fetch();
+$stmt->close();
+$conn->close();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scentora | Checkout</title>
+  <style>
+    :root {
+      --primary: #a182c9;
+      --accent: #917489;
+      --background: #f7f5fa;
+      --card: #fff7ff;
+      --sidebar: #efe2fa;
+      --text: #392e44;
+      --nav-bg: rgba(114, 69, 173, 0.7);
+      --nav-blur: blur(10px);
+      --white: #fff;
+      --shadow: 0 4px 24px rgba(161,130,201,0.14);
+      --border: #e5d6f7;
+    }
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding-top: 74px;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: var(--nav-blur);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(145, 116, 137, 0.08);
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .nav-links a.active {
+      background: var(--white);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--accent);
+    }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toggle-switch label {
+      font-size: 0.96rem;
+      color: var(--white);
+    }
+    .toggle-switch input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #bda6e7;
+      outline: none;
+      border-radius: 15px;
+      position: relative;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    .toggle-switch input[type="checkbox"]:checked {
+      background: #392e44;
+    }
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      top: 1px;
+      left: 2px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .toggle-switch input[type="checkbox"]:checked::before {
+      transform: translateX(19px);
+      background: #a182c9;
+    }
+    .checkout-container {
+      max-width: 540px;
+      margin: 3.5rem auto 2rem auto;
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 2.5rem 2rem 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .checkout-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 2rem;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .summary-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem 0;
+    }
+    .summary-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(161,130,201,0.04);
+      border-radius: 12px;
+      margin-bottom: 0.7rem;
+      box-shadow: 0 2px 8px rgba(145, 116, 137, 0.06);
+      transition: box-shadow 0.2s;
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+    .summary-item-name {
+      font-size: 1.13rem;
+      font-weight: 600;
+      color: var(--text);
+      flex: 2;
+      text-align: left;
+      letter-spacing: 0.2px;
+    }
+    .summary-item-qty {
+      font-size: 1rem;
+      color: var(--primary);
+      margin: 0 1rem;
+      font-weight: 500;
+      background: var(--sidebar);
+      border-radius: 8px;
+      padding: 0.3rem 0.8rem;
+    }
+    .summary-item-price {
+      font-size: 1.13rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-left: 1rem;
+    }
+    .checkout-total {
+      text-align: right;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 2rem;
+      letter-spacing: 0.5px;
+    }
+    .total-note {
+    font-size: 0.85rem;
+    color: var(--text);
+    text-align: right;
+    margin-top: 0.3rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    opacity: 0.8;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border-right: 3px solid var(--primary);
+}
+    .form-section {
+      margin-bottom: 2rem;
+    }
+    .form-section label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+    .form-section input,
+    .form-section select,
+    .form-section textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      background: var(--sidebar);
+      color: var(--text);
+      transition: border 0.2s;
+      box-sizing: border-box;
+    }
+    /* Ensure all inputs and selects fit inside their parent */
+.checkout-container input,
+.checkout-container select,
+.checkout-container textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+  display: block;
+}
+    .form-section input:focus,
+    .form-section select:focus,
+    .form-section textarea:focus {
+      border: 1.5px solid var(--primary);
+      outline: none;
+    }
+    .place-order-btn {
+      display: block;
+      width: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      color: var(--white);
+      font-size: 1.18rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 0;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(145, 116, 137, 0.10);
+      transition: background 0.2s, transform 0.2s;
+      margin-top: 1rem;
+      letter-spacing: 0.5px;
+    }
+    .place-order-btn:hover {
+      background: linear-gradient(90deg, #917489 0%, var(--primary) 100%);
+      transform: scale(1.03);
+    }
+    .drag-drop-area {
+        width: 100%;
+        height: 200px;
+        border: 2px dashed var(--primary);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.2rem;
+        background: var(--sidebar);
+        position: relative;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .drag-drop-area.dragover {
+        background: rgba(161,130,201,0.1);
+        border-color: var(--accent);
+    }
+
+    .drag-drop-area img {
+        max-width: 100%;
+        max-height: 180px;
+        object-fit: contain;
+        display: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(145, 116, 137, 0.10);
+    }
+
+    .drag-drop-area .placeholder {
+        text-align: center;
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    .drag-drop-area.has-file .placeholder {
+        display: none;
+    }
+
+    @media (max-width: 700px) {
+      .checkout-container {
+        max-width: 98vw;
+        padding: 1.2rem 0.5rem;
+      }
+      .checkout-title {
+        font-size: 1.5rem;
+      }
+      .checkout-total {
+        font-size: 1.1rem;
+      }
+      .place-order-btn {
+        font-size: 1rem;
+        padding: 0.7rem 0;
+      }
+    }
+
+    /* Dark Mode */
+body.darkmode {
+  --primary: #b89fff;
+  --accent: #28294b;
+  --background: #191922;
+  --card: #232336;
+  --sidebar: #232336;
+  --text: #f7f5fa;
+  --nav-bg: rgba(32, 31, 50, 0.92);
+  --white: #e9e9ff;
+  --shadow: 0 2px 16px rgba(17, 17, 22, 0.12);
+}
+
+body.darkmode .summary-item-price {
+  color: var(--white);
+}
+
+.courier-note {
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-top: -0.8rem;
+    margin-bottom: 1.2rem;
+    padding-left: 0.2rem;
+    font-style: italic;
+    opacity: 0.8;
+   
+    padding: 0.8rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+}
+
+/* Dark mode specific styles */
+body.darkmode .courier-note {
+    background: rgba(184, 159, 255, 0.1);
+    color: var(--white);
+    border-left: 3px solid var(--primary);
+}
+  </style>
+</head>
+<body>
+  <header>
+  <div class="logo">Scentora</div>
+  <nav class="nav-links">
+    <a href="shop_user.php">Shop</a>
+    <a href="orders_user.php">Orders</a>
+    <a href="userCart.html" title="Cart">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+    </a>
+    <a href="user_profile.php" title="Profile">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+      </svg>
+    </a>
+    <a href="#logout" id="logout-link">Logout</a>
+  </nav>
+  <div class="toggle-switch">
+    <label for="darkmode">Dark mode</label>
+    <input type="checkbox" id="darkmode" title="Toggle dark mode" />
+  </div>
+</header>
+  <div class="checkout-container">
+    <div class="checkout-title">Checkout</div>
+    <ul class="summary-list" id="summaryList">
+      <!-- Order summary items will be rendered here from the database -->
+    </ul>
+    <div class="checkout-total" id="checkoutTotal">Total: ₱0.00</div>
+    <div class="total-note">
+    * Total does not include courier fee. The courier will contact you regarding the delivery fee via email.
+</div>
+    <form class="form-section" id="checkoutForm">
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($fullname ?? ''); ?>" required />
+
+      <label for="address">Delivery Address</label>
+      <textarea id="address" name="address" rows="3" required placeholder="Please enter your complete delivery address"><?php echo htmlspecialchars($address ?? ''); ?></textarea>
+
+      <label for="payment">Payment Method</label>
+      <select id="payment" name="payment" required>
+        <option value="">Select payment method</option>
+        <option value="gcash">GCash</option>
+        <option value="card">Credit/Debit Card</option>
+      </select>
+
+      <label for="courier">Courier</label>
+      <select id="courier" name="courier" required>
+          <option value="">Select courier</option>
+          <option value="lalamove">Lalamove</option>
+          <option value="grab">Grab</option>
+          <option value="joyride">Joyride</option>
+      </select>
+      <div class="courier-note">
+          * Delivery fee will be shouldered by the customer. You will receive an email from the courier once your order is shipped.
+      </div>
+
+      <label for="proof">Proof of Payment</label>
+      <!-- Add this container for the QR image -->
+      <div id="paymentQR" style="text-align:center; margin-bottom:1rem; display:none;">
+        <img id="qrImage" src="" alt="Payment QR" style="max-width:180px; max-height:180px; border-radius:12px; box-shadow:0 2px 8px rgba(145,116,137,0.10);" />
+      </div>
+      <div class="drag-drop-area" id="dragDropArea">
+        <div class="placeholder">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Drag and drop your proof of payment here<br>or click to select file</p>
+        </div>
+        <img id="previewImage" alt="Preview"/>
+        <input type="file" id="proof" name="proof" accept="image/*" required style="display: none;"/>
+      </div>
+
+      <button type="submit" class="place-order-btn">Place Order</button>
+    </form>
+  </div>
+  <script>
+    // Function to load and display cart items
+    async function loadCartItems() {
+        try {
+            const response = await fetch('fetch_cart.php');
+            const cartItems = await response.json();
+            
+            const summaryList = document.getElementById('summaryList');
+            summaryList.innerHTML = ''; // Clear existing items
+            
+            if (cartItems.length === 0) {
+                summaryList.innerHTML = '<li class="summary-item">Your cart is empty</li>';
+                updateTotal(0);
+                return;
+            }
+            
+            cartItems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'summary-item';
+                li.innerHTML = `
+                    <span class="summary-item-name">${item.Product_Name}</span>
+                    <span class="summary-item-qty">${item.Quantity}</span>
+                    <span class="summary-item-price">₱${parseFloat(item.Product_Price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                `;
+                summaryList.appendChild(li);
+            });
+            
+            // Calculate total
+            const total = cartItems.reduce((sum, item) => 
+                sum + (parseFloat(item.Product_Price) * parseInt(item.Quantity)), 0);
+            updateTotal(total);
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            document.getElementById('summaryList').innerHTML = 
+                '<li class="summary-item">Error loading cart items</li>';
+        }
+    }
+    let checkoutTotalAmount = 0;
+
+    // Function to update total display
+    function updateTotal(total) {
+      checkoutTotalAmount = total;
+      document.getElementById('checkoutTotal').textContent =
+        `Total: ₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
+
+    // Validate form inputs
+    function validateForm() {
+        const fullname = document.getElementById('fullname').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const payment = document.getElementById('payment').value;
+        const courier = document.getElementById('courier').value;
+        const proofFile = document.getElementById('proof').files[0];
+
+        if (!fullname) {
+            alert('Please enter your full name');
+            return false;
+        }
+
+        if (!address) {
+            alert('Please enter delivery address');
+            return false;
+        }
+
+        if (!payment) {
+            alert('Please select payment method');
+            return false;
+        }
+
+        if (!courier) {
+            alert('Please select courier');
+            return false;
+        }
+
+        if (!proofFile) {
+            alert('Please upload proof of payment');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Handle form submissiona
+    document.getElementById("checkoutForm").onsubmit = async function(e) {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        const formData = new FormData(this);
+        formData.append("total_amount", checkoutTotalAmount);
+
+        try {
+          const response = await fetch("process_order.php", {
+            method: "POST",
+            body: formData,
+          });
+
+          const text = await response.text();
+          let result;
+
+          try {
+            result = JSON.parse(text);
+          } catch (jsonError) {
+            console.error("JSON parse error:", jsonError);
+            console.error("Raw response:", text);
+            alert("Server error. Please check your proof upload and try again.");
+            return;
+          }
+
+          if (result.success) {
+            alert(`Order #${result.order_id} placed successfully!`);
+            await fetch("clear_cart.php");
+            window.location.href = "thank_you.html";
+          } else {
+            throw new Error(result.message || "Unknown error occurred");
+          }
+        } catch (error) {
+          console.error("Order processing error:", error);
+          alert("Error processing order. Please try again.");
+        }
+      };
+
+    // Handle logout
+    document.getElementById("logout-link").onclick = function(e) {
+        e.preventDefault();
+        if (confirm("Are you sure you want to logout?")) {
+            window.location.href = "/IM2-Scentora/files/logout.php";
+        }
+    };
+
+    // Load cart items when page loads
+    document.addEventListener('DOMContentLoaded', loadCartItems);
+
+    // Drag and drop functionality for file upload
+    const dragDropArea = document.getElementById('dragDropArea');
+    const proofInput = document.getElementById('proof');
+    const previewImage = document.getElementById('previewImage');
+
+    dragDropArea.addEventListener('click', () => {
+        proofInput.click();
+    });
+
+    proofInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+        if (e.target.files.length > 0) {
+            dragDropArea.classList.add('has-file');
+        }
+    });
+
+    dragDropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.add('dragover');
+    });
+
+    dragDropArea.addEventListener('dragleave', () => {
+        dragDropArea.classList.remove('dragover');
+    });
+
+    dragDropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDropArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            
+            // Set the file to the input element
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            proofInput.files = dataTransfer.files;
+            
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                // Hide placeholder when image is loaded
+                dragDropArea.classList.add('has-file');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Show QR image based on payment method
+    const paymentSelect = document.getElementById('payment');
+    const paymentQR = document.getElementById('paymentQR');
+    const qrImage = document.getElementById('qrImage');
+
+    paymentSelect.addEventListener('change', function() {
+      if (this.value === 'gcash') {
+        qrImage.src = 'http://localhost/IM2-Scentora/files/imges/gcash_qr.jpg';
+        paymentQR.style.display = 'block';
+      } else if (this.value === 'card') {
+        qrImage.src = 'http://localhost/IM2-Scentora/files/imges/card_qr.jpg';
+        paymentQR.style.display = 'block';
+      } else {
+        paymentQR.style.display = 'none';
+        qrImage.src = '';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+  const darkToggle = document.getElementById('darkmode');
+  if (darkToggle) {
+    if (localStorage.getItem('scentoraDark') === '1') {
+      document.body.classList.add('darkmode');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('darkmode', darkToggle.checked);
+      localStorage.setItem('scentoraDark', darkToggle.checked ? '1' : '0');
+    });
+  }
+});
+  </script>
+</body>
+</html>
