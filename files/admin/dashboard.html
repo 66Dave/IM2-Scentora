@@ -829,6 +829,49 @@ document.getElementById('overrideModal').addEventListener('click', function(e) {
   }
 });
 
+function showProofModal(filename) {
+  const proofImage = document.getElementById('proofImage');
+  const imageError = document.getElementById('imageError');
+  const modal = document.getElementById('proofModal');
+  
+  // Reset display states
+  proofImage.style.display = 'none';
+  imageError.style.display = 'none';
+  
+  // Set image source - proofs are in the uploads/proofs/ directory
+  proofImage.src = `../uploads/proofs/${filename}`;
+  
+  // Handle image load success
+  proofImage.onload = function() {
+    proofImage.style.display = 'block';
+    imageError.style.display = 'none';
+  };
+  
+  // Handle image load error
+  proofImage.onerror = function() {
+    proofImage.style.display = 'none';
+    imageError.style.display = 'block';
+    imageError.textContent = `Failed to load image: ${filename}`;
+    console.error('Failed to load proof image:', `../uploads/proofs/${filename}`);
+  };
+  
+  // Show modal
+  modal.style.display = 'block';
+}
+
+function closeProofModal() {
+  document.getElementById('proofModal').style.display = 'none';
+  // Clear image source to prevent caching issues
+  document.getElementById('proofImage').src = '';
+}
+
+// Close proof modal when clicking outside
+document.getElementById('proofModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeProofModal();
+  }
+});
+
 function changeOrderStatus(orderId, newStatus) {
   // Add console.log for debugging
   console.log('Updating order:', orderId, 'to status:', newStatus);

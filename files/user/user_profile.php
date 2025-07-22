@@ -370,7 +370,7 @@ $profile_pic = !empty($profile_image) ? $profile_image : "https://ui-avatars.com
   <header>
   <div class="logo">Scentora</div>
   <nav class="nav-links">
-    <a href="shop_user.html">Shop</a>
+    <a href="shop_user.php">Shop</a>
     <a href="orders_user.php">Orders</a>
     <a href="userCart.html" title="Cart">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">

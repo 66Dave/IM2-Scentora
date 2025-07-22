@@ -274,12 +274,18 @@
         max-height: 180px;
         object-fit: contain;
         display: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(145, 116, 137, 0.10);
     }
 
     .drag-drop-area .placeholder {
         text-align: center;
         color: var(--primary);
         font-size: 1rem;
+    }
+
+    .drag-drop-area.has-file .placeholder {
+        display: none;
     }
 
     @media (max-width: 700px) {
@@ -342,7 +348,7 @@ body.darkmode .courier-note {
   <header>
   <div class="logo">Scentora</div>
   <nav class="nav-links">
-    <a href="shop_user.html">Shop</a>
+    <a href="shop_user.php">Shop</a>
     <a href="orders_user.php">Orders</a>
     <a href="userCart.html" title="Cart">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
@@ -563,6 +569,9 @@ body.darkmode .courier-note {
 
     proofInput.addEventListener('change', (e) => {
         handleFiles(e.target.files);
+        if (e.target.files.length > 0) {
+            dragDropArea.classList.add('has-file');
+        }
     });
 
     dragDropArea.addEventListener('dragover', (e) => {
@@ -585,9 +594,16 @@ body.darkmode .courier-note {
             const file = files[0];
             const reader = new FileReader();
             
+            // Set the file to the input element
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            proofInput.files = dataTransfer.files;
+            
             reader.onload = (e) => {
                 previewImage.src = e.target.result;
                 previewImage.style.display = 'block';
+                // Hide placeholder when image is loaded
+                dragDropArea.classList.add('has-file');
             };
             
             reader.readAsDataURL(file);

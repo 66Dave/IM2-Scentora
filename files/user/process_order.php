@@ -32,7 +32,7 @@ if (!$address || !$paymentMethod || !$courier || $totalAmount <= 0) {
 }
 
 // Upload proof file
-$uploadDir = __DIR__ . '/proofs/';
+$uploadDir = dirname(__DIR__) . '/uploads/proofs/';
 if (!file_exists($uploadDir)) {
     if (!mkdir($uploadDir, 0777, true)) {
         header('Content-Type: application/json');
@@ -67,6 +67,9 @@ if (isset($_FILES['proof'])) {
         ]);
         exit;
     }
+    
+    // Set the filename after successful upload
+    $proofFilename = $fileName;
 }
 
 // Fetch cart items
