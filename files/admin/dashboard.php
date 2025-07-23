@@ -847,21 +847,47 @@ document.getElementById("logout-link").onclick = function(e) {
 
 //Real-time dashboard data fetch
 fetch("dashboard_data.php")
-  .then(res => res.json())
-  .then(data => {
-    // Overview section
-    document.getElementById("count-products").textContent = data.totalProducts;
-    document.getElementById("count-alerts").textContent = data.stockAlerts;
-    document.getElementById("count-orders").textContent = data.pendingOrders;
-    
-    // Stats section
-    document.getElementById("stat-total").textContent = data.totalProducts;
-    document.getElementById("stat-in-stock").textContent = data.inStock;
-    document.getElementById("stat-out-stock").textContent = data.outOfStock;
-    document.getElementById("stat-orders").textContent = data.totalOrders;
+  .then(res => {
+    console.log("Dashboard API response status:", res.status);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    return res.text();
+  })
+  .then(text => {
+    console.log("Dashboard API raw response:", text);
+    try {
+      const data = JSON.parse(text);
+      console.log("Dashboard API parsed data:", data);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      // Overview section
+      document.getElementById("count-products").textContent = data.totalProducts || 0;
+      document.getElementById("count-alerts").textContent = data.stockAlerts || 0;
+      document.getElementById("count-orders").textContent = data.pendingOrders || 0;
+      
+      // Stats section
+      document.getElementById("stat-total").textContent = data.totalProducts || 0;
+      document.getElementById("stat-in-stock").textContent = data.inStock || 0;
+      document.getElementById("stat-out-stock").textContent = data.outOfStock || 0;
+      document.getElementById("stat-orders").textContent = data.totalOrders || 0;
+      
+      console.log("Dashboard data loaded successfully");
+    } catch (e) {
+      console.error("JSON parse error:", e);
+      console.error("Raw text was:", text);
+      throw new Error("Server returned invalid JSON: " + e.message);
+    }
   })
   .catch(err => {
     console.error("Dashboard fetch failed:", err);
+    // Show error message in the dashboard
+    document.getElementById("count-products").textContent = "Error";
+    document.getElementById("count-alerts").textContent = "Error";
+    document.getElementById("count-orders").textContent = "Error";
   });
   let currentOrderId = null;
 

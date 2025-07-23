@@ -23,13 +23,17 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch products
+// Fetch products with ratings
 $sql = "SELECT 
-    Product_ID, Product_Name, Product_Price, Available_Stocks, Stock_Level,
-    Category, Image_URL, Product_Code, Brand, Description
-    FROM product
-    WHERE Is_Active = 1 AND Available_Stocks > 0
-    ORDER BY Product_ID DESC";
+    p.Product_ID, p.Product_Name, p.Product_Price, p.Available_Stocks, p.Stock_Level,
+    p.Category, p.Image_URL, p.Product_Code, p.Brand, p.Description,
+    COALESCE(AVG(pr.Rating), 0) as average_rating,
+    COUNT(pr.Review_ID) as total_reviews
+    FROM product p
+    LEFT JOIN product_reviews pr ON p.Product_ID = pr.Product_ID AND pr.Is_Approved = 1
+    WHERE p.Is_Active = 1 AND p.Available_Stocks > 0
+    GROUP BY p.Product_ID
+    ORDER BY p.Product_ID DESC";
 
 $result = $conn->query($sql);
 $products = [];
@@ -46,7 +50,9 @@ while ($row = $result->fetch_assoc()) {
         'Image_URL' => $imagePath,
         'Product_Code' => $row['Product_Code'],
         'Brand' => $row['Brand'] ?? 'Scentora',
-        'Description' => $row['Description'] ?? 'No description available'
+        'Description' => $row['Description'] ?? 'No description available',
+        'average_rating' => (float)$row['average_rating'],
+        'total_reviews' => (int)$row['total_reviews']
     ];
 }
 $conn->close();
@@ -699,6 +705,195 @@ body.darkmode .top-selling-btn.active {
     color: var(--white);
 }
 
+/* Reviews Section Styles */
+.modal-reviews-section {
+    margin-top: 2rem;
+}
+
+.reviews-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: 12px;
+}
+
+.rating-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.rating-score {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.2rem;
+    margin: 0.5rem 0;
+}
+
+.star-display {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
+.star-display.empty {
+    color: #ddd;
+}
+
+.total-reviews {
+    font-size: 0.9rem;
+    color: var(--text);
+    opacity: 0.8;
+}
+
+.rating-distribution {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.bar-fill {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill-inner {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.individual-reviews {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.review-item {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem 0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: var(--text);
+    opacity: 0.6;
+}
+
+.review-rating {
+    display: flex;
+    gap: 0.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.review-text {
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0;
+}
+
+/* Top Rated Button */
+.top-rated-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    background: var(--card);
+    color: #ffc107;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.top-rated-btn:hover {
+    background: #ffc107;
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.top-rated-btn.active {
+    background: #ffc107;
+    color: var(--white);
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.4);
+}
+
+body.darkmode .top-rated-btn {
+    background: var(--accent);
+    border-color: #ffc107;
+}
+
+body.darkmode .top-rated-btn:hover,
+body.darkmode .top-rated-btn.active {
+    background: #ffc107;
+    color: var(--white);
+}
+
+/* Product Card Stars */
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.product-stars {
+    display: flex;
+    gap: 0.1rem;
+}
+
+.product-star {
+    color: #ffc107;
+    font-size: 0.9rem;
+}
+
+.product-star.empty {
+    color: #ddd;
+}
+
+.rating-text {
+    font-size: 0.8rem;
+    color: var(--text);
+    opacity: 0.8;
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -731,7 +926,7 @@ body.darkmode .top-selling-btn.active {
       <input type="text" id="searchInput" placeholder="Search for products" />
     </div>
     <nav class="nav-center">
-      <a href="shop_user.php">Shop</a>
+      <a href="shop_user.php" class="active">Shop</a>
       <a href="orders_user.php">Orders</a>
       <a href="userCart.html" title="Cart">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
@@ -740,7 +935,7 @@ body.darkmode .top-selling-btn.active {
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
       </a>
-      <a href="user_profile.php" class="active" title="Profile">
+      <a href="user_profile.php" title="Profile">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;">
           <circle cx="12" cy="8" r="4"></circle>
           <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
@@ -763,6 +958,14 @@ body.darkmode .top-selling-btn.active {
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
           </svg>
           Top Selling Items
+        </button>
+      </div>
+      <div>
+        <button id="topRatedBtn" class="top-rated-btn" onclick="toggleTopRated()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          Top Rated Items
         </button>
       </div>
       <div>
@@ -821,6 +1024,17 @@ body.darkmode .top-selling-btn.active {
           </svg>
           Add to Cart
         </button>
+        
+        <!-- Product Reviews Section -->
+        <div class="modal-reviews-section" id="modalReviews">
+          <h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1.5rem;">Customer Reviews</h3>
+          <div id="reviewsContent">
+            <div class="loading-reviews" style="text-align: center; padding: 2rem;">
+              <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+              <p style="color: var(--text); margin-top: 1rem;">Loading reviews...</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -854,13 +1068,16 @@ document.getElementById("logout-link").onclick = function(e) {
 let allProducts = <?php echo json_encode($products); ?>;
 let currentViewingProduct = null;
 let isTopSellingMode = false;
+let isTopRatedMode = false;
 let topSellingProducts = [];
+let topRatedProducts = [];
 
 const categorySelect = document.querySelector(".category-select");
 const searchInput = document.getElementById("searchInput");
 const productGrid = document.getElementById("productGrid");
 const brandFilter = document.getElementById("brandFilter");
 const topSellingBtn = document.getElementById("topSellingBtn");
+const topRatedBtn = document.getElementById("topRatedBtn");
 
 //Category filters
 const allCategoryList = [
@@ -878,6 +1095,18 @@ function populateCategories() {
 //Top Selling functionality
 function toggleTopSelling() {
     isTopSellingMode = !isTopSellingMode;
+    
+    // Reset other modes
+    if (isTopSellingMode) {
+        isTopRatedMode = false;
+        topRatedBtn.classList.remove('active');
+        topRatedBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Rated Items
+        `;
+    }
     
     if (isTopSellingMode) {
         topSellingBtn.classList.add('active');
@@ -898,6 +1127,45 @@ function toggleTopSelling() {
         `;
         // Clear top selling products array and render normal products
         topSellingProducts = [];
+        renderFilteredProducts();
+    }
+}
+
+//Top Rated functionality
+function toggleTopRated() {
+    isTopRatedMode = !isTopRatedMode;
+    
+    // Reset other modes
+    if (isTopRatedMode) {
+        isTopSellingMode = false;
+        topSellingBtn.classList.remove('active');
+        topSellingBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Selling Items
+        `;
+    }
+    
+    if (isTopRatedMode) {
+        topRatedBtn.classList.add('active');
+        topRatedBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Rated (Active)
+        `;
+        fetchTopRatedProducts();
+    } else {
+        topRatedBtn.classList.remove('active');
+        topRatedBtn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Top Rated Items
+        `;
+        // Clear top rated products array and render normal products
+        topRatedProducts = [];
         renderFilteredProducts();
     }
 }
@@ -1014,10 +1282,136 @@ function renderTopSellingProducts() {
     });
 }
 
+function fetchTopRatedProducts() {
+    // Show loading state
+    productGrid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #ffc107; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: var(--text); margin-top: 1rem;">Loading top rated items...</p>
+        </div>
+    `;
+
+    fetch('get_top_rated.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Top rated response:', data); // Debug log
+            if (data.success) {
+                topRatedProducts = data.products;
+                if (topRatedProducts.length === 0) {
+                    productGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                            <p style="color: var(--text);">No top rated items found. Products need reviews to appear here.</p>
+                        </div>
+                    `;
+                } else {
+                    renderTopRatedProducts();
+                }
+            } else {
+                productGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <p style="color: var(--text);">Failed to load top rated items: ${data.error || 'Unknown error'}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching top rated products:', error);
+            productGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                    <p style="color: var(--text);">Error loading top rated items: ${error.message}</p>
+                    <button onclick="fetchTopRatedProducts()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        });
+}
+
+function renderTopRatedProducts() {
+    const filterText = searchInput.value.toLowerCase();
+    const selectedCategory = categorySelect.value;
+    const brandText = brandFilter.value.toLowerCase();
+
+    productGrid.innerHTML = "";
+
+    if (!topRatedProducts || topRatedProducts.length === 0) {
+        productGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                <p style="color: var(--text);">No products available in top rated view.</p>
+            </div>`;
+        return;
+    }
+
+    const filteredProducts = topRatedProducts.filter(product => {
+        const name = (product.Product_Name || "").toLowerCase();
+        const brand = (product.Brand || "").toLowerCase();
+        const category = (product.Category || "").toLowerCase();
+        
+        const matchesSearch = name.includes(filterText);
+        const matchesCategory = selectedCategory === "All" || category === selectedCategory.toLowerCase();
+        const matchesBrand = brandText === "" || brand.includes(brandText);
+
+        return matchesSearch && matchesCategory && matchesBrand;
+    });
+
+    if (filteredProducts.length === 0) {
+        productGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                <p style="color: var(--text);">No top rated items match your filters.</p>
+            </div>`;
+        return;
+    }
+
+    filteredProducts.forEach((product, index) => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        const stars = renderStars(product.average_rating || 0);
+        card.innerHTML = `
+            <div class="card">
+                <div class="img">
+                    <div style="position: absolute; top: 10px; left: 10px; background: #ffc107; color: white; 
+                                border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; 
+                                justify-content: center; font-weight: bold; font-size: 0.8rem; z-index: 1;">
+                        #${index + 1}
+                    </div>
+                    <img src="${product.Image_URL || 'placeholder.jpg'}" alt="${product.Product_Name}" 
+                         onclick="viewProduct(${product.Product_ID})" style="cursor: pointer;">
+                </div>
+                <div class="text">
+                    <p class="brand-name">${product.Brand || 'Scentora'}</p>
+                    <h3 class="product-name">${product.Product_Name}</h3>
+                    <p class="price-tag">${parseFloat(product.Product_Price).toFixed(2)}</p>
+                    <div class="product-rating">
+                        <div class="product-stars">${stars}</div>
+                        <span class="rating-text">${product.average_rating ? product.average_rating.toFixed(1) : '0.0'} (${product.total_reviews || 0} reviews)</span>
+                    </div>
+                    <span class="stock-status ${getStockStatusClass(product.Stock_Level)}">
+                        ${product.Available_Stocks} left
+                    </span>
+                    <div class="button-group">
+                        <button class="view-btn" onclick="viewProduct(${product.Product_ID})">
+                            Details
+                        </button>
+                        <button class="cart-btn" onclick="addToCart(${product.Product_ID})">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        productGrid.appendChild(card);
+    });
+}
+
 //Filter renderer
 function renderFilteredProducts() {
-  // If in top selling mode, don't render regular products
-  if (isTopSellingMode) {
+  // If in top selling mode or top rated mode, don't render regular products
+  if (isTopSellingMode || isTopRatedMode) {
     return;
   }
   
@@ -1068,6 +1462,14 @@ function renderFilteredProducts() {
                   <p class="brand-name">${product.Brand || 'Scentora'}</p>
                   <h3 class="product-name">${product.Product_Name}</h3>
                   <p class="price-tag">${parseFloat(product.Product_Price).toFixed(2)}</p>
+                  <div class="product-rating">
+                      <div class="product-stars" id="stars-${product.Product_ID}">
+                          ${renderStars(product.average_rating || 0)}
+                      </div>
+                      <span class="rating-text" id="rating-text-${product.Product_ID}">
+                          ${product.average_rating ? product.average_rating.toFixed(1) : '0.0'} (${product.total_reviews || 0} reviews)
+                      </span>
+                  </div>
                   <span class="stock-status ${getStockStatusClass(product.Stock_Level)}">
                       ${product.Available_Stocks} left
                   </span>
@@ -1091,16 +1493,14 @@ categorySelect.addEventListener("change", renderFilteredProducts);
 searchInput.addEventListener("input", renderFilteredProducts);
 brandFilter.addEventListener("input", renderFilteredProducts);
 topSellingBtn.addEventListener("click", toggleTopSelling);
+topRatedBtn.addEventListener("click", toggleTopRated);
 
-//Fetch products
-fetch("shop_user.php")
-  .then(response => response.json())
-  .then(products => {
-    allProducts = products;
-    console.log("Products received:", products[0]); // Debug
-    populateCategories();
-    renderFilteredProducts();
-  });
+//Initialize page when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("Products loaded:", allProducts.length); // Debug
+  populateCategories();
+  renderFilteredProducts();
+});
 
 let maxQty = 1;
 
@@ -1127,10 +1527,13 @@ document.getElementById('qtyValue').addEventListener('input', function() {
 });
 
 function viewProduct(productId) {
-  // Check both regular products and top selling products
+  // Check both regular products, top selling products, and top rated products
   let product = allProducts.find(p => p.Product_ID == productId);
   if (!product && isTopSellingMode) {
     product = topSellingProducts.find(p => p.Product_ID == productId);
+  }
+  if (!product && isTopRatedMode) {
+    product = topRatedProducts.find(p => p.Product_ID == productId);
   }
   
   currentViewingProduct = productId;
@@ -1147,6 +1550,10 @@ function viewProduct(productId) {
     maxQty = parseInt(product.Available_Stocks, 10) || 1;
     setModalQty(1, maxQty);
     document.getElementById("qtyValue").max = maxQty;
+    
+    // Load reviews for this product
+    loadProductReviews(productId);
+    
     document.getElementById("productModal").style.display = "block";
     document.body.style.overflow = "hidden";
   }
@@ -1268,6 +1675,142 @@ function checkSessionStatus() {
         .catch(error => {
             console.warn('Session check failed:', error);
         });
+}
+
+// Helper function to render stars
+function renderStars(rating) {
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            starsHtml += '<span class="product-star">★</span>';
+        } else {
+            starsHtml += '<span class="product-star empty">★</span>';
+        }
+    }
+    return starsHtml;
+}
+
+// Load rating for a specific product
+function loadProductRating(productId) {
+    fetch(`get_product_reviews.php?product_id=${productId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const starsContainer = document.getElementById(`stars-${productId}`);
+                const ratingText = document.getElementById(`rating-text-${productId}`);
+                
+                if (starsContainer && ratingText) {
+                    starsContainer.innerHTML = renderStars(data.average_rating);
+                    ratingText.textContent = `${data.average_rating.toFixed(1)} (${data.total_reviews} reviews)`;
+                }
+            } else {
+                const ratingText = document.getElementById(`rating-text-${productId}`);
+                if (ratingText) {
+                    ratingText.textContent = 'No reviews yet';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading product rating:', error);
+            const ratingText = document.getElementById(`rating-text-${productId}`);
+            if (ratingText) {
+                ratingText.textContent = 'No reviews yet';
+            }
+        });
+}
+
+// Load reviews for product modal
+function loadProductReviews(productId) {
+    const reviewsContent = document.getElementById('reviewsContent');
+    
+    if (!reviewsContent) {
+        console.error('reviewsContent element not found!');
+        return;
+    }
+    
+    reviewsContent.innerHTML = `
+        <div class="loading-reviews" style="text-align: center; padding: 2rem;">
+            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: var(--text); margin-top: 1rem;">Loading reviews...</p>
+        </div>
+    `;
+
+    fetch(`get_product_reviews.php?product_id=${productId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayReviews(data);
+            } else {
+                reviewsContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: var(--text);">No reviews available for this product.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading reviews:', error);
+            reviewsContent.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <p style="color: var(--text);">Error loading reviews.</p>
+                </div>
+            `;
+        });
+}
+
+// Display reviews in modal
+function displayReviews(reviewData) {
+    const reviewsContent = document.getElementById('reviewsContent');
+    
+    if (reviewData.total_reviews === 0) {
+        reviewsContent.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <p style="color: var(--text);">No reviews available for this product yet.</p>
+                <p style="color: var(--text); font-size: 0.9rem; opacity: 0.7;">Be the first to leave a review!</p>
+            </div>
+        `;
+        return;
+    }
+
+    let reviewsHtml = `
+        <div class="reviews-summary">
+            <div class="rating-overview">
+                <div class="rating-score">${reviewData.average_rating}</div>
+                <div class="rating-stars">${renderStars(Math.round(reviewData.average_rating))}</div>
+                <div class="total-reviews">${reviewData.total_reviews} review${reviewData.total_reviews !== 1 ? 's' : ''}</div>
+            </div>
+            <div class="rating-distribution">
+                ${[5,4,3,2,1].map(star => {
+                    const count = reviewData.rating_distribution[star] || 0;
+                    const percentage = reviewData.total_reviews > 0 ? (count / reviewData.total_reviews) * 100 : 0;
+                    return `
+                        <div class="rating-bar">
+                            <span>${star} ★</span>
+                            <div class="bar-fill">
+                                <div class="bar-fill-inner" style="width: ${percentage}%"></div>
+                            </div>
+                            <span>${count}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+        
+        <div class="individual-reviews">
+            ${reviewData.reviews.map(review => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <span class="reviewer-name">${review.Consumer_Name}</span>
+                        <span class="review-date">${review.Formatted_Date}</span>
+                    </div>
+                    <div class="review-rating">${renderStars(review.Rating)}</div>
+                    <p class="review-text">${review.Review_Text || 'No written review provided.'}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    reviewsContent.innerHTML = reviewsHtml;
 }
   </script>
 </body>

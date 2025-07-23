@@ -1,8 +1,8 @@
 Array
 (
     [fullname] => Khit Joshua
-    [address] => 12345 randoms ass place
-    [payment] => card
+    [address] => 123 random street
+    [payment] => gcash
     [courier] => lalamove
-    [total_amount] => 132
+    [total_amount] => 0
 )

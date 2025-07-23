@@ -251,10 +251,37 @@ function getStockClass(stock) {
 
 function loadInventoryItems() {
   fetch("inventory_fetch.php")
-    .then(res => res.json())
-    .then(data => {
-      inventory = data;
-      renderTable();
+    .then(res => {
+      console.log("Inventory API response status:", res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.text();
+    })
+    .then(text => {
+      console.log("Inventory API raw response (first 500 chars):", text.substring(0, 500));
+      try {
+        const data = JSON.parse(text);
+        console.log("Inventory API parsed data (first 3 items):", data.slice(0, 3));
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        inventory = data;
+        renderTable();
+        console.log("Inventory loaded successfully, total items:", data.length);
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        console.error("Raw text was:", text);
+        throw new Error("Server returned invalid JSON: " + e.message);
+      }
+    })
+    .catch(err => {
+      console.error("Inventory fetch failed:", err);
+      // Show error message in the table
+      const tbody = document.querySelector("#inventoryTable tbody");
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Error loading inventory: ' + err.message + '</td></tr>';
     });
 }
 

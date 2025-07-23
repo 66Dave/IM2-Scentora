@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 16, 2025 at 04:15 PM
+-- Generation Time: Jul 22, 2025 at 06:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,13 +34,6 @@ CREATE TABLE `cart` (
   `Quantity` int(11) NOT NULL DEFAULT 1,
   `Date_Added` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `cart`
---
-
-INSERT INTO `cart` (`Cart_ID`, `User_ID`, `Product_ID`, `Quantity`, `Date_Added`) VALUES
-(1, 31, 40, 1, '2025-07-16 13:31:13');
 
 -- --------------------------------------------------------
 
@@ -152,16 +145,25 @@ INSERT INTO `order` (`Order_ID`, `User_ID`, `Order_Date`, `Total_Amount`, `Shipp
 (31, 23, '2025-06-21 10:40:00', 25396.00, 'London, UK', 'card', 'proof_605.jpg', 'Accepted', NULL, NULL, NULL),
 (34, 2, '2025-07-05 12:45:00', 6299.00, 'Los Angeles, CA', 'gcash', 'proof_703.jpg', 'Declined', NULL, NULL, NULL),
 (36, 1, '2025-07-10 15:40:00', 6399.00, 'Beverly Hills, CA', 'gcash', 'proof_705.jpg', 'Accepted', 'lalamove', 'TRK705', NULL),
-(37, 33, '2025-07-01 09:00:00', 2500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz1.jpg', 'Completed', 'grab', 'AMZ100001', '2025-07-04'),
-(38, 33, '2025-07-02 10:30:00', 1800000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz2.jpg', 'Completed', 'lalamove', 'AMZ100002', '2025-07-05'),
-(39, 33, '2025-07-03 11:15:00', 3200000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz3.jpg', 'Completed', 'grab', 'AMZ100003', '2025-07-06'),
-(40, 33, '2025-03-05 14:20:00', 4500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz4.jpg', 'Completed', 'lalamove', 'AMZ100004', '2025-07-08'),
-(41, 33, '2025-07-08 09:45:00', 1950000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz5.jpg', 'Completed', 'grab', 'AMZ100005', '2025-07-11'),
-(42, 33, '2025-07-10 13:30:00', 2800000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz6.jpg', 'Accepted', 'lalamove', 'AMZ100006', NULL),
-(43, 33, '2025-05-12 15:20:00', 3750000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz7.jpg', 'Accepted', 'grab', 'AMZ100007', NULL),
-(44, 33, '2025-02-13 16:45:00', 5200000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz8.jpg', 'Pending', NULL, NULL, NULL),
-(45, 33, '2025-04-14 10:15:00', 4100000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz9.jpg', 'Pending', NULL, NULL, NULL),
-(46, 33, '2025-07-15 11:30:00', 6500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz10.jpg', 'Pending', NULL, NULL, NULL);
+(37, 33, '2025-07-01 09:00:00', 2500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz1.jpg', 'Declined', 'grab', 'AMZ100001', '2025-07-04'),
+(38, 33, '2025-07-02 10:30:00', 1800000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz2.jpg', 'Declined', 'lalamove', 'AMZ100002', '2025-07-05'),
+(39, 33, '2025-07-03 11:15:00', 3200000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz3.jpg', 'Declined', 'grab', 'AMZ100003', '2025-07-06'),
+(40, 33, '2025-03-05 14:20:00', 4500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz4.jpg', 'Declined', 'lalamove', 'AMZ100004', '2025-07-08'),
+(41, 33, '2025-07-08 09:45:00', 1950000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz5.jpg', 'Declined', 'grab', 'AMZ100005', '2025-07-11'),
+(42, 33, '2025-07-10 13:30:00', 2800000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz6.jpg', 'Declined', 'lalamove', 'AMZ100006', NULL),
+(43, 33, '2025-05-12 15:20:00', 3750000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz7.jpg', 'Declined', 'grab', 'AMZ100007', NULL),
+(44, 33, '2025-02-13 16:45:00', 5200000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz8.jpg', 'Declined', NULL, NULL, NULL),
+(45, 33, '2025-04-14 10:15:00', 4100000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz9.jpg', 'Declined', NULL, NULL, NULL),
+(46, 33, '2025-07-15 11:30:00', 6500000.00, 'Amazon HQ, Seattle', 'card', 'proof_amz10.jpg', 'Declined', NULL, NULL, NULL),
+(47, 31, '2025-07-16 22:43:01', 37998.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '', 'Cancelled', 'grab', NULL, NULL),
+(48, 32, '2025-07-22 16:01:29', 17999.00, '123', 'gcash', '', 'Accepted', 'grab', NULL, NULL),
+(49, 32, '2025-07-22 21:25:53', 132.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '', 'Accepted', 'lalamove', NULL, NULL),
+(50, 32, '2025-07-22 21:32:15', 132.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '', 'Accepted', 'lalamove', NULL, NULL),
+(51, 32, '2025-07-22 21:43:00', 132.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '', 'Cancelled', 'lalamove', NULL, NULL),
+(52, 32, '2025-07-22 21:47:50', 264.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '', 'Cancelled', 'lalamove', NULL, NULL),
+(53, 32, '2025-07-22 21:52:53', 132.00, 'Maria Santos 1234 Rizal Street Cebu City Cebu 6000 Philippines', 'gcash', '1753192373_wallpaperflare-cropped.jpg', 'Accepted', 'lalamove', NULL, NULL),
+(54, 32, '2025-07-22 22:04:23', 132.00, '123 something street, random city', 'gcash', '1753193063_wallpaperflare-cropped.jpg', 'Accepted', 'lalamove', NULL, NULL),
+(55, 34, '2025-07-22 22:43:16', 132.00, '12345 randoms ass place', 'card', '1753195396_wallpaperflare-cropped.jpg', 'Accepted', 'lalamove', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -246,7 +248,17 @@ INSERT INTO `orderdetails` (`Order_ID`, `Product_ID`, `Product_Price`, `Product_
 (45, 40, 17999.00, 227, 4085773.00),
 (46, 34, 19999.00, 325, 6499675.00),
 (46, 38, 18999.00, 342, 6497658.00),
-(46, 40, 17999.00, 361, 6497639.00);
+(46, 40, 17999.00, 361, 6497639.00),
+(47, 34, 19999.00, 1, 19999.00),
+(47, 40, 17999.00, 1, 17999.00),
+(48, 40, 17999.00, 1, 17999.00),
+(49, 41, 132.00, 1, 132.00),
+(50, 41, 132.00, 1, 132.00),
+(51, 41, 132.00, 1, 132.00),
+(52, 41, 132.00, 2, 264.00),
+(53, 41, 132.00, 1, 132.00),
+(54, 41, 132.00, 1, 132.00),
+(55, 41, 132.00, 1, 132.00);
 
 -- --------------------------------------------------------
 
@@ -309,13 +321,64 @@ INSERT INTO `product` (`Product_ID`, `User_ID`, `Product_Name`, `Product_Price`,
 (31, 1, 'Dylan Blue', 5799.00, 1, 'VER003', 'Fresh', 'uploads/dylan_blue.jpg', '2025-07-16', '2025-07-16', 1, 'Versace', 'Aquatic notes with bergamot', 45),
 (32, 1, 'Le Male', 5399.00, 1, 'JPG001', 'Oriental', 'uploads/le_male.jpg', '2025-07-16', '2025-07-16', 1, 'Jean Paul Gaultier', 'Mint and vanilla with lavender', 40),
 (33, 1, 'Eros', 5899.00, 1, 'VER004', 'Fresh', 'uploads/eros.jpg', '2025-07-16', '2025-07-16', 1, 'Versace', 'Mint leaves with vanilla', 48),
-(34, 1, 'Aventus', 19999.00, 1, 'CR001', 'Fruity', 'uploads/aventus.jpg', '2025-07-16', '2025-07-16', 1, 'Creed', 'Blackcurrant and apple with birch', 30),
+(34, 1, 'Aventus', 19999.00, 1, 'CR001', 'Fruity', 'uploads/aventus.jpg', '2025-07-16', '2025-07-16', 1, 'Creed', 'Blackcurrant and apple with birch', 1843),
 (35, 1, 'Sauvage', 7499.00, 1, 'DIO004', 'Fresh', 'uploads/sauvage.jpg', '2025-07-16', '2025-07-16', 1, 'Dior', 'Bergamot with ambroxan', 45),
 (36, 1, 'Invictus', 5499.00, 1, 'PR004', 'Fresh', 'uploads/invictus.jpg', '2025-07-16', '2025-07-16', 1, 'Paco Rabanne', 'Marine notes with guaiac wood', 50),
 (37, 1, 'Y', 6299.00, 1, 'YSL004', 'Fresh', 'uploads/y.jpg', '2025-07-16', '2025-07-16', 1, 'Yves Saint Laurent', 'White aldehydes with cedar', 42),
-(38, 1, 'Oud Wood', 18999.00, 1, 'TF001', 'Woody', 'uploads/oud_wood.jpg', '2025-07-16', '2025-07-16', 1, 'Tom Ford', 'Rare oud wood with sandalwood', 35),
+(38, 1, 'Oud Wood', 18999.00, 1, 'TF001', 'Woody', 'uploads/oud_wood.jpg', '2025-07-16', '2025-07-16', 1, 'Tom Ford', 'Rare oud wood with sandalwood', 1940),
 (39, 1, 'Bleu de Chanel', 7999.00, 1, 'CH005', 'Fresh', 'uploads/bleu.jpg', '2025-07-16', '2025-07-16', 1, 'Chanel', 'Citrus and vetiver blend', 40),
-(40, 1, 'Tobacco Vanille', 17999.00, 1, 'TF002', 'Oriental', 'uploads/tobacco_vanille.jpg', '2025-07-16', '2025-07-16', 1, 'Tom Ford', 'Tobacco leaf with vanilla', 32);
+(40, 1, 'Tobacco Vanille', 17999.00, 1, 'TF002', 'Oriental', 'uploads/tobacco_vanille.jpg', '2025-07-16', '2025-07-16', 1, 'Tom Ford', 'Tobacco leaf with vanilla', 2042),
+(41, 1, 'nikotan', 132.00, NULL, '123', 'Floral', 'uploads/687f4c344199b_shika-shikanokonokonokoshitan (1).gif', NULL, '2025-07-22', 1, '32', '312', 9);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_reviews`
+--
+
+CREATE TABLE `product_reviews` (
+  `Review_ID` int(11) NOT NULL,
+  `Order_ID` int(11) NOT NULL,
+  `Product_ID` int(11) NOT NULL,
+  `User_ID` int(11) NOT NULL,
+  `Rating` int(1) NOT NULL CHECK (`Rating` >= 1 and `Rating` <= 5),
+  `Review_Text` text DEFAULT NULL,
+  `Review_Date` datetime DEFAULT current_timestamp(),
+  `Is_Approved` tinyint(1) DEFAULT 1,
+  `Helpful_Count` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+INSERT INTO `product_reviews` (`Review_ID`, `Order_ID`, `Product_ID`, `User_ID`, `Rating`, `Review_Text`, `Review_Date`, `Is_Approved`, `Helpful_Count`) VALUES
+(1, 1, 1, 1, 2, 'Absolutely love this fragrance! Long-lasting and gets so many compliments.', '2025-07-01 23:56:58', 1, 0),
+(2, 1, 6, 1, 5, 'Excellent product.', '2025-07-01 23:56:58', 1, 0),
+(3, 1, 29, 1, 5, 'Highly recommended.', '2025-06-24 23:56:58', 1, 0),
+(4, 1, 30, 1, 4, 'Nice fragrance but not exactly what I expected. Quality is good though.', '2025-07-08 23:56:58', 1, 0),
+(5, 2, 6, 1, 3, 'Highly recommended.', '2025-06-19 23:56:58', 1, 0),
+(6, 2, 11, 1, 5, 'This perfume is amazing! Perfect for special occasions.', '2025-06-30 23:56:58', 1, 0),
+(7, 2, 38, 1, 3, 'Good value.', '2025-07-01 23:56:58', 1, 0),
+(8, 3, 1, 2, 5, 'Amazing fragrance!', '2025-07-09 23:56:58', 1, 0),
+(9, 3, 34, 2, 2, 'Great!', '2025-06-28 23:56:58', 1, 0),
+(10, 9, 23, 17, 5, 'Amazing fragrance!', '2025-07-11 23:56:58', 1, 0),
+(11, 26, 13, 5, 4, 'Highly recommended.', '2025-05-26 00:00:00', 1, 0),
+(12, 25, 24, 18, 5, 'Love this perfume! Great quality and fast shipping.', '2025-06-04 00:00:00', 1, 0),
+(13, 23, 22, 25, 5, 'Highly recommended.', '2025-05-16 00:00:00', 1, 0),
+(14, 21, 27, 3, 5, 'Classic fragrance, never goes out of style.', '2025-04-29 00:00:00', 1, 0),
+(15, 21, 35, 3, 3, 'Amazing fragrance!', '2025-04-28 00:00:00', 1, 0),
+(16, 21, 37, 3, 3, 'Fast shipping.', '2025-04-28 00:00:00', 1, 0),
+(17, 20, 3, 29, 3, 'Exactly what I was looking for!', '2025-05-04 00:00:00', 1, 0),
+(18, 20, 30, 29, 4, 'Premium quality as expected.', '2025-05-01 00:00:00', 1, 0),
+(19, 18, 15, 16, 5, 'Nice addition to my collection.', '2025-04-19 00:00:00', 1, 0),
+(20, 16, 33, 4, 4, 'Good quality.', '2025-03-26 00:00:00', 1, 0),
+(21, 15, 38, 26, 5, 'Good value.', '2025-04-01 00:00:00', 1, 0),
+(22, 14, 3, 13, 5, 'Perfect scent.', '2025-03-20 00:00:00', 1, 0),
+(23, 13, 10, 19, 5, 'Nice scent but a bit too floral for my taste.', '2025-03-17 00:00:00', 1, 0),
+(24, 12, 22, 22, 3, 'Premium quality as expected.', '2025-03-12 00:00:00', 1, 0),
+(25, 12, 29, 22, 5, 'Highly recommended.', '2025-03-14 00:00:00', 1, 0),
+(26, 9, 32, 17, 4, 'Good quality but the bottle is smaller than expected.', '2025-02-12 00:00:00', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -372,8 +435,9 @@ INSERT INTO `user` (`User_ID`, `Name`, `Email`, `Address`, `User_Type`, `Passwor
 (29, 'Harry Styles', 'harry@styles.com', 'Holmes Chapel, UK', 'Consumer', '$2y$10$v.LBbOqs9NAqq2rcKbCLaeV6kgn8Nbv1gAu16p.uw5Te1QoKcV0.C', NULL, NULL, NULL, 1),
 (30, 'Gal Gadot', 'wonder@woman.com', 'Tel Aviv, Israel', 'Consumer', '$2y$10$v.LBbOqs9NAqq2rcKbCLaeV6kgn8Nbv1gAu16p.uw5Te1QoKcV0.C', NULL, NULL, NULL, 1),
 (31, 'Admin User', 'sscentora@gmail.com', 'Cebu City', 'Admin', 'admin123', NULL, NULL, NULL, 1),
-(32, 'Dave Lagunda', 'davelagunda@gmail.com', '', 'Consumer', '$2y$10$sclXu/Ro0ZQUi.YSa3Cau.h4QU.0BBiPlaf2I7RJiTmuheAYnjT.W', NULL, NULL, NULL, 1),
-(33, 'Amazon Corporate', 'amazon@gmail.com', 'Seattle, WA', 'Consumer', '$2y$10$v.LBbOqs9NAqq2rcKbCLaeV6kgn8Nbv1gAu16p.uw5Te1QoKcV0.C', NULL, NULL, NULL, 1);
+(32, 'Dave Lagunda', 'davelagunda@gmail.com', '123 something street, random city', 'Consumer', '$2y$10$sclXu/Ro0ZQUi.YSa3Cau.h4QU.0BBiPlaf2I7RJiTmuheAYnjT.W', NULL, NULL, NULL, 1),
+(33, 'Amazon Corporate', 'amazon@gmail.com', 'Seattle, WA', 'Consumer', '$2y$10$v.LBbOqs9NAqq2rcKbCLaeV6kgn8Nbv1gAu16p.uw5Te1QoKcV0.C', NULL, NULL, NULL, 0),
+(34, 'Khit Joshua', 'khjoshuam@gmail.com', '', 'Consumer', '$2y$10$38KSCE/Mu4AVSDAPLsR8xeNrxUUnJcEpRVFaahtt6mOTKhOnnEfQa', NULL, NULL, NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -421,6 +485,19 @@ ALTER TABLE `product`
   ADD KEY `User_ID` (`User_ID`);
 
 --
+-- Indexes for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD PRIMARY KEY (`Review_ID`),
+  ADD UNIQUE KEY `unique_order_product_review` (`Order_ID`,`Product_ID`),
+  ADD KEY `Product_ID` (`Product_ID`),
+  ADD KEY `User_ID` (`User_ID`),
+  ADD KEY `Order_ID` (`Order_ID`),
+  ADD KEY `idx_product_reviews_product_approved` (`Product_ID`,`Is_Approved`),
+  ADD KEY `idx_product_reviews_user` (`User_ID`),
+  ADD KEY `idx_product_reviews_date` (`Review_Date`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -434,25 +511,31 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `order`
 --
 ALTER TABLE `order`
-  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `Order_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- AUTO_INCREMENT for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  MODIFY `Review_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- Constraints for dumped tables
@@ -495,6 +578,14 @@ ALTER TABLE `orderdetails`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
+
+--
+-- Constraints for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD CONSTRAINT `product_reviews_ibfk_1` FOREIGN KEY (`Order_ID`) REFERENCES `order` (`Order_ID`),
+  ADD CONSTRAINT `product_reviews_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `product` (`Product_ID`),
+  ADD CONSTRAINT `product_reviews_ibfk_3` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

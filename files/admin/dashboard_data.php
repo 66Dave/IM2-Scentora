@@ -1,4 +1,7 @@
 <?php
+// Start output buffering to prevent any accidental output
+ob_start();
+
 require_once '../includes/session_config.php';
 
 // Require admin access
@@ -8,20 +11,21 @@ requireAdmin();
 checkSessionTimeout();
 
 // Error visibility (optional for debugging)
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // Disable display errors for clean JSON
 error_reporting(E_ALL);
 
-// Database credentials
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "scentoradb";
+try {
+    // Database credentials
+    $host = "localhost";
+    $username = "root";
+    $password = "";
+    $database = "scentoradb";
 
-// Connect to database
-$conn = new mysqli($host, $username, $password, $database);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+    // Connect to database
+    $conn = new mysqli($host, $username, $password, $database);
+    if ($conn->connect_error) {
+        throw new Exception("Database connection failed: " . $conn->connect_error);
+    }
 
 // Total products (only active products)
 $totalProductsQuery = $conn->query("SELECT COUNT(*) AS total FROM product WHERE Is_Active = 1");
@@ -51,19 +55,29 @@ $stockSummary = $stockSummaryQuery->fetch_assoc();
 $inStock = $stockSummary['inStock'] ?? 0;
 $outOfStock = $stockSummary['outOfStock'] ?? 0;
 
-// Package all data
-$data = [
-    "totalProducts" => $totalProducts,
-    "stockAlerts" => $stockAlerts,
-    "pendingOrders" => $pendingOrders,
-    "inStock" => $inStock,
-    "outOfStock" => $outOfStock,
-    "totalOrders" => $totalOrders
-];
+    // Package all data
+    $data = [
+        "totalProducts" => $totalProducts,
+        "stockAlerts" => $stockAlerts,
+        "pendingOrders" => $pendingOrders,
+        "inStock" => $inStock,
+        "outOfStock" => $outOfStock,
+        "totalOrders" => $totalOrders
+    ];
 
-// Output JSON
-header("Content-Type: application/json");
-echo json_encode($data);
+    // Close connection
+    $conn->close();
 
-// Close connection
-$conn->close();
+    // Clean output buffer and send JSON response
+    ob_clean();
+    header("Content-Type: application/json");
+    echo json_encode($data);
+
+} catch (Exception $e) {
+    // Clean output buffer and send error response
+    ob_clean();
+    http_response_code(500);
+    header("Content-Type: application/json");
+    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
+}
+?>

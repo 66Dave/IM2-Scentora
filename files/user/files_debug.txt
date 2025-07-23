@@ -5,7 +5,7 @@ Array
             [name] => wallpaperflare-cropped.jpg
             [full_path] => wallpaperflare-cropped.jpg
             [type] => image/jpeg
-            [tmp_name] => C:\xampp\tmp\phpA6CD.tmp
+            [tmp_name] => C:\xampp\tmp\phpFB3F.tmp
             [error] => 0
             [size] => 2626523
         )

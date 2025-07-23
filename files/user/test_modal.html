@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Rating Modal</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; }
+        .product-item { display: flex; gap: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 1rem; }
+        .product-image { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+        .rating-stars { display: flex; gap: 0.2rem; margin: 0.5rem 0; }
+        .star { font-size: 1.5rem; color: #ddd; cursor: pointer; transition: color 0.2s; }
+        .star.active, .star:hover { color: #ffc107; }
+        .review-text { width: 100%; min-height: 60px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; }
+        button { background: #6f58e9; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Rating Modal</h1>
+    <button onclick="testAPI()">Test API Call</button>
+    <button onclick="showModal()">Show Modal</button>
+    <button onclick="testWithOrderId()">Test with Order ID 1</button>
+    
+    <div id="results"></div>
+    
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <h2>Rate Products</h2>
+            <div id="productsList"></div>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function testAPI() {
+            fetch('get_reviewable_orders.php')
+                .then(response => response.text())
+                .then(text => {
+                    console.log('Raw response:', text);
+                    document.getElementById('results').innerHTML = '<h3>API Response:</h3><pre>' + text + '</pre>';
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        console.log('Parsed:', data);
+                        if (data.reviewable_items) {
+                            renderProducts(data.reviewable_items);
+                        }
+                    } catch(e) {
+                        console.error('Parse error:', e);
+                        document.getElementById('results').innerHTML += '<p style="color:red;">JSON Parse Error: ' + e.message + '</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    document.getElementById('results').innerHTML = '<p style="color:red;">Fetch Error: ' + error.message + '</p>';
+                });
+        }
+        
+        function showModal() {
+            document.getElementById('testModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('testModal').style.display = 'none';
+        }
+        
+        function testWithOrderId() {
+            fetch('get_reviewable_orders.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.reviewable_items) {
+                        const orderProducts = data.reviewable_items.filter(item => item.Order_ID == 1);
+                        console.log('Products for Order 1:', orderProducts);
+                        renderProducts(orderProducts);
+                        showModal();
+                    }
+                });
+        }
+        
+        function renderProducts(products) {
+            const container = document.getElementById('productsList');
+            container.innerHTML = '';
+            
+            if (!products || products.length === 0) {
+                container.innerHTML = '<p>No products to display</p>';
+                return;
+            }
+            
+            products.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <img src="${product.Image_URL || '../images/placeholder.jpg'}" class="product-image" alt="${product.Product_Name}">
+                    <div>
+                        <h4>${product.Product_Name}</h4>
+                        <p>Brand: ${product.Brand}</p>
+                        <p>Price: ₱${product.Product_Price}</p>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating(this, 1)">★</span>
+                            <span class="star" onclick="setRating(this, 2)">★</span>
+                            <span class="star" onclick="setRating(this, 3)">★</span>
+                            <span class="star" onclick="setRating(this, 4)">★</span>
+                            <span class="star" onclick="setRating(this, 5)">★</span>
+                        </div>
+                        <textarea class="review-text" placeholder="Write your review..."></textarea>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function setRating(starElement, rating) {
+            const stars = starElement.parentElement.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+        }
+    </script>
+</body>
+</html>

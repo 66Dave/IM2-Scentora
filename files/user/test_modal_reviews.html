@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Product Modal Reviews</title>
+</head>
+<body>
+    <h2>Test Product Reviews Loading</h2>
+    
+    <button onclick="testLoadReviews(23)">Test Load Reviews for Product 23</button>
+    <button onclick="testLoadReviews(24)">Test Load Reviews for Product 24</button>
+    <button onclick="testLoadReviews(25)">Test Load Reviews for Product 25</button>
+    
+    <div id="reviewsContent" style="border: 1px solid #ccc; padding: 20px; margin: 20px 0; min-height: 200px;">
+        Click a button to test loading reviews...
+    </div>
+    
+    <div id="console-log" style="background: #f0f0f0; padding: 10px; margin: 20px 0; min-height: 100px;">
+        <strong>Console Log:</strong><br>
+    </div>
+
+    <script>
+    function log(message) {
+        const consoleDiv = document.getElementById('console-log');
+        consoleDiv.innerHTML += '<br>' + new Date().toLocaleTimeString() + ': ' + message;
+    }
+    
+    function renderStars(rating) {
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                starsHtml += '<span style="color: gold;">★</span>';
+            } else {
+                starsHtml += '<span style="color: #ccc;">★</span>';
+            }
+        }
+        return starsHtml;
+    }
+    
+    function testLoadReviews(productId) {
+        log(`Loading reviews for product ID: ${productId}`);
+        const reviewsContent = document.getElementById('reviewsContent');
+        
+        reviewsContent.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #007bff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 1rem;">Loading reviews...</p>
+            </div>
+        `;
+
+        fetch(`get_product_reviews.php?product_id=${productId}`)
+            .then(response => {
+                log(`Response status: ${response.status}`);
+                return response.text();
+            })
+            .then(text => {
+                log(`Raw response: ${text.substring(0, 100)}...`);
+                try {
+                    const data = JSON.parse(text);
+                    log(`Parsed JSON successfully. Success: ${data.success}`);
+                    
+                    if (data.success) {
+                        displayReviews(data);
+                    } else {
+                        reviewsContent.innerHTML = `
+                            <div style="text-align: center; padding: 2rem;">
+                                <p>No reviews available for this product.</p>
+                            </div>
+                        `;
+                        log('API returned success: false');
+                    }
+                } catch (e) {
+                    log(`JSON parse error: ${e.message}`);
+                    reviewsContent.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <p>Error parsing response: ${e.message}</p>
+                            <pre>${text}</pre>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                log(`Fetch error: ${error.message}`);
+                reviewsContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p>Error loading reviews: ${error.message}</p>
+                    </div>
+                `;
+            });
+    }
+    
+    function displayReviews(reviewData) {
+        log(`Displaying ${reviewData.total_reviews} reviews, avg rating: ${reviewData.average_rating}`);
+        const reviewsContent = document.getElementById('reviewsContent');
+        
+        if (reviewData.total_reviews === 0) {
+            reviewsContent.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <p>No reviews available for this product yet.</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">Be the first to leave a review!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let reviewsHtml = `
+            <div style="border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2rem; font-weight: bold;">${reviewData.average_rating}</div>
+                    <div>
+                        <div>${renderStars(Math.round(reviewData.average_rating))}</div>
+                        <div style="font-size: 0.9rem; color: #666;">${reviewData.total_reviews} review${reviewData.total_reviews !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                ${reviewData.reviews.map(review => `
+                    <div style="border-bottom: 1px solid #f0f0f0; padding: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>${review.Consumer_Name}</strong>
+                            <span style="font-size: 0.9rem; color: #666;">${review.Formatted_Date}</span>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">${renderStars(review.Rating)}</div>
+                        <p>${review.Review_Text || 'No written review provided.'}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        reviewsContent.innerHTML = reviewsHtml;
+    }
+    </script>
+    
+    <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+</body>
+</html>
