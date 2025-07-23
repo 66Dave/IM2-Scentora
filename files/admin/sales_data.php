@@ -118,12 +118,14 @@ try {
         ],
         'labels' => $chartData['labels'] ?? [],
         'values' => $chartData['values'] ?? [],
-        'monthlySales' => $month ? $stats['totalSales'] : array_sum($chartData['values'] ?? [0]),
+        'monthlySales' => $month ? $stats['totalSales'] : $stats['totalSales'], // Use the same totalSales for consistency
         'debug' => [
             'dateRange' => $startDate . ' to ' . $endDate,
             'totalMonths' => count($allMonths),
             'hasData' => !empty($chartData['labels']),
-            'queryMonth' => $month
+            'queryMonth' => $month,
+            'chartSum' => array_sum($chartData['values'] ?? [0]),
+            'actualTotal' => $stats['totalSales']
         ]
     ];
 

@@ -875,6 +875,11 @@ fetch("dashboard_data.php")
       document.getElementById("stat-out-stock").textContent = data.outOfStock || 0;
       document.getElementById("stat-orders").textContent = data.totalOrders || 0;
       
+      // Update total sales
+      const totalSales = parseFloat(data.totalSales) || 0;
+      document.getElementById("stat-sales").textContent = 
+        `₱${totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+      
       console.log("Dashboard data loaded successfully");
     } catch (e) {
       console.error("JSON parse error:", e);
@@ -1122,6 +1127,28 @@ function renderOrders(data) {
     });
 }
 
+// Refresh sales totals from dashboard data
+function refreshSalesTotals() {
+    fetch('dashboard_data.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Refreshing sales totals:', data);
+            
+            if (data.totalSales !== undefined) {
+                const statSalesElement = document.getElementById('stat-sales');
+                if (statSalesElement) {
+                    statSalesElement.textContent = '₱' + parseFloat(data.totalSales).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing sales totals:', error);
+        });
+}
+
 function loadOrders(statusFilter = 'all') {
   const searchTerm = document.getElementById('orderSearch').value;
   
@@ -1265,6 +1292,9 @@ document.addEventListener("DOMContentLoaded", () => {
   updateTableHeaders(); // Initialize table headers
   restorePageState(); // Restore previous page state after refresh
   startAdminSessionMonitoring(); // Start session monitoring for admin
+  
+  // Load initial sales data for stats page
+  loadSalesData('all');
 });
 
 // Session monitoring functionality for admin
@@ -1400,15 +1430,19 @@ function loadSalesData(month = 'all') {
     fetch(`sales_data.php?month=${month}`)
         .then(response => response.json())
         .then(data => {
-            // Update total sales display
-            const totalSales = parseFloat(data.totalSales) || 0;
-            document.getElementById('stat-sales').textContent = 
-                `₱${totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
-
-            // Monthly/All-time total in graph header
+            console.log('Sales data loaded:', data);
+            
+            // Update monthly/filtered total in graph header  
             const displaySales = parseFloat(data.monthlySales || data.totalSales) || 0;
             document.getElementById('monthly-total').textContent = 
                 `₱${displaySales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+
+            // Only update the main stat-sales if we're showing all data (no filter)
+            if (month === 'all') {
+                const totalSales = parseFloat(data.totalSales) || 0;
+                document.getElementById('stat-sales').textContent = 
+                    `₱${totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+            }
 
             // Chart update
             const ctx = document.getElementById('salesChart').getContext('2d');
@@ -1539,6 +1573,16 @@ function loadSalesData(month = 'all') {
         })
         .catch(error => {
             console.error('Error loading sales data:', error);
+            // Update UI to show error state
+            const statSalesElement = document.getElementById('stat-sales');
+            const monthlyTotalElement = document.getElementById('monthly-total');
+            
+            if (statSalesElement) {
+                statSalesElement.textContent = 'Error';
+            }
+            if (monthlyTotalElement) {
+                monthlyTotalElement.textContent = 'Error';
+            }
         });
 }
 

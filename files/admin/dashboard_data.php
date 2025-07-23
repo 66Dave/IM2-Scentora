@@ -55,6 +55,11 @@ $stockSummary = $stockSummaryQuery->fetch_assoc();
 $inStock = $stockSummary['inStock'] ?? 0;
 $outOfStock = $stockSummary['outOfStock'] ?? 0;
 
+// Total sales from completed orders
+$totalSalesQuery = $conn->query("SELECT COALESCE(SUM(Total_Amount), 0) AS totalSales 
+    FROM `order` WHERE Status = 'Completed'");
+$totalSales = $totalSalesQuery->fetch_assoc()['totalSales'] ?? 0;
+
     // Package all data
     $data = [
         "totalProducts" => $totalProducts,
@@ -62,7 +67,8 @@ $outOfStock = $stockSummary['outOfStock'] ?? 0;
         "pendingOrders" => $pendingOrders,
         "inStock" => $inStock,
         "outOfStock" => $outOfStock,
-        "totalOrders" => $totalOrders
+        "totalOrders" => $totalOrders,
+        "totalSales" => number_format($totalSales, 2, '.', '')
     ];
 
     // Close connection
