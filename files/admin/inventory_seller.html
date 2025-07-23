@@ -551,7 +551,7 @@ document.getElementById("addItemForm").onsubmit = function(e) {
     submitButton.disabled = true;
     submitButton.textContent = 'Adding...';
 
-    fetch("inventory_seller.php", {
+    fetch("add_product.php", {
         method: "POST",
         body: formData
     })
